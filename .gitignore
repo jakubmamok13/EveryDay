@@ -1,0 +1,15 @@
+# Private, never committed (D-006): the training book, its index, personal data
+private/
+*.pdf
+*.epub
+*.mobi
+
+# Secrets
+.env
+.env.*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
