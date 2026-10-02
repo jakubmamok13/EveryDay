@@ -30,14 +30,14 @@ daily loop works, so the app is useful even if the AI spike disappoints.
 | 2–4. Link Garmin / MyWhoosh / Wahoo | ✔ done (2026-10-02) |
 | 5. VirtualRide filter | ? to confirm |
 | 6–7. FTP / weight / history import | ? to confirm |
-| S14 test workout | Author approved one "TEST EveryDay" workout (20 min easy), deleted after the check |
+| S14 test workout | ✔ Manual test done (2026-10-02): workout created by hand in the intervals.icu calendar arrived on the devices ("it works") |
 | 8. API key | ✔ done. Shared in chat → **regenerate it after Phase 0**; the app stores its own copy encrypted (03 §7). Never committed. |
 | 9. Tailscale | ✔ phone · ✖ PC (no access to the PC right now) |
 | 9. Ollama on the PC | ✖ waiting for PC access |
 
-Blocked from the Claude cloud session: `intervals.icu` is not in the
-session environment's allowed network domains, so S05 / S14 cannot run until
-it is added (a setting of the Claude environment, not of the app).
+The Claude cloud environment blocks `intervals.icu` (checked in this session
+and in a fresh test session). This does not affect the app, which runs on
+the author's PC. The **API parts** of S05 / S14 move to Phase 1 on the PC (D-038).
 
 ### 0b. Spikes on the real setup (Claude, with the author's help)
 

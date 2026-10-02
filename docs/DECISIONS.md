@@ -358,3 +358,13 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
 | R8-24 | LTHR | From Fenix 8 auto-detection or intervals.icu estimate; no extra test |
 
 - **Source:** User (round 9).
+
+## D-038 · 2026-10-02 · API spikes run on the PC, not from the cloud session
+- **Fact:** The Claude cloud environment's network policy blocks
+  `intervals.icu` (still blocked after a settings change, also in a fresh
+  session). The manual delivery test (calendar → devices) **worked**.
+- **Decision:** The remaining API checks (S05 read fields, S14 write via
+  API) run in **Phase 1 on the author's PC**, where the app runs anyway.
+  Phase 1 sync code is written against the documented API and tested with
+  recorded responses (09 Testing approach) until then.
+- **Source:** Claude proposal; author chose the manual-test route (2026-10-02).

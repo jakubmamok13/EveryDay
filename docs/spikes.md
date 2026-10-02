@@ -21,7 +21,7 @@ terms and test the APIs ourselves.
 | S11 | Apple Health / Health Connect unreachable from web | Low | Believed true |
 | S12 | GDPR: health data = special category (Art. 9) | Low | Mostly moot for a single-user tool; revisit if opened up |
 | S13 | MyWhoosh ↔ intervals.icu: workouts arrive correctly (power targets, cadence, ramps); rides return with full data | Med | Research: exists; test with the author's account |
-| S14 | Planned workouts written via the intervals.icu API reach Garmin Connect and MyWhoosh automatically | **High** | Unverified — core of the delivery path |
+| S14 | Planned workouts written via the intervals.icu API reach Garmin Connect and MyWhoosh automatically | Med | **Delivery confirmed** (2026-10-02): a workout added by hand to the intervals.icu calendar reached the devices (author: "it works"). Still to check: the same via the API (Phase 1, on the PC) |
 | S15 | Phone access via private tunnel + Telegram/email push from the PC | Low | Decided D-012; setup to verify |
 | S16 | Provenance / license / quality of the community "uncensored" Qwen 3.8 build — **chosen model (D-026)** | **High** | Unverified |
 | S17 | Book → local knowledge index: format of the author's copy (PDF/e-book), Polish answers from an English book | Low | Deferred: book not found yet; Method Notes first (D-022) |

@@ -16,7 +16,7 @@ Last updated: 2026-10-02
 | [09 v1 build plan](09_v1_build_plan.md) | **Spec v1** | Phase 0 setup + spikes, Phases 1–6 |
 | [Glossary](glossary.md) | **Spec v1** | Canonical terms + Polish UI labels |
 | [Spikes](spikes.md) | Active | 23 spikes; S05, S06, S14, S16, S18, S22 high risk |
-| [Decisions](DECISIONS.md) | Active | D-001 … D-037 (D-008 superseded) |
+| [Decisions](DECISIONS.md) | Active | D-001 … D-038 (D-008 superseded) |
 
 ## Interview progress
 
@@ -38,6 +38,6 @@ Last updated: 2026-10-02
 MyWhoosh, Wahoo), Ollama and Tailscale; then the spikes run on the real setup.
 No application code before Phase 0 results are written back into these docs.
 
-Progress: intervals.icu account + API key ✔ · Tailscale on phone ✔ · PC
-steps waiting for PC access · API spikes waiting for network access from the
-Claude session (09 §0a).
+Progress: intervals.icu account + API key ✔ · Garmin / MyWhoosh / Wahoo
+linked ✔ · calendar → devices delivery ✔ (manual test) · Tailscale on phone ✔
+· PC steps waiting for PC access · API checks moved to Phase 1 on the PC (D-038).
