@@ -1,0 +1,16 @@
+{
+  "name": "@everyday/core",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": {
+    "@everyday/shared": "0.1.0",
+    "@everyday/engine": "0.1.0",
+    "@everyday/library": "0.1.0",
+    "sql.js": "^1.14.2"
+  },
+  "devDependencies": {
+    "@types/sql.js": "^1.4.11"
+  }
+}

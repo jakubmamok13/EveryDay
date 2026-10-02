@@ -1,7 +1,8 @@
-// SQLite via Node's built-in node:sqlite (D-039). One file: data/everyday.db.
-import { DatabaseSync, type SQLInputValue } from "node:sqlite";
+// SQLite compiled to WebAssembly (sql.js), stored in the phone's IndexedDB (D-043).
+import type { Database, SqlValue } from "sql.js";
 
 export type Row = Record<string, any>;
+export type Param = string | number | boolean | null | undefined | Uint8Array;
 
 const MIGRATIONS: string[] = [
   `
@@ -75,39 +76,66 @@ const MIGRATIONS: string[] = [
     error_code TEXT, details_json TEXT);
   CREATE TABLE setting (account_id INTEGER NOT NULL, key TEXT NOT NULL, value_json TEXT NOT NULL, PRIMARY KEY (account_id, key));
   `,
+  // v2 — phone-only, one-tap check-in (D-043, D-044)
+  `
+  ALTER TABLE check_in ADD COLUMN exhausted INTEGER NOT NULL DEFAULT 0;
+  ALTER TABLE check_in ADD COLUMN feeling TEXT;
+  `,
 ];
 
 export class Db {
-  readonly raw: DatabaseSync;
-  constructor(path: string) {
-    this.raw = new DatabaseSync(path);
-    this.raw.exec("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;");
+  private depth = 0;
+  constructor(readonly raw: Database, private readonly onWrite: () => void = () => undefined) {
     this.migrate();
   }
 
   private migrate(): void {
     this.raw.exec("CREATE TABLE IF NOT EXISTS schema_version (version INTEGER NOT NULL)");
-    const cur = (this.raw.prepare("SELECT MAX(version) AS v FROM schema_version").get() as Row | undefined)?.v ?? 0;
+    const cur = this.get<{ v: number | null }>("SELECT MAX(version) AS v FROM schema_version")?.v ?? 0;
     for (let v = cur; v < MIGRATIONS.length; v++) {
       this.tx(() => {
         this.raw.exec(MIGRATIONS[v]!);
-        this.raw.prepare("INSERT INTO schema_version (version) VALUES (?)").run(v + 1);
+        this.run("INSERT INTO schema_version (version) VALUES (?)", v + 1);
       });
     }
   }
 
-  all<T = Row>(sql: string, ...params: SQLInputValue[]): T[] {
-    return this.raw.prepare(sql).all(...params) as T[];
+  private bind(params: Param[]): SqlValue[] {
+    return params.map((p) => (p === undefined ? null : typeof p === "boolean" ? (p ? 1 : 0) : p));
   }
-  get<T = Row>(sql: string, ...params: SQLInputValue[]): T | undefined {
-    return this.raw.prepare(sql).get(...params) as T | undefined;
+
+  all<T = Row>(sql: string, ...params: Param[]): T[] {
+    const stmt = this.raw.prepare(sql);
+    try {
+      stmt.bind(this.bind(params));
+      const out: T[] = [];
+      while (stmt.step()) out.push(stmt.getAsObject() as T);
+      return out;
+    } finally {
+      stmt.free();
+    }
   }
-  run(sql: string, ...params: SQLInputValue[]): { changes: number; id: number } {
-    const r = this.raw.prepare(sql).run(...params);
-    return { changes: Number(r.changes), id: Number(r.lastInsertRowid) };
+  get<T = Row>(sql: string, ...params: Param[]): T | undefined {
+    return this.all<T>(sql, ...params)[0];
+  }
+  run(sql: string, ...params: Param[]): { changes: number; id: number } {
+    this.raw.run(sql, this.bind(params));
+    const changes = this.raw.getRowsModified();
+    const id = Number(this.raw.exec("SELECT last_insert_rowid()")[0]?.values[0]?.[0] ?? 0);
+    if (this.depth === 0) this.onWrite();
+    return { changes, id };
   }
   tx<T>(fn: () => T): T {
+    if (this.depth > 0) {
+      this.depth++;
+      try {
+        return fn();
+      } finally {
+        this.depth--;
+      }
+    }
     this.raw.exec("BEGIN");
+    this.depth = 1;
     try {
       const out = fn();
       this.raw.exec("COMMIT");
@@ -115,6 +143,9 @@ export class Db {
     } catch (e) {
       this.raw.exec("ROLLBACK");
       throw e;
+    } finally {
+      this.depth = 0;
+      this.onWrite();
     }
   }
   meta(key: string): string | undefined {
@@ -122,6 +153,9 @@ export class Db {
   }
   setMeta(key: string, value: string): void {
     this.run("INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", key, value);
+  }
+  export(): Uint8Array {
+    return this.raw.export();
   }
   close(): void {
     this.raw.close();

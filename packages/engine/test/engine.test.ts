@@ -205,6 +205,12 @@ describe("readiness", () => {
     expect(r.mainReason).toBe("sick");
   });
 
+  it("totally exhausted means a red day", () => {
+    const r = computeReadiness({ date: MONDAY, wellness, checkIn: { date: MONDAY, sleepQuality: 2, legs: 1, motivation: 1, sick: false, pain: false, rideMode: "indoor", exhausted: true } });
+    expect(r.effective).toBe("red");
+    expect(r.mainReason).toBe("exhausted");
+  });
+
   it("flags low HRV and high resting HR", () => {
     const bad = wellness.map((w) => (w.date === MONDAY ? { ...w, hrv: 40, restingHr: 59 } : w));
     const r = computeReadiness({ date: MONDAY, wellness: bad });

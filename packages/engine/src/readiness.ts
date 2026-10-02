@@ -117,15 +117,18 @@ export function computeReadiness(ctx: ReadinessContext): Readiness {
   const overrides: Readiness["overrides"] = [];
   if (ctx.checkIn?.sick || noteActive(ctx.activeNotes, "illness", ctx.date)) overrides.push("sick");
   if (ctx.checkIn?.pain || noteActive(ctx.activeNotes, "injury", ctx.date)) overrides.push("pain");
+  if (ctx.checkIn?.exhausted) overrides.push("exhausted");
 
   let effective: Readiness["effective"] = "green";
-  if (overrides.includes("sick") || bads >= 2) effective = "red";
+  if (overrides.includes("sick") || overrides.includes("exhausted") || bads >= 2) effective = "red";
   else if (bads === 1 || cautions >= 2) effective = "yellow";
 
   const first = inputs.find((i) => i.rating === "bad") ?? inputs.find((i) => i.rating === "caution");
   const mainReason = overrides.includes("sick")
     ? "sick"
-    : overrides.includes("pain") && effective === "green"
+    : overrides.includes("exhausted")
+      ? "exhausted"
+      : overrides.includes("pain") && effective === "green"
       ? "pain"
       : first
         ? `${first.key}:${first.rating}`
@@ -135,7 +138,7 @@ export function computeReadiness(ctx: ReadinessContext): Readiness {
 
   return {
     date: ctx.date,
-    score: overrides.includes("sick") ? Math.min(score, 20) : score,
+    score: overrides.includes("sick") || overrides.includes("exhausted") ? Math.min(score, 20) : score,
     state: learning ? "learning" : effective,
     effective,
     inputs,

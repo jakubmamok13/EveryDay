@@ -2,8 +2,6 @@ import { addDays, type AvailabilityDay, type Goal, type ISODate } from "@everyda
 import type { App } from "../app";
 import { nowIso } from "../db";
 import { RealIcuClient } from "../icu";
-import { hashPassword } from "../secrets";
-import { syncKnowledge } from "./coach";
 import { ensurePlan, regenerate, writeCalendar } from "./plan";
 import { syncAll } from "./sync";
 
@@ -23,16 +21,7 @@ export interface OnboardingInput {
   health?: { kind: "injury" | "illness"; text: string } | null;
 }
 
-export function createAccount(app: App, email: string, password: string): number {
-  if (app.accountId()) throw Object.assign(new Error("account exists"), { statusCode: 409 });
-  return app.db.tx(() => {
-    const acc = app.db.run("INSERT INTO account (email, password_hash, created_at) VALUES (?,?,?)", email.trim().toLowerCase(), hashPassword(password), nowIso()).id;
-    app.db.run("INSERT INTO athlete (account_id, created_at) VALUES (?,?)", acc, nowIso());
-    return acc;
-  });
-}
-
-/** Test the intervals.icu key and store it encrypted; returns pre-fill values (R8-04). */
+/** Test the intervals.icu key and keep it on this phone only; returns pre-fill values (R8-04). */
 export async function connectIcu(app: App, apiKey: string, externalId = "0") {
   const athleteId = app.requireAthlete();
   const client = new RealIcuClient(apiKey.trim(), externalId || "0");
@@ -40,7 +29,7 @@ export async function connectIcu(app: App, apiKey: string, externalId = "0") {
   app.db.run(
     `INSERT INTO source_connection (athlete_id, provider, external_athlete_id, api_key_encrypted, status) VALUES (?,?,?,?,'ok')
      ON CONFLICT(athlete_id, provider) DO UPDATE SET external_athlete_id = excluded.external_athlete_id, api_key_encrypted = excluded.api_key_encrypted, status = 'ok'`,
-    athleteId, "intervals_icu", a.id, app.secrets.seal(apiKey.trim()),
+    athleteId, "intervals_icu", a.id, apiKey.trim(),
   );
   app.resetIcu();
   return a;
@@ -97,25 +86,23 @@ export async function completeOnboarding(app: App, input: OnboardingInput): Prom
   app.db.run("UPDATE athlete SET learning_until = ?, onboarded = 1 WHERE id = ?", learningUntil, athleteId);
   if (app.db.get("SELECT 1 FROM training_plan WHERE athlete_id = ?", athleteId)) regenerate(app, athleteId, "onboarding");
   else ensurePlan(app, athleteId, "onboarding");
-  syncKnowledge(app);
   await writeCalendar(app, athleteId, today, addDays(today, 7)).catch(() => undefined);
 }
 
-/** Demo mode: the author's profile (01 §4) on simulated intervals.icu data. */
+/** Demo mode: a sample athlete on simulated intervals.icu data. */
 export async function seedDemo(app: App): Promise<void> {
-  if (app.accountId()) return;
-  createAccount(app, "demo@everyday.local", "demo1234");
+  if (app.onboarded()) return;
   await completeOnboarding(app, {
-    profile: { displayName: "Kuba", weightKg: 86, heightCm: 174, ftp: 270, lthr: 165, maxHr: 186, outdoorPowerMeter: false },
+    profile: { displayName: "Demo", weightKg: 75, heightCm: 178, ftp: 250, lthr: 162, maxHr: 184, outdoorPowerMeter: false },
     goals: [
       { role: "primary", type: "raise_ftp" },
-      { role: "secondary", type: "endurance", targetDistanceKm: 200, targetMinutes: 420 },
+      { role: "secondary", type: "endurance", targetDistanceKm: 150, targetMinutes: 330 },
     ],
     availability: {
       days: [1, 2, 3, 4, 5, 6, 7].map((weekday) => ({
         weekday,
-        available: [1, 3, 6, 7].includes(weekday),
-        maxMinutes: weekday === 1 || weekday === 3 ? 60 : weekday >= 6 ? 240 : 0,
+        available: [2, 4, 6, 7].includes(weekday),
+        maxMinutes: weekday === 2 || weekday === 4 ? 60 : weekday === 6 ? 180 : weekday === 7 ? 120 : 0,
         defaultRideMode: weekday >= 6 ? "outdoor" : "indoor",
         notifyTime: "07:00",
       })),
@@ -123,10 +110,9 @@ export async function seedDemo(app: App): Promise<void> {
       longRideEveryWeeks: 5,
     },
     equipment: [
-      { kind: "trainer", model: "Wahoo KICKR CORE", role: "indoor_recorder" },
-      { kind: "bike_computer", model: "Wahoo ELEMNT BOLT v2", role: "outdoor_master" },
-      { kind: "watch", model: "Garmin Fenix 8", role: "outdoor_fallback" },
-      { kind: "hr_strap", model: "Pas HR", role: null },
+      { kind: "trainer", model: "Trenażer", role: "indoor_recorder" },
+      { kind: "bike_computer", model: "Licznik rowerowy", role: "outdoor_master" },
+      { kind: "watch", model: "Zegarek", role: "outdoor_fallback" },
     ],
   });
 }

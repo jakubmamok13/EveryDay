@@ -145,6 +145,8 @@ export function checkIn(app: App, athleteId: number, date: ISODate): CheckIn | n
     pain: !!c.pain,
     ...(c.pain_note ? { painNote: c.pain_note } : {}),
     rideMode: c.ride_mode,
+    exhausted: !!c.exhausted,
+    ...(c.feeling ? { feeling: c.feeling } : {}),
   };
 }
 

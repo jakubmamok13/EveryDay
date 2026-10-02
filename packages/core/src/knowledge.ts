@@ -1,12 +1,10 @@
-// Knowledge Base (M11): Method Notes chunked by heading, searched by
-// embeddings (cosine in JS, D-039) or by keywords when no embedding model is available.
+// Knowledge Base (M11): Method Notes chunked by heading, searched by keywords.
 
 export interface KnowledgeChunk {
   source: "method_notes" | "book";
   docPath: string;
   heading: string;
   text: string;
-  embedding?: number[] | null;
 }
 
 export function chunkMarkdown(docPath: string, markdown: string, source: KnowledgeChunk["source"] = "method_notes"): KnowledgeChunk[] {
@@ -21,25 +19,6 @@ export function chunkMarkdown(docPath: string, markdown: string, source: Knowled
     if (text) chunks.push({ source, docPath, heading: `${title} — ${head!.trim()}`, text });
   }
   return chunks;
-}
-
-export function cosine(a: number[], b: number[]): number {
-  let dot = 0, na = 0, nb = 0;
-  for (let i = 0; i < a.length; i++) {
-    dot += a[i]! * b[i]!;
-    na += a[i]! * a[i]!;
-    nb += b[i]! * b[i]!;
-  }
-  return na && nb ? dot / Math.sqrt(na * nb) : 0;
-}
-
-export function topByEmbedding(query: number[], chunks: KnowledgeChunk[], k: number): KnowledgeChunk[] {
-  return chunks
-    .filter((c) => c.embedding && c.embedding.length === query.length)
-    .map((c) => ({ c, s: cosine(query, c.embedding!) }))
-    .sort((a, b) => b.s - a.s)
-    .slice(0, k)
-    .map((x) => x.c);
 }
 
 const STOP = new Set(["i", "w", "na", "z", "do", "to", "się", "jak", "co", "czy", "nie", "jest", "o", "po", "a", "że", "dla", "mi", "mam", "dziś"]);

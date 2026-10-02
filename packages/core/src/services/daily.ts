@@ -16,7 +16,6 @@ import {
   scaleWorkout,
   type AdaptResult,
 } from "@everyday/engine";
-import { PROMPT_VERSION } from "@everyday/coach";
 import type { App } from "../app";
 import { nowIso } from "../db";
 import {
@@ -33,7 +32,6 @@ import {
   wellnessRange,
   type PlannedRow,
 } from "../repo";
-import { writeBrief } from "./coach";
 import { applyChange, insertWorkout, moveWorkout, relocateKey, setRideMode, undo, writeCalendar } from "./plan";
 
 export function computeReadinessFor(app: App, athleteId: number, date: ISODate, withCheckIn: boolean): Readiness {
@@ -112,16 +110,14 @@ export async function runMorning(app: App, athleteId: number, date: ISODate, wit
     if (res.keyMissed && before) rescheduleKey(app, athleteId, date, before.workout, row);
   }
 
-  const written = await writeBrief(app, facts);
-  const { lines, text } = assembleBrief(facts, written.slots);
+  const { lines, text } = assembleBrief(facts);
   app.db.run(
     `INSERT INTO daily_brief (athlete_id, date, facts_json, text_pl, lines_json, slots_source_json, model, prompt_version, validator_passed, with_check_in, generated_at)
      VALUES (?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(athlete_id, date) DO UPDATE SET facts_json = excluded.facts_json, text_pl = excluded.text_pl,
        lines_json = excluded.lines_json, slots_source_json = excluded.slots_source_json, model = excluded.model,
        prompt_version = excluded.prompt_version, validator_passed = excluded.validator_passed, with_check_in = excluded.with_check_in,
        generated_at = excluded.generated_at`,
-    athleteId, date, JSON.stringify(facts), text, JSON.stringify(lines), JSON.stringify(written.sources), written.model,
-    PROMPT_VERSION, written.validatorPassed ? 1 : 0, withCheckIn ? 1 : 0, nowIso(),
+    athleteId, date, JSON.stringify(facts), text, JSON.stringify(lines), "{}", null, 0, 1, withCheckIn ? 1 : 0, nowIso(),
   );
   await writeCalendar(app, athleteId, date, addDays(date, 7)).catch(() => undefined);
 }
@@ -151,16 +147,14 @@ export async function refreshBrief(app: App, athleteId: number, date: ISODate): 
     facts.templates.change = t;
     facts.numbers = [...new Set([...facts.numbers, ...(t.match(/\d+(?:[.,]\d+)?/g) ?? [])])];
   }
-  const written = await writeBrief(app, facts);
-  const { lines, text } = assembleBrief(facts, written.slots);
+  const { lines, text } = assembleBrief(facts);
   app.db.run(
     `INSERT INTO daily_brief (athlete_id, date, facts_json, text_pl, lines_json, slots_source_json, model, prompt_version, validator_passed, with_check_in, generated_at)
      VALUES (?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(athlete_id, date) DO UPDATE SET facts_json = excluded.facts_json, text_pl = excluded.text_pl,
        lines_json = excluded.lines_json, slots_source_json = excluded.slots_source_json, model = excluded.model,
        prompt_version = excluded.prompt_version, validator_passed = excluded.validator_passed, with_check_in = excluded.with_check_in,
        generated_at = excluded.generated_at`,
-    athleteId, date, JSON.stringify(facts), text, JSON.stringify(lines), JSON.stringify(written.sources), written.model,
-    PROMPT_VERSION, written.validatorPassed ? 1 : 0, withCheckIn ? 1 : 0, nowIso(),
+    athleteId, date, JSON.stringify(facts), text, JSON.stringify(lines), "{}", null, 0, 1, withCheckIn ? 1 : 0, nowIso(),
   );
 }
 
@@ -178,14 +172,16 @@ function rescheduleKey(app: App, athleteId: number, date: ISODate, workout: Scal
   relocateKey(app, athleteId, date, to, row.role, workout, row.ride_mode, `„${workout.name}” przeniesiony na ${WEEKDAY_PL_LONG[weekday(to)]}`);
 }
 
-export async function submitCheckIn(app: App, athleteId: number, c: Omit<CheckIn, "date"> & { bonusMinutes?: number }): Promise<void> {
+export async function submitCheckIn(app: App, athleteId: number, c: Omit<CheckIn, "date"> & { bonusMinutes?: number; painPart?: string }): Promise<void> {
   const date = app.today();
   app.db.run(
-    `INSERT INTO check_in (athlete_id, date, sleep_quality, legs, motivation, sick, pain, pain_note, ride_mode, bonus_minutes, submitted_at)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(athlete_id, date) DO UPDATE SET sleep_quality = excluded.sleep_quality, legs = excluded.legs,
+    `INSERT INTO check_in (athlete_id, date, sleep_quality, legs, motivation, sick, pain, pain_note, ride_mode, bonus_minutes, submitted_at, exhausted, feeling)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(athlete_id, date) DO UPDATE SET sleep_quality = excluded.sleep_quality, legs = excluded.legs,
        motivation = excluded.motivation, sick = excluded.sick, pain = excluded.pain, pain_note = excluded.pain_note,
-       ride_mode = excluded.ride_mode, bonus_minutes = excluded.bonus_minutes, submitted_at = excluded.submitted_at`,
+       ride_mode = excluded.ride_mode, bonus_minutes = excluded.bonus_minutes, submitted_at = excluded.submitted_at,
+       exhausted = excluded.exhausted, feeling = excluded.feeling`,
     athleteId, date, c.sleepQuality, c.legs, c.motivation, c.sick ? 1 : 0, c.pain ? 1 : 0, c.painNote ?? null, c.rideMode, c.bonusMinutes ?? null, nowIso(),
+    c.exhausted ? 1 : 0, c.feeling ?? null,
   );
   if (c.pain && c.painNote) {
     app.db.run("INSERT INTO chat_note (athlete_id, kind, text, start_date, end_date, created_at) VALUES (?,?,?,?,?,?)",

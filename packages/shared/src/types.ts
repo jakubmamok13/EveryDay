@@ -139,6 +139,10 @@ export interface CheckIn {
   pain: boolean;
   painNote?: string;
   rideMode: RideMode;
+  /** "Totalne wyczerpanie" button: a red day (D-044). */
+  exhausted?: boolean;
+  /** The feeling button pressed (one-tap check-in, D-044). */
+  feeling?: string;
 }
 
 export interface ReadinessInput {
@@ -157,7 +161,7 @@ export interface Readiness {
   /** State used for decisions (never "learning"). */
   effective: Exclude<ReadinessState, "learning">;
   inputs: ReadinessInput[];
-  overrides: ("sick" | "pain")[];
+  overrides: ("sick" | "pain" | "exhausted")[];
   /** Main reason code for the brief. */
   mainReason: string;
 }

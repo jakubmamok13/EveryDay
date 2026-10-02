@@ -43,6 +43,9 @@ export function adapt(ctx: AdaptContext): AdaptResult {
   if (r.overrides.includes("sick")) {
     return { action: "rest", reasons: ["sick"], workout: null, keyMissed: p.isKey };
   }
+  if (r.overrides.includes("exhausted")) {
+    return { action: "rest", reasons: ["exhausted"], workout: null, keyMissed: p.isKey };
+  }
   if (ctx.recentlySick && w.intensity !== "easy") {
     return { action: "shorten", reasons: ["return_after_illness"], workout: shortenAndCap(w, Math.min(1, 60 / w.minutes)), keyMissed: p.isKey };
   }

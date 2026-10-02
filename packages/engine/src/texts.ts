@@ -31,6 +31,7 @@ export const ENVELOPE_REASON: Record<string, string> = {
 
 export const CHANGE_REASON: Record<string, string> = {
   sick: "choroba",
+  exhausted: "totalne wyczerpanie",
   return_after_illness: "powrót po chorobie",
   pain: "zgłoszony ból",
   yellow: "gotowość na żółto",
@@ -78,6 +79,7 @@ function inputText(r: Readiness, key: string): string | null {
 export function readinessReason(r: Readiness, withCheckIn: boolean): string {
   let text: string;
   if (r.mainReason === "sick") text = "zgłoszona choroba";
+  else if (r.mainReason === "exhausted") text = "totalne wyczerpanie — dziś odpoczynek";
   else if (r.mainReason === "pain") text = "zgłoszony ból — bez mocnych akcentów";
   else if (r.mainReason === "no_data") text = "brak danych z zegarka";
   else if (r.mainReason === "all_ok") {

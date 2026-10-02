@@ -67,7 +67,6 @@ export interface IcuClient {
   createWorkout(ev: IcuWorkoutEvent): Promise<string>;
   updateWorkout(id: string, ev: IcuWorkoutEvent): Promise<void>;
   deleteWorkout(id: string): Promise<void>;
-  downloadFit(activityId: string): Promise<Buffer | null>;
 }
 
 const num = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
@@ -135,7 +134,7 @@ export class RealIcuClient implements IcuClient {
   readonly kind = "real" as const;
   private readonly auth: string;
   constructor(apiKey: string, private readonly athleteId = "0", private readonly base = "https://intervals.icu/api/v1") {
-    this.auth = "Basic " + Buffer.from(`API_KEY:${apiKey}`).toString("base64");
+    this.auth = "Basic " + btoa(`API_KEY:${apiKey}`);
   }
 
   private async req(method: string, path: string, body?: unknown): Promise<any> {
@@ -198,15 +197,5 @@ export class RealIcuClient implements IcuClient {
 
   async deleteWorkout(id: string): Promise<void> {
     await this.req("DELETE", `/athlete/${this.athleteId}/events/${id}`);
-  }
-
-  async downloadFit(activityId: string): Promise<Buffer | null> {
-    try {
-      const res = await fetch(`${this.base}/activity/${activityId}/file`, { headers: { authorization: this.auth }, signal: AbortSignal.timeout(60_000) });
-      if (!res.ok) return null;
-      return Buffer.from(await res.arrayBuffer());
-    } catch {
-      return null;
-    }
   }
 }

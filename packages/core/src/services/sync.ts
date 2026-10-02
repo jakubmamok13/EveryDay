@@ -1,5 +1,3 @@
-import { mkdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
 import { addDays, type ISODate } from "@everyday/shared";
 import { compliance, eftpFromBest20, findDuplicates, ftpFromRampTest, ftpSuggestion, performanceSeries, powerLoad } from "@everyday/engine";
 import type { App } from "../app";
@@ -57,7 +55,6 @@ export async function syncAll(app: App, athleteId: number, days = 14): Promise<{
       });
       dedupe(app, athleteId, addDays(oldest, -1), today);
       matchToPlan(app, athleteId, oldest, today);
-      if (icu.kind === "real") await downloadFits(app, athleteId, oldest);
       app.db.run(
         "UPDATE source_connection SET last_sync_at = ?, status = 'ok', last_error = NULL WHERE athlete_id = ? AND provider = 'intervals_icu'",
         nowIso(), athleteId,
@@ -122,21 +119,6 @@ function matchToPlan(app: App, athleteId: number, from: ISODate, to: ISODate): v
         );
       }
     }
-  }
-}
-
-async function downloadFits(app: App, athleteId: number, from: ISODate): Promise<void> {
-  const icu = app.icu();
-  if (!icu) return;
-  const rows = app.db.all("SELECT id, icu_id, date FROM activity WHERE athlete_id = ? AND date >= ? AND fit_path IS NULL AND is_master = 1", athleteId, from);
-  for (const r of rows.slice(0, 10)) {
-    const buf = await icu.downloadFit(r.icu_id);
-    if (!buf) continue;
-    const dir = join(app.config.dataDir, "fit", r.date.slice(0, 4), r.date.slice(5, 7));
-    mkdirSync(dir, { recursive: true });
-    const file = join(dir, `${r.icu_id}.fit`);
-    writeFileSync(file, buf);
-    app.db.run("UPDATE activity SET fit_path = ? WHERE id = ?", file, r.id);
   }
 }
 

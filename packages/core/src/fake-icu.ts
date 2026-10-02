@@ -21,10 +21,10 @@ export class FakeIcuClient implements IcuClient {
   readonly kind = "demo" as const;
   private readonly events = new Map<string, StoredEvent>();
   private nextId = 1;
-  constructor(private readonly today: () => ISODate, private readonly ftp = 270) {}
+  constructor(private readonly today: () => ISODate, private readonly ftp = 250) {}
 
   async athlete(): Promise<IcuAthlete> {
-    return { id: "demo", name: "Demo", ftp: this.ftp, lthr: 165, maxHr: 186, weightKg: 86, eftp: 276 };
+    return { id: "demo", name: "Demo", ftp: this.ftp, lthr: 162, maxHr: 184, weightKg: 75, eftp: 256 };
   }
 
   private historyFor(date: ISODate): IcuActivity[] {
@@ -126,7 +126,7 @@ export class FakeIcuClient implements IcuClient {
         bodyBatteryMin: Math.round(10 + r() * 20),
         readiness: Math.round(45 + r() * 50),
         stress: Math.round(20 + r() * 20),
-        weightKg: 86,
+        weightKg: 75,
         raw: { demo: true },
       });
     }
@@ -143,8 +143,5 @@ export class FakeIcuClient implements IcuClient {
   }
   async deleteWorkout(id: string): Promise<void> {
     this.events.delete(id);
-  }
-  async downloadFit(): Promise<Buffer | null> {
-    return null;
   }
 }
