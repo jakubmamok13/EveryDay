@@ -1,6 +1,6 @@
 # 01 — Product Vision
 
-Status: **DRAFT — rounds 1–4 answered**
+Status: **DRAFT — rounds 1–6 answered**
 Working name: **EveryDay** (repo name; final product name = Q-VIS-01)
 
 ## 1. One-line pitch
@@ -48,7 +48,21 @@ next sessions.
 per-Athlete so it could be opened to friends later, but v1 makes no
 compromises for other users.
 
-Author's setup (devices, apps, hours, FTP): to be captured in Q-INT-02.
+### Author's setup (round 5)
+
+| Item | Value |
+|---|---|
+| Training days | **Monday, Wednesday, Saturday** + one more (Q-VIS-13) |
+| Duration | ~**1 h** on weekdays; **longer at the weekend** (max TBD) |
+| Watch | **Garmin Fenix 8** (Body Battery, HRV Status, sleep, Training Readiness) |
+| HR | **Chest HR strap** |
+| Indoor | **Wahoo KICKR CORE** smart trainer + **MyWhoosh** |
+| Bike computer | **Wahoo ELEMNT BOLT** (outdoor) |
+| Outdoor power meter | **None yet, planned** → outdoor = HR-guided until then (D-023) |
+| Indoor recording | **MyWhoosh and Fenix both record** → keep MyWhoosh copy (D-024) |
+| PC | **AMD Radeon RX 7800 XT 16 GB**, **32 GB RAM**, OS TBD |
+| Phone | **Must work on iOS and Android** (D-025) |
+| FTP / weight / Goal | TBD (Q-VIS-14) |
 
 ## 5. What makes it different (hypotheses to confirm)
 
@@ -84,5 +98,6 @@ Author's setup (devices, apps, hours, FTP): to be captured in Q-INT-02.
   like or hate about them?
 - ~~Q-VIS-10~~ → D-006: the "book" is the Coach AI's knowledge source.
 - ~~Q-VIS-11~~ → D-010: Allen & Coggan, "Training and Racing with a Power Meter".
-- **Q-VIS-12** Do you have the book as an e-book/PDF (needed for the AI's
-  knowledge base), or only on paper?
+- ~~Q-VIS-12~~ Book not found yet → D-022 (start with our own Method Notes).
+- **Q-VIS-13** The 4th training day? (round 5 listed Monday twice)
+- **Q-VIS-14** Current FTP, weight, and Goal (type + event/date if any).

@@ -1,12 +1,12 @@
 # 00 — Index
 
-Last updated: 2026-10-01
+Last updated: 2026-10-02
 
 | Doc | Status | Notes |
 |---|---|---|
 | [README](README.md) | Done | Conventions |
 | [01 Product vision](01_product_vision.md) | Draft | Personal tool, Polish, Coggan method |
-| [02 Feature modules](02_feature_modules.md) | Skeleton | 9 modules proposed |
+| [02 Feature modules](02_feature_modules.md) | Draft | 10 modules (Coach Chat added) |
 | [03 Technical architecture](03_technical_architecture.md) | Draft | All on PC; rules + AI adjust; runtime diagram |
 | [04 Data model](04_data_model.md) | Skeleton | Entity list |
 | [05 Settings](05_settings.md) | Skeleton | |
@@ -15,8 +15,8 @@ Last updated: 2026-10-01
 | [08 Errors, logging, feedback](08_error_logging_feedback.md) | Skeleton | |
 | [09 v1 build plan](09_v1_build_plan.md) | Not started | |
 | [Glossary](glossary.md) | Draft | ~35 terms, several *(proposed)* |
-| [Spikes](spikes.md) | Draft | 17 spikes; S05, S06, S14 high risk |
-| [Decisions](DECISIONS.md) | Active | D-001 … D-016 |
+| [Spikes](spikes.md) | Draft | 21 spikes; S05, S06, S14, S16, S18 high risk |
+| [Decisions](DECISIONS.md) | Active | D-001 … D-026 (D-008 superseded) |
 
 ## Interview progress
 
@@ -25,4 +25,6 @@ Last updated: 2026-10-01
 - Round 2 — "book" meaning, where the brief is read, PC hardware, workout delivery: **done** → D-006 … D-009.
 - Round 3 — method/book, who decides the plan, PC uptime, language: **done** → D-010 … D-013.
 - Round 4 — adaptation mode, check-in, tone: **done** → D-014 … D-016.
-- Round 5 — your profile (hours, FTP, goal, devices), morning flow, chat, book format, GPU: **next**.
+- Round 5 — profile, devices, GPU, book, notifications, chat, indoor/outdoor, clarity: **done** → D-017 … D-022.
+- Round 6 — outdoor power, indoor recording, phone, model: **done** → D-023 … D-026.
+- Round 7 — 4th day, weekend length, FTP / weight / goal, PC OS, outdoor recorder, intervals.icu status, notification time: **open**.

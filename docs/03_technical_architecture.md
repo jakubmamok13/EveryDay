@@ -28,7 +28,7 @@ plan itself (rules) can run anywhere.
 | Layer | Job | Tech nature |
 |---|---|---|
 | **Plan Engine** | Generate and adapt the Training Plan; compute Load, Fitness, Fatigue, Form and Readiness; **validate any AI proposal** against the safe envelope (D-011) | Deterministic rules + math based on Coggan & Allen (D-010). Testable, explainable, cheap; same input gives the same output |
-| **Coach AI** | Turn the engine's decision + reasons into the short Daily Brief; optional Q&A; grounded in the book via retrieval (D-006) | 7–14B LLM on the author's NVIDIA PC (D-008); never invents workouts or numbers |
+| **Coach AI** | Turn the engine's decision + reasons into the short Daily Brief; Coach Chat (D-019); grounded in the Knowledge Base (D-006, D-022) | Uncensored Qwen 3.8 27B (~4-bit) via Ollama on the AMD RX 7800 XT (D-017, D-026); never invents workouts or numbers; clarity rules (D-021) |
 
 Why: small local models are unreliable at arithmetic and long-horizon
 planning, but good at short, friendly explanations of facts they are given.
@@ -36,7 +36,7 @@ This also limits the damage of a wrong AI output.
 
 ## Building blocks (to decide)
 
-- Frontend: SPA / PWA (framework TBD).
+- Frontend: installable PWA (framework TBD), HTTPS inside the tunnel (D-018).
 - Backend + DB: accounts, Sources, OAuth tokens, sync jobs, plan storage.
 - Sync worker: webhooks + scheduled polling per Source.
 - FIT parser (S07).
@@ -50,11 +50,12 @@ This also limits the damage of a wrong AI output.
 - **Q-ARC-03** Do you build it yourself (with Claude), or with other people?
 - **Q-ARC-04** Offline use needed (e.g. view today's workout without internet)?
 - ~~Q-ARC-05~~ → D-012 (option 2: all on PC + tunnel).
-- ~~Q-ARC-06~~ NVIDIA GPU 8 GB+ (round 2) → D-008. Still need: OS, exact GPU, RAM.
+- ~~Q-ARC-06~~ → D-017: AMD RX 7800 XT 16 GB, 32 GB RAM.
 - ~~Q-ARC-07~~ → D-011 (rules decide, AI may adjust within limits).
 - ~~Q-ARC-08~~ → PC on 24/7 (D-012).
-- **Q-ARC-09** Exact GPU model and VRAM, plus system RAM and OS. (Qwen 3.8
-  27B wants 24 GB VRAM for full speed.)
+- ~~Q-ARC-09~~ → D-017.
+- **Q-ARC-10** PC operating system: Windows or Linux? (Affects the AMD runtime: ROCm vs Vulkan.)
+- ~~Q-ARC-11~~ → D-026 (uncensored Qwen 3.8; official as fallback).
 
 ## Runtime overview (D-012)
 
@@ -67,10 +68,10 @@ This also limits the damage of a wrong AI output.
  │       │         writes Planned Workouts to intervals.icu        │
  │  Plan Engine (rules, Coggan & Allen)                           │
  │       │  facts + decision                                       │
- │  Coach AI ── Ollama (Qwen 3.8) + book index (RAG, local only)  │
+ │  Coach AI ── Ollama on RX 7800 XT (Qwen 3.8) + Knowledge Base  │
  │       │                                                        │
- │  Scheduler: nightly sync → adapt → brief → push               │
+ │  Scheduler: sync → adapt → draft brief → web push              │
  └───────┬──────────────────────────────┬─────────────────────────┘
-         │ private tunnel (Tailscale)    │ outbound only
-     Phone / PC browser            Telegram / email
+         │ private tunnel, HTTPS          │ outbound only
+     Phone (PWA) / PC browser      Web Push service ─► phone notification
 ```

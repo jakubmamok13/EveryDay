@@ -108,12 +108,12 @@ Proposal — structure (≤ 5 lines):
 Open questions:
 - ~~Q-BRF-01~~ → D-007: phone, PC browser, Garmin (workout only),
   email / Telegram push.
-- **Q-BRF-05** Push channel: Telegram, email, or both? At what time?
+- ~~Q-BRF-05~~ → D-018 (one web push notification; time TBD, Q-BRF-07).
+- **Q-BRF-07** What time should the notification arrive (per weekday)?
 - **Q-BRF-06** Morning flow: check-in first, then brief? What happens if
   there is no check-in by a cut-off time?
 - ~~Q-BRF-02~~ → D-016 (friendly buddy).
-- **Q-BRF-03** Should the user be able to chat with the coach ("I only have
-  45 minutes today")?
+- ~~Q-BRF-03~~ → D-019 (Coach Chat in scope).
 - **Q-BRF-04** Nutrition / fueling advice in scope (e.g. carbs per hour on long rides)?
 
 ## M7. Workout Delivery (getting the workout onto the bike) — DECIDED (D-009)
@@ -129,8 +129,8 @@ Open questions:
 Open questions:
 - **Q-WKD-02** Outdoor workouts: strict structured intervals on the Garmin,
   or "guidance" rides (e.g. "2 h Z2 with 3 climbs at threshold")?
-- **Q-WKD-03** How does the plan choose indoor vs outdoor for a day: fixed
-  per weekday, weather-based, or you decide each morning?
+- ~~Q-WKD-03~~ → D-020: you choose each day; two variants per workout
+  (indoor = power/ERG, outdoor = HR).
 
 ## M8. Progress & Insights
 
@@ -140,6 +140,17 @@ compliance, goal countdown. Kept secondary to the Daily Brief.
 Open question:
 - **Q-PRG-01** How much analytics do you want (minimal vs. intervals.icu-level)?
 
-## M9. Notifications
+## M9. Notifications — DECIDED (D-018)
 
-Depends on Q-BRF-01.
+- One web push per day → opens Today (check-in → brief).
+- Optional: reminder if no check-in by the cut-off (Q-BRF-06).
+- Installable PWA over HTTPS inside the private tunnel.
+
+## M10. Coach Chat — IN SCOPE (D-019)
+
+- Free-text chat with the Coach AI (Polish), grounded in the Knowledge Base
+  and the Athlete's data.
+- Requests that change training ("only 45 min", "legs are dead") become
+  Adaptations through the Safe Envelope (D-011), with one-tap undo (D-014).
+- Open: **Q-CHT-01** Should chat history be remembered as context (e.g. "knee
+  pain since Tuesday") for future briefs?

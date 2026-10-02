@@ -8,8 +8,9 @@ Status: **SKELETON**
 
 ## Proposed main screens
 
-1. **Today**: Readiness, the Daily Brief, today's Planned Workout (steps
-   graph), buttons: Done / Skip / "I only have X min" / Export to device.
+1. **Today** (opened from the notification): Morning Check-in (incl.
+   **Indoor / Outdoor**) → Readiness → Daily Brief → today's Planned Workout
+   (steps graph), "what changed" + Undo, buttons: Skip / "I only have X min" / Chat.
 2. **Week / Calendar**: plan vs completed, Key Workouts marked.
 3. **Progress**: Fitness/Form chart, FTP, goal countdown.
 4. **Onboarding** wizard.
@@ -20,3 +21,4 @@ Status: **SKELETON**
 - **Q-UX-01** Any apps whose look or feel you love (or hate)?
 - **Q-UX-02** Mobile-first or desktop-first?
 - **Q-UX-03** Dark mode default?
+- ~~Q-UX-04~~ → D-025: both iOS and Android; onboarding shows "Add to Home Screen" on iPhone.

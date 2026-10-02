@@ -74,9 +74,14 @@ Terms marked *(proposed)* are not confirmed yet.
   inside the Safe Envelope (D-011).
 - **Safe Envelope** — the limits within which the Coach AI may change a
   Planned Workout. The Plan Engine rejects anything outside. *(limits TBD: Q-ADP-04)*
-- **Knowledge Base** — the local, searchable index of the training book
-  (Allen & Coggan) that the Coach AI retrieves from. Never leaves the PC.
-  (Called "the book" in conversation.)
+- **Knowledge Base** — the local, searchable index the Coach AI retrieves
+  from: Method Notes first, then the Allen & Coggan book if found (the book
+  part never leaves the PC). Called "the book" in conversation.
+- **Method Notes** — our own written summary of the Coggan method (zones,
+  Performance Manager, ramp rates, workout types). It is the first content of
+  the Knowledge Base, and it is committed to git (D-022).
+- **Coach Chat** — free-text conversation with the Coach AI (D-019).
+- **Notification** — the single daily web push that opens the Today screen (D-018).
 - **Performance Manager** — Coggan's model of Fitness / Fatigue / Form over
   time; our Load maths follows it (D-010).
 
@@ -86,3 +91,11 @@ Terms marked *(proposed)* are not confirmed yet.
   MyWhoosh or another app.
 - **Outdoor** — a ride on the road or off-road.
 - **ERG mode** — the smart trainer holds the target power regardless of cadence.
+- **Ride Mode** — Indoor or Outdoor, chosen by the Athlete each day in the
+  Morning Check-in (D-020). UI: "Gdzie dziś jedziesz?" *(label TBD)*
+- **Workout Variant** — one of the two versions of a Planned Workout: the
+  **Indoor Variant** (power targets, ERG, MyWhoosh) or the **Outdoor Variant**
+  (HR/RPE targets now, power once an outdoor power meter exists — D-023;
+  shown on the BOLT and/or Fenix 8). Only the chosen one is written to the calendar.
+- **Master Copy** — when the same ride arrives twice (e.g. MyWhoosh +
+  Fenix), the one copy that counts for Load. Indoors = MyWhoosh (D-024).
