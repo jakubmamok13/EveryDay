@@ -1,0 +1,38 @@
+[
+  {
+    "slug": "recovery-30",
+    "name": "Regeneracja 30 min",
+    "category": "recovery",
+    "intensity": "easy",
+    "level": 1,
+    "purpose": "Aktywna regeneracja: krążenie bez zmęczenia.",
+    "cue": "naprawdę luźno ({target}), kadencja 85–95 — to ma być łatwe.",
+    "steps": [
+      {
+        "kind": "steady",
+        "minutes": 30,
+        "pct": 50,
+        "label": "Luźno Z1",
+        "cadence": 90
+      }
+    ]
+  },
+  {
+    "slug": "recovery-45",
+    "name": "Regeneracja 45 min",
+    "category": "recovery",
+    "intensity": "easy",
+    "level": 2,
+    "purpose": "Aktywna regeneracja: krążenie bez zmęczenia.",
+    "cue": "naprawdę luźno ({target}), kadencja 85–95 — to ma być łatwe.",
+    "steps": [
+      {
+        "kind": "steady",
+        "minutes": 45,
+        "pct": 50,
+        "label": "Luźno Z1",
+        "cadence": 90
+      }
+    ]
+  }
+]

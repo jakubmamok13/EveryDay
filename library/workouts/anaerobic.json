@@ -1,0 +1,95 @@
+[
+  {
+    "slug": "sprints-z2",
+    "name": "Wytrzymałość ze sprintami {h}",
+    "category": "anaerobic",
+    "intensity": "moderate",
+    "level": 1,
+    "purpose": "Moc beztlenowa i szybkość — krótkie, mocne bodźce.",
+    "cue": "sprinty 15 s na maksa, między nimi luźne Z2 — reszta jazdy równo.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 65,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "kind": "steady",
+        "minutes": 20,
+        "pct": 65,
+        "pctHigh": 72,
+        "label": "Z2",
+        "fill": true
+      },
+      {
+        "repeat": 6,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 0.25,
+            "pct": 160,
+            "label": "Sprint 15 s"
+          },
+          {
+            "kind": "steady",
+            "minutes": 4.75,
+            "pct": 62,
+            "label": "Z2 luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "anaerobic-6x1",
+    "name": "Beztlenowo {n}×1 min",
+    "category": "anaerobic",
+    "intensity": "hard",
+    "level": 2,
+    "purpose": "Moc beztlenowa i szybkość — krótkie, mocne bodźce.",
+    "cue": "krótko i bardzo mocno, potem całkiem luźno — jakość ważniejsza niż ilość.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 12,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 6,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 1,
+            "pct": 130,
+            "label": "1 min bardzo mocno",
+            "cadence": 100
+          },
+          {
+            "kind": "recovery",
+            "minutes": 4,
+            "pct": 50,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 8,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  }
+]

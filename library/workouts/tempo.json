@@ -1,0 +1,206 @@
+[
+  {
+    "slug": "tempo-2x15",
+    "name": "Tempo {n}×15 min",
+    "category": "tempo",
+    "intensity": "moderate",
+    "level": 1,
+    "purpose": "Wytrzymałość mięśniowa i ekonomia jazdy w tempie, które utrzymasz godzinami.",
+    "cue": "stałe {target} w blokach, bez szarpania, kadencja 85–95.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 2,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 15,
+            "pct": 80,
+            "label": "Tempo",
+            "cadence": 90
+          },
+          {
+            "kind": "recovery",
+            "minutes": 5,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "tempo-2x18",
+    "name": "Tempo {n}×18 min",
+    "category": "tempo",
+    "intensity": "moderate",
+    "level": 2,
+    "purpose": "Wytrzymałość mięśniowa i ekonomia jazdy w tempie, które utrzymasz godzinami.",
+    "cue": "stałe {target} w blokach, bez szarpania, kadencja 85–95.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 2,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 18,
+            "pct": 80,
+            "label": "Tempo",
+            "cadence": 90
+          },
+          {
+            "kind": "recovery",
+            "minutes": 4,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "tempo-3x12",
+    "name": "Tempo {n}×12 min",
+    "category": "tempo",
+    "intensity": "moderate",
+    "level": 3,
+    "purpose": "Wytrzymałość mięśniowa i ekonomia jazdy w tempie, które utrzymasz godzinami.",
+    "cue": "stałe {target} w blokach, bez szarpania, kadencja 85–95.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 3,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 12,
+            "pct": 82,
+            "label": "Tempo",
+            "cadence": 90
+          },
+          {
+            "kind": "recovery",
+            "minutes": 3,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "tempo-1x40",
+    "name": "Tempo 40 min",
+    "category": "tempo",
+    "intensity": "moderate",
+    "level": 4,
+    "purpose": "Wytrzymałość mięśniowa i ekonomia jazdy w tempie, które utrzymasz godzinami.",
+    "cue": "stałe {target} w blokach, bez szarpania, kadencja 85–95.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "kind": "work",
+        "minutes": 40,
+        "pct": 80,
+        "label": "Tempo równo",
+        "cadence": 90
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 10,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "tempo-low-cadence",
+    "name": "Siła na rowerze {n}×8 min",
+    "category": "tempo",
+    "intensity": "moderate",
+    "level": 5,
+    "purpose": "Wytrzymałość mięśniowa i ekonomia jazdy w tempie, które utrzymasz godzinami.",
+    "cue": "{target} przy kadencji 60 — mocny, spokojny nacisk, plecy stabilne.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 4,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 8,
+            "pct": 80,
+            "label": "Niska kadencja 60",
+            "cadence": 60
+          },
+          {
+            "kind": "recovery",
+            "minutes": 3,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  }
+]

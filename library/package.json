@@ -1,0 +1,12 @@
+{
+  "name": "@everyday/library",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@everyday/shared": "0.1.0"
+  }
+}

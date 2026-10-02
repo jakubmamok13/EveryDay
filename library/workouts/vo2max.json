@@ -1,0 +1,369 @@
+[
+  {
+    "slug": "openers",
+    "name": "Otwarcie przed startem",
+    "category": "vo2max",
+    "intensity": "moderate",
+    "level": 0,
+    "purpose": "Podnosi pułap tlenowy (VO2max), czyli sufit dla FTP.",
+    "cue": "krótkie przyspieszenia do {target} — mają obudzić nogi, nie zmęczyć.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 15,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 3,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 1,
+            "pct": 110,
+            "label": "Mocno",
+            "cadence": 100
+          },
+          {
+            "kind": "recovery",
+            "minutes": 2,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "repeat": 3,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 0.25,
+            "pct": 150,
+            "label": "Sprint"
+          },
+          {
+            "kind": "recovery",
+            "minutes": 2,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 8,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "vo2-5x2",
+    "name": "VO2max {n}×2 min",
+    "category": "vo2max",
+    "intensity": "hard",
+    "level": 1,
+    "purpose": "Podnosi pułap tlenowy (VO2max), czyli sufit dla FTP.",
+    "cue": "{target} w powtórzeniach, kadencja 95–105, w przerwach naprawdę luźno.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 12,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 5,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 2,
+            "pct": 110,
+            "pctHigh": 115,
+            "label": "VO2max",
+            "cadence": 100
+          },
+          {
+            "kind": "recovery",
+            "minutes": 2,
+            "pct": 50,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 8,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "vo2-30-30",
+    "name": "VO2max 30/30 ×{n}",
+    "category": "vo2max",
+    "intensity": "hard",
+    "level": 2,
+    "purpose": "Podnosi pułap tlenowy (VO2max), czyli sufit dla FTP.",
+    "cue": "{target} w powtórzeniach, kadencja 95–105, w przerwach naprawdę luźno.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 12,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 16,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 0.5,
+            "pct": 120,
+            "label": "30 s mocno",
+            "cadence": 100
+          },
+          {
+            "kind": "recovery",
+            "minutes": 0.5,
+            "pct": 50,
+            "label": "30 s luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 10,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "vo2-5x3",
+    "name": "VO2max {n}×3 min",
+    "category": "vo2max",
+    "intensity": "hard",
+    "level": 3,
+    "purpose": "Podnosi pułap tlenowy (VO2max), czyli sufit dla FTP.",
+    "cue": "{target} w powtórzeniach, kadencja 95–105, w przerwach naprawdę luźno.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 12,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 5,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 3,
+            "pct": 110,
+            "pctHigh": 115,
+            "label": "VO2max",
+            "cadence": 100
+          },
+          {
+            "kind": "recovery",
+            "minutes": 3,
+            "pct": 50,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 8,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "vo2-6x3",
+    "name": "VO2max {n}×3 min",
+    "category": "vo2max",
+    "intensity": "hard",
+    "level": 4,
+    "purpose": "Podnosi pułap tlenowy (VO2max), czyli sufit dla FTP.",
+    "cue": "{target} w powtórzeniach, kadencja 95–105, w przerwach naprawdę luźno.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 12,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 6,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 3,
+            "pct": 110,
+            "pctHigh": 115,
+            "label": "VO2max",
+            "cadence": 100
+          },
+          {
+            "kind": "recovery",
+            "minutes": 3,
+            "pct": 50,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 6,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "vo2-4x4",
+    "name": "VO2max {n}×4 min",
+    "category": "vo2max",
+    "intensity": "hard",
+    "level": 5,
+    "purpose": "Podnosi pułap tlenowy (VO2max), czyli sufit dla FTP.",
+    "cue": "{target} w powtórzeniach, kadencja 95–105, w przerwach naprawdę luźno.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 12,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 4,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 4,
+            "pct": 108,
+            "pctHigh": 113,
+            "label": "VO2max",
+            "cadence": 100
+          },
+          {
+            "kind": "recovery",
+            "minutes": 4,
+            "pct": 50,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 8,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "vo2-5x4",
+    "name": "VO2max {n}×4 min",
+    "category": "vo2max",
+    "intensity": "hard",
+    "level": 6,
+    "purpose": "Podnosi pułap tlenowy (VO2max), czyli sufit dla FTP.",
+    "cue": "{target} w powtórzeniach, kadencja 95–105, w przerwach naprawdę luźno.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 5,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 4,
+            "pct": 108,
+            "pctHigh": 113,
+            "label": "VO2max",
+            "cadence": 100
+          },
+          {
+            "kind": "recovery",
+            "minutes": 4,
+            "pct": 50,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "vo2-4x5",
+    "name": "VO2max {n}×5 min",
+    "category": "vo2max",
+    "intensity": "hard",
+    "level": 7,
+    "purpose": "Podnosi pułap tlenowy (VO2max), czyli sufit dla FTP.",
+    "cue": "{target} w powtórzeniach, kadencja 95–105, w przerwach naprawdę luźno.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 4,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 5,
+            "pct": 106,
+            "pctHigh": 112,
+            "label": "VO2max",
+            "cadence": 98
+          },
+          {
+            "kind": "recovery",
+            "minutes": 5,
+            "pct": 50,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  }
+]

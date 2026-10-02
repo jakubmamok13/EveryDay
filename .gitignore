@@ -16,3 +16,5 @@ Thumbs.db
 
 # Runtime data: database, ride files, backups, logs (never committed)
 data/
+node_modules/
+apps/web/dist/

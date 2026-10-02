@@ -47,12 +47,12 @@ returns **structured JSON**; the engine validates it and applies it.
 | Runtime | **Node.js LTS** | Installed on Windows |
 | Server framework | Fastify (or Hono) | Small, typed, fast |
 | Front-end | **React + Vite**, installable **PWA** | Mobile-first (R8-23); service worker for offline Today (R8-21) and push |
-| Database | **SQLite**, one file `data/everyday.db` | Typed query layer (Drizzle or Kysely); migrations in repo |
-| Vector search | SQLite vector extension (e.g. sqlite-vec) **[spike]** | Knowledge Base retrieval |
+| Database | **SQLite** via built-in `node:sqlite`, one file `data/everyday.db` | SQL migrations in repo (D-039) |
+| Vector search | Embeddings in SQLite + cosine similarity in JS (D-039) | Knowledge Base retrieval |
 | Embeddings | Multilingual embedding model in Ollama (e.g. bge-m3) **[spike]** | Polish + English text |
 | LLM | **Ollama for Windows** (AMD ROCm/HIP); LM Studio (Vulkan) as fallback **[spike S22]** | Qwen 3.8 27B uncensored, ~4-bit |
 | Push | Web Push with VAPID keys | iOS 16.4+ (Home Screen PWA) + Android Chrome |
-| Tunnel + HTTPS | **Tailscale** + Tailscale HTTPS certificate **[spike S20]** | No public port |
+| Tunnel + HTTPS | **Tailscale Serve** → `https://<pc>.<tailnet>.ts.net` → app on localhost (D-039) **[spike S20]** | No public port |
 | Windows service | Auto-start at boot (e.g. NSSM, node-windows or a startup task) **[spike]** | Restarts on crash and after Windows Update |
 
 ## 4. Repository layout (proposal)
@@ -106,7 +106,7 @@ work. The first request after unloading takes longer (model load).
 - Server listens **only on localhost and the Tailscale interface**; no port
   forwarding, no public URL.
 - HTTPS with the Tailscale certificate (needed for the service worker and push).
-- Password hashed (argon2); "remember this device" = long-lived HTTP-only
+- Password hashed (scrypt, built into Node — D-039); "remember this device" = long-lived HTTP-only
   session cookie; sessions listed and revocable in Settings.
 - intervals.icu API key stored **encrypted** on disk (Windows DPAPI or a
   local key file outside the repo) **[spike]**.

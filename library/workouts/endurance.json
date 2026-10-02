@@ -1,0 +1,87 @@
+[
+  {
+    "slug": "endurance-z2",
+    "name": "Wytrzymałość {h}",
+    "category": "endurance",
+    "intensity": "easy",
+    "level": 1,
+    "purpose": "Baza tlenowa: więcej mitochondriów i lepsze spalanie tłuszczu przy niskim koszcie zmęczenia.",
+    "cue": "równo w Z2 ({target}), spokojny oddech — możesz swobodnie rozmawiać.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 65,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "kind": "steady",
+        "minutes": 50,
+        "pct": 65,
+        "pctHigh": 72,
+        "label": "Z2 równo",
+        "fill": true
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "endurance-cadence",
+    "name": "Wytrzymałość z kadencją {h}",
+    "category": "endurance",
+    "intensity": "easy",
+    "level": 2,
+    "purpose": "Baza tlenowa: więcej mitochondriów i lepsze spalanie tłuszczu przy niskim koszcie zmęczenia.",
+    "cue": "równo w Z2 ({target}), spokojny oddech — możesz swobodnie rozmawiać.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 65,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "kind": "steady",
+        "minutes": 20,
+        "pct": 65,
+        "pctHigh": 72,
+        "label": "Z2 równo",
+        "fill": true
+      },
+      {
+        "repeat": 4,
+        "steps": [
+          {
+            "kind": "steady",
+            "minutes": 1,
+            "pct": 70,
+            "label": "Kadencja 105+",
+            "cadence": 105
+          },
+          {
+            "kind": "steady",
+            "minutes": 4,
+            "pct": 65,
+            "label": "Z2",
+            "cadence": 90
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  }
+]

@@ -1,0 +1,169 @@
+[
+  {
+    "slug": "ramp-test",
+    "name": "Test rampowy",
+    "category": "test",
+    "intensity": "hard",
+    "level": 1,
+    "purpose": "Sprawdza aktualne FTP, żeby strefy pasowały do Twojej formy.",
+    "cue": "zacznij spokojnie, co minutę mocniej — jedź do odmowy; FTP = 75% najlepszej minuty.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 45,
+        "pctHigh": 55,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "kind": "work",
+        "minutes": 1,
+        "pct": 40.0,
+        "label": "Rampa 1"
+      },
+      {
+        "kind": "work",
+        "minutes": 1,
+        "pct": 47.5,
+        "label": "Rampa 2"
+      },
+      {
+        "kind": "work",
+        "minutes": 1,
+        "pct": 55.0,
+        "label": "Rampa 3"
+      },
+      {
+        "kind": "work",
+        "minutes": 1,
+        "pct": 62.5,
+        "label": "Rampa 4"
+      },
+      {
+        "kind": "work",
+        "minutes": 1,
+        "pct": 70.0,
+        "label": "Rampa 5"
+      },
+      {
+        "kind": "work",
+        "minutes": 1,
+        "pct": 77.5,
+        "label": "Rampa 6"
+      },
+      {
+        "kind": "work",
+        "minutes": 1,
+        "pct": 85.0,
+        "label": "Rampa 7"
+      },
+      {
+        "kind": "work",
+        "minutes": 1,
+        "pct": 92.5,
+        "label": "Rampa 8"
+      },
+      {
+        "kind": "work",
+        "minutes": 1,
+        "pct": 100.0,
+        "label": "Rampa 9"
+      },
+      {
+        "kind": "work",
+        "minutes": 1,
+        "pct": 107.5,
+        "label": "Rampa 10"
+      },
+      {
+        "kind": "work",
+        "minutes": 1,
+        "pct": 115.0,
+        "label": "Rampa 11"
+      },
+      {
+        "kind": "work",
+        "minutes": 1,
+        "pct": 122.5,
+        "label": "Rampa 12"
+      },
+      {
+        "kind": "work",
+        "minutes": 1,
+        "pct": 130.0,
+        "label": "Rampa 13"
+      },
+      {
+        "kind": "work",
+        "minutes": 1,
+        "pct": 137.5,
+        "label": "Rampa 14"
+      },
+      {
+        "kind": "work",
+        "minutes": 1,
+        "pct": 145.0,
+        "label": "Rampa 15"
+      },
+      {
+        "kind": "work",
+        "minutes": 1,
+        "pct": 152.5,
+        "label": "Rampa 16"
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 10,
+        "pct": 45,
+        "label": "Schłodzenie"
+      }
+    ],
+    "isTest": true
+  },
+  {
+    "slug": "ftp-20",
+    "name": "Test FTP 20 min",
+    "category": "test",
+    "intensity": "hard",
+    "level": 2,
+    "purpose": "Sprawdza aktualne FTP, żeby strefy pasowały do Twojej formy.",
+    "cue": "20 minut równo, tak mocno jak dasz radę utrzymać — nie zaczynaj za szybko.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 15,
+        "pct": 50,
+        "pctHigh": 75,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "kind": "work",
+        "minutes": 5,
+        "pct": 110,
+        "label": "5 min mocno"
+      },
+      {
+        "kind": "recovery",
+        "minutes": 10,
+        "pct": 55,
+        "label": "Luźno"
+      },
+      {
+        "kind": "work",
+        "minutes": 20,
+        "pct": 100,
+        "pctHigh": 105,
+        "label": "Test 20 min – równo, maksymalnie"
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 10,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ],
+    "isTest": true
+  }
+]

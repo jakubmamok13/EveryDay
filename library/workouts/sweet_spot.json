@@ -1,0 +1,255 @@
+[
+  {
+    "slug": "ss-3x10",
+    "name": "Sweet Spot {n}×10 min",
+    "category": "sweet_spot",
+    "intensity": "hard",
+    "level": 1,
+    "purpose": "Najwięcej wzrostu FTP na godzinę treningu przy umiarkowanym zmęczeniu.",
+    "cue": "równe {target} w blokach, kadencja 90+, bez przyspieszania na końcu.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 3,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 10,
+            "pct": 88,
+            "pctHigh": 92,
+            "label": "Sweet Spot",
+            "cadence": 90
+          },
+          {
+            "kind": "recovery",
+            "minutes": 4,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "ss-3x12",
+    "name": "Sweet Spot {n}×12 min",
+    "category": "sweet_spot",
+    "intensity": "hard",
+    "level": 2,
+    "purpose": "Najwięcej wzrostu FTP na godzinę treningu przy umiarkowanym zmęczeniu.",
+    "cue": "równe {target} w blokach, kadencja 90+, bez przyspieszania na końcu.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 3,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 12,
+            "pct": 88,
+            "pctHigh": 92,
+            "label": "Sweet Spot",
+            "cadence": 90
+          },
+          {
+            "kind": "recovery",
+            "minutes": 3,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "ss-2x18",
+    "name": "Sweet Spot {n}×18 min",
+    "category": "sweet_spot",
+    "intensity": "hard",
+    "level": 3,
+    "purpose": "Najwięcej wzrostu FTP na godzinę treningu przy umiarkowanym zmęczeniu.",
+    "cue": "równe {target} w blokach, kadencja 90+, bez przyspieszania na końcu.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 2,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 18,
+            "pct": 88,
+            "pctHigh": 92,
+            "label": "Sweet Spot",
+            "cadence": 90
+          },
+          {
+            "kind": "recovery",
+            "minutes": 4,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "ss-2x20",
+    "name": "Sweet Spot {n}×20 min",
+    "category": "sweet_spot",
+    "intensity": "hard",
+    "level": 4,
+    "purpose": "Najwięcej wzrostu FTP na godzinę treningu przy umiarkowanym zmęczeniu.",
+    "cue": "równe {target} w blokach, kadencja 90+, bez przyspieszania na końcu.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 8,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 2,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 20,
+            "pct": 88,
+            "pctHigh": 93,
+            "label": "Sweet Spot",
+            "cadence": 90
+          },
+          {
+            "kind": "recovery",
+            "minutes": 3,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 4,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "ss-3x14",
+    "name": "Sweet Spot {n}×14 min",
+    "category": "sweet_spot",
+    "intensity": "hard",
+    "level": 5,
+    "purpose": "Najwięcej wzrostu FTP na godzinę treningu przy umiarkowanym zmęczeniu.",
+    "cue": "równe {target} w blokach, kadencja 90+, bez przyspieszania na końcu.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 8,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 3,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 14,
+            "pct": 88,
+            "pctHigh": 93,
+            "label": "Sweet Spot",
+            "cadence": 90
+          },
+          {
+            "kind": "recovery",
+            "minutes": 2,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 4,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "ss-1x40",
+    "name": "Sweet Spot 40 min",
+    "category": "sweet_spot",
+    "intensity": "hard",
+    "level": 6,
+    "purpose": "Najwięcej wzrostu FTP na godzinę treningu przy umiarkowanym zmęczeniu.",
+    "cue": "równe {target} w blokach, kadencja 90+, bez przyspieszania na końcu.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "kind": "work",
+        "minutes": 40,
+        "pct": 88,
+        "pctHigh": 92,
+        "label": "Sweet Spot równo",
+        "cadence": 90
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 10,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  }
+]

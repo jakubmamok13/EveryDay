@@ -1,0 +1,382 @@
+[
+  {
+    "slug": "thr-4x6",
+    "name": "Próg {n}×6 min",
+    "category": "threshold",
+    "intensity": "hard",
+    "level": 1,
+    "purpose": "Bezpośrednio podnosi FTP — praca tuż przy progu mleczanowym.",
+    "cue": "trzymaj {target} od pierwszej minuty — nie zaczynaj za mocno.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 4,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 6,
+            "pct": 95,
+            "pctHigh": 100,
+            "label": "Próg",
+            "cadence": 92
+          },
+          {
+            "kind": "recovery",
+            "minutes": 3,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "thr-4x8",
+    "name": "Próg {n}×8 min",
+    "category": "threshold",
+    "intensity": "hard",
+    "level": 2,
+    "purpose": "Bezpośrednio podnosi FTP — praca tuż przy progu mleczanowym.",
+    "cue": "trzymaj {target} od pierwszej minuty — nie zaczynaj za mocno.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 4,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 8,
+            "pct": 95,
+            "pctHigh": 100,
+            "label": "Próg",
+            "cadence": 92
+          },
+          {
+            "kind": "recovery",
+            "minutes": 3,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "thr-3x10",
+    "name": "Próg {n}×10 min",
+    "category": "threshold",
+    "intensity": "hard",
+    "level": 3,
+    "purpose": "Bezpośrednio podnosi FTP — praca tuż przy progu mleczanowym.",
+    "cue": "trzymaj {target} od pierwszej minuty — nie zaczynaj za mocno.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 3,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 10,
+            "pct": 95,
+            "pctHigh": 100,
+            "label": "Próg",
+            "cadence": 92
+          },
+          {
+            "kind": "recovery",
+            "minutes": 4,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "thr-3x12",
+    "name": "Próg {n}×12 min",
+    "category": "threshold",
+    "intensity": "hard",
+    "level": 4,
+    "purpose": "Bezpośrednio podnosi FTP — praca tuż przy progu mleczanowym.",
+    "cue": "trzymaj {target} od pierwszej minuty — nie zaczynaj za mocno.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 3,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 12,
+            "pct": 95,
+            "pctHigh": 100,
+            "label": "Próg",
+            "cadence": 92
+          },
+          {
+            "kind": "recovery",
+            "minutes": 3,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "thr-2x15",
+    "name": "Próg {n}×15 min",
+    "category": "threshold",
+    "intensity": "hard",
+    "level": 5,
+    "purpose": "Bezpośrednio podnosi FTP — praca tuż przy progu mleczanowym.",
+    "cue": "trzymaj {target} od pierwszej minuty — nie zaczynaj za mocno.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 2,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 15,
+            "pct": 95,
+            "pctHigh": 100,
+            "label": "Próg",
+            "cadence": 92
+          },
+          {
+            "kind": "recovery",
+            "minutes": 5,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "thr-2x18",
+    "name": "Próg {n}×18 min",
+    "category": "threshold",
+    "intensity": "hard",
+    "level": 6,
+    "purpose": "Bezpośrednio podnosi FTP — praca tuż przy progu mleczanowym.",
+    "cue": "trzymaj {target} od pierwszej minuty — nie zaczynaj za mocno.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 2,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 18,
+            "pct": 95,
+            "pctHigh": 100,
+            "label": "Próg",
+            "cadence": 92
+          },
+          {
+            "kind": "recovery",
+            "minutes": 4,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "thr-2x20",
+    "name": "Próg {n}×20 min",
+    "category": "threshold",
+    "intensity": "hard",
+    "level": 7,
+    "purpose": "Bezpośrednio podnosi FTP — praca tuż przy progu mleczanowym.",
+    "cue": "trzymaj {target} od pierwszej minuty — nie zaczynaj za mocno.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 8,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 2,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 20,
+            "pct": 95,
+            "pctHigh": 100,
+            "label": "Próg",
+            "cadence": 92
+          },
+          {
+            "kind": "recovery",
+            "minutes": 4,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 4,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "thr-over-under",
+    "name": "Ponad/pod progiem {n}×9 min",
+    "category": "threshold",
+    "intensity": "hard",
+    "level": 8,
+    "purpose": "Bezpośrednio podnosi FTP — praca tuż przy progu mleczanowym.",
+    "cue": "trzymaj {target} od pierwszej minuty — nie zaczynaj za mocno.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 3,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 2,
+            "pct": 92,
+            "label": "Pod progiem"
+          },
+          {
+            "kind": "work",
+            "minutes": 1,
+            "pct": 105,
+            "label": "Ponad progiem"
+          },
+          {
+            "kind": "work",
+            "minutes": 2,
+            "pct": 92,
+            "label": "Pod progiem"
+          },
+          {
+            "kind": "work",
+            "minutes": 1,
+            "pct": 105,
+            "label": "Ponad progiem"
+          },
+          {
+            "kind": "work",
+            "minutes": 2,
+            "pct": 92,
+            "label": "Pod progiem"
+          },
+          {
+            "kind": "work",
+            "minutes": 1,
+            "pct": 105,
+            "label": "Ponad progiem"
+          },
+          {
+            "kind": "recovery",
+            "minutes": 4,
+            "pct": 55,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 3,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  }
+]

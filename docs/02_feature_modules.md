@@ -170,7 +170,7 @@ Each input is rated **ok / caution / bad**:
 
 | Input | Caution | Bad |
 |---|---|---|
-| HRV (overnight) | today below the personal normal band (60-day baseline) | 7-day average below the band |
+| HRV (overnight) | tonight below the band (60-day mean − max(1 SD, 3%)) | 7-day average below the band **and** ≥ 3 low nights (D-040) |
 | Resting HR | ≥ +5 bpm vs 30-day mean | ≥ +8 bpm |
 | Sleep | < 6 h or sleep score < 60 | < 5 h |
 | Body Battery (morning max) | < 50 | < 30 |

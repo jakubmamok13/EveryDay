@@ -368,3 +368,22 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   Phase 1 sync code is written against the documented API and tested with
   recorded responses (09 Testing approach) until then.
 - **Source:** Claude proposal; author chose the manual-test route (2026-10-02).
+
+## D-039 · 2026-10-02 · Build-time stack choices (no native add-ons)
+- **Decision:** To keep the Windows install to "install Node, run one command":
+  - Database: Node's built-in **`node:sqlite`** (no native module to compile).
+  - Password hashing: Node's built-in **scrypt** instead of argon2.
+  - Knowledge Base search: embeddings stored in SQLite, **cosine similarity
+    in JavaScript** (a few hundred passages; no sqlite-vec extension).
+  - HTTPS for the phone: **Tailscale Serve** in front of the app (the app
+    itself listens on localhost only; no certificate handling in the app).
+  - Runtime: TypeScript run directly with **tsx**; web app built with Vite.
+- **Why:** Native modules (better-sqlite3, argon2, sqlite-vec) need build
+  tools or matching binaries on Windows; the built-ins do the same job at our scale.
+- **Source:** Claude (build phase, user asked for full auto build).
+
+## D-040 · 2026-10-02 · HRV "bad" needs at least 3 low nights
+- **Decision:** HRV band = 60-day mean − max(1 SD, 3%). Caution = tonight
+  below the band. **Bad = 7-day average below the band and ≥ 3 low nights**
+  in that week, so one bad night alone gives Yellow, not Red. *(our rule)*
+- **Source:** Claude, found while testing the engine.

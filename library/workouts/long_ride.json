@@ -1,0 +1,248 @@
+[
+  {
+    "slug": "long-z2",
+    "name": "Długa jazda {h}",
+    "category": "long_ride",
+    "intensity": "moderate",
+    "level": 1,
+    "purpose": "Przygotowanie do długich dystansów: wytrzymałość, jedzenie i nawodnienie w ruchu.",
+    "cue": "Z2 ({target}), jedz co 30 min, pij co 15 min — równe tempo przez cały czas.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 15,
+        "pct": 50,
+        "pctHigh": 65,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "kind": "steady",
+        "minutes": 120,
+        "pct": 65,
+        "pctHigh": 72,
+        "label": "Z2 równo",
+        "fill": true
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 10,
+        "pct": 55,
+        "label": "Schłodzenie"
+      }
+    ],
+    "outdoorGuidance": "Jedź w Z2 — rozmawiasz pełnymi zdaniami. Jedz od 30. minuty co 30 min, pij co 15 min."
+  },
+  {
+    "slug": "long-z2-tempo2",
+    "name": "Długa jazda {h} z tempem",
+    "category": "long_ride",
+    "intensity": "moderate",
+    "level": 2,
+    "purpose": "Przygotowanie do długich dystansów: wytrzymałość, jedzenie i nawodnienie w ruchu.",
+    "cue": "Z2 ({target}), jedz co 30 min, pij co 15 min — równe tempo przez cały czas.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 15,
+        "pct": 50,
+        "pctHigh": 65,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "kind": "steady",
+        "minutes": 90,
+        "pct": 65,
+        "pctHigh": 72,
+        "label": "Z2",
+        "fill": true
+      },
+      {
+        "repeat": 2,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 15,
+            "pct": 78,
+            "pctHigh": 82,
+            "label": "Tempo",
+            "cadence": 88
+          },
+          {
+            "kind": "steady",
+            "minutes": 10,
+            "pct": 65,
+            "label": "Z2"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 10,
+        "pct": 55,
+        "label": "Schłodzenie"
+      }
+    ],
+    "outdoorGuidance": "Jedź w Z2 — rozmawiasz pełnymi zdaniami. Jedz od 30. minuty co 30 min, pij co 15 min. W drugiej części 2×15 min tempa."
+  },
+  {
+    "slug": "long-z2-tempo3",
+    "name": "Długa jazda {h} z tempem",
+    "category": "long_ride",
+    "intensity": "moderate",
+    "level": 3,
+    "purpose": "Przygotowanie do długich dystansów: wytrzymałość, jedzenie i nawodnienie w ruchu.",
+    "cue": "Z2 ({target}), jedz co 30 min, pij co 15 min — równe tempo przez cały czas.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 15,
+        "pct": 50,
+        "pctHigh": 65,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "kind": "steady",
+        "minutes": 80,
+        "pct": 65,
+        "pctHigh": 72,
+        "label": "Z2",
+        "fill": true
+      },
+      {
+        "repeat": 3,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 20,
+            "pct": 78,
+            "pctHigh": 82,
+            "label": "Tempo",
+            "cadence": 88
+          },
+          {
+            "kind": "steady",
+            "minutes": 10,
+            "pct": 65,
+            "label": "Z2"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 10,
+        "pct": 55,
+        "label": "Schłodzenie"
+      }
+    ],
+    "outdoorGuidance": "Jedź w Z2 — rozmawiasz pełnymi zdaniami. Jedz od 30. minuty co 30 min, pij co 15 min. W drugiej części 3×20 min tempa."
+  },
+  {
+    "slug": "long-z2-ss2",
+    "name": "Długa jazda {h} ze Sweet Spotem",
+    "category": "long_ride",
+    "intensity": "moderate",
+    "level": 4,
+    "purpose": "Przygotowanie do długich dystansów: wytrzymałość, jedzenie i nawodnienie w ruchu.",
+    "cue": "Z2 ({target}), jedz co 30 min, pij co 15 min — równe tempo przez cały czas.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 15,
+        "pct": 50,
+        "pctHigh": 65,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "kind": "steady",
+        "minutes": 90,
+        "pct": 65,
+        "pctHigh": 72,
+        "label": "Z2",
+        "fill": true
+      },
+      {
+        "repeat": 2,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 20,
+            "pct": 86,
+            "pctHigh": 90,
+            "label": "Sweet Spot",
+            "cadence": 88
+          },
+          {
+            "kind": "steady",
+            "minutes": 10,
+            "pct": 65,
+            "label": "Z2"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 10,
+        "pct": 55,
+        "label": "Schłodzenie"
+      }
+    ],
+    "outdoorGuidance": "Jedź w Z2 — rozmawiasz pełnymi zdaniami. Jedz od 30. minuty co 30 min, pij co 15 min. W drugiej części 2×20 min Sweet Spot."
+  },
+  {
+    "slug": "long-z2-ss3",
+    "name": "Długa jazda {h} ze Sweet Spotem",
+    "category": "long_ride",
+    "intensity": "moderate",
+    "level": 5,
+    "purpose": "Przygotowanie do długich dystansów: wytrzymałość, jedzenie i nawodnienie w ruchu.",
+    "cue": "Z2 ({target}), jedz co 30 min, pij co 15 min — równe tempo przez cały czas.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 15,
+        "pct": 50,
+        "pctHigh": 65,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "kind": "steady",
+        "minutes": 80,
+        "pct": 65,
+        "pctHigh": 72,
+        "label": "Z2",
+        "fill": true
+      },
+      {
+        "repeat": 3,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 20,
+            "pct": 86,
+            "pctHigh": 90,
+            "label": "Sweet Spot",
+            "cadence": 88
+          },
+          {
+            "kind": "steady",
+            "minutes": 10,
+            "pct": 65,
+            "label": "Z2"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 10,
+        "pct": 55,
+        "label": "Schłodzenie"
+      }
+    ],
+    "outdoorGuidance": "Jedź w Z2 — rozmawiasz pełnymi zdaniami. Jedz od 30. minuty co 30 min, pij co 15 min. W drugiej części 3×20 min Sweet Spot."
+  }
+]
