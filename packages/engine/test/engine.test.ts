@@ -213,6 +213,12 @@ describe("readiness", () => {
     expect(r.effective).toBe("yellow");
   });
 
+  it("treats two low check-in answers as a strong signal", () => {
+    const r = computeReadiness({ date: MONDAY, wellness, checkIn: { date: MONDAY, sleepQuality: 2, legs: 2, motivation: 4, sick: false, pain: false, rideMode: "indoor" } });
+    expect(r.effective).toBe("yellow");
+    expect(r.inputs.find((i) => i.key === "check_in")!.rating).toBe("bad");
+  });
+
   it("shows learning during the Learning Period", () => {
     const r = computeReadiness({ date: MONDAY, wellness, learningUntil: addDays(MONDAY, 3) });
     expect(r.state).toBe("learning");

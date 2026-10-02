@@ -78,7 +78,7 @@ function weekKind(goals: Goal[], focus: BlockFocus, weekInBlock: number): WeekKi
   return weekInBlock === 3 ? "recovery" : "load";
 }
 
-function qualityCategories(focus: BlockFocus, blockIndex: number): WorkoutCategory[] {
+export function qualityCategories(focus: BlockFocus, blockIndex: number): WorkoutCategory[] {
   switch (focus) {
     case "sweet_spot":
       return ["sweet_spot", "sweet_spot"];

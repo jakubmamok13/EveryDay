@@ -387,3 +387,16 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   below the band. **Bad = 7-day average below the band and ≥ 3 low nights**
   in that week, so one bad night alone gives Yellow, not Red. *(our rule)*
 - **Source:** Claude, found while testing the engine.
+
+## D-041 · 2026-10-02 · Build refinements found in testing
+- **Check-in:** two or more low answers (≤ 2) count as a strong ("bad")
+  signal, so heavy legs + poor sleep gives a Yellow day. *(our rule)*
+- **Your own requests** ("mam tylko 45 min", Skip, chat requests) may shorten a
+  workout by more than 20%; the ±20% Safe Envelope limit applies to changes the
+  AI proposes on its own. All other safety checks still apply.
+- **Coach Chat answers arrive whole** (not word by word) with a "Trener pisze…"
+  indicator; structured actions are validated before anything changes.
+- **Ladder progression** from ride ratings applies to the next session of that
+  category within 14 days; FTP changes also need updating in intervals.icu
+  (the app reminds you; automatic FTP write-back is a Phase 1 check on the PC).
+- **Source:** Claude, during the build (user asked for full auto build).

@@ -147,8 +147,9 @@ export function ruleBasedChat(message: string, ctx: ChatContext): ChatResult {
   }
   const best = ctx.passages[0];
   if (best && /dlaczego|po co|czemu|jak |co to|ile /.test(m + " ")) {
-    const sentences = best.text.replace(/\n+/g, " ").split(/(?<=[.!?])\s+/).slice(0, 2).join(" ");
-    return done(`${sentences}`);
+    const sentences = best.text.replace(/\n+/g, " ").replace(/\*\*/g, "").split(/(?<=[.!?])\s+/).slice(0, 3).join(" ");
+    const topic = best.heading.split(" — ").pop() ?? best.heading;
+    return done(`${topic}: ${sentences}`);
   }
   return done(
     "Mogę: skrócić trening („mam tylko 45 min”), zrobić go lżejszym („ciężkie nogi”), dać wolne, zapamiętać ból, chorobę albo wyjazd i wyjaśnić, po co jest dany trening.",

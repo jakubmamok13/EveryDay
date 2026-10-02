@@ -118,6 +118,8 @@ export interface EnvelopeContext {
   weekAfter: PlannedDay[];
   weekPlannedLoad: number;
   overrides: Readiness["overrides"];
+  /** The athlete asked for it (chat / buttons): shorter than −20% is allowed. */
+  userRequested?: boolean;
 }
 
 const RANK = { easy: 0, moderate: 1, hard: 2 } as const;
@@ -133,7 +135,8 @@ export function checkEnvelope(p: Proposal, ctx: EnvelopeContext): { ok: boolean;
     if (Math.abs(daysBetween(p.fromDate, p.date)) > 1) reasons.push("move_too_far");
     const sameCategory = after.category === before.workout.category;
     if (!sameCategory && !EASIER_CATEGORIES.has(after.category)) reasons.push("category_change");
-    if (sameCategory && Math.abs(after.minutes - before.workout.minutes) > before.workout.minutes * 0.2 + 0.5) reasons.push("duration_change");
+    const shorterByUser = ctx.userRequested && after.minutes <= before.workout.minutes;
+    if (sameCategory && !shorterByUser && Math.abs(after.minutes - before.workout.minutes) > before.workout.minutes * 0.2 + 0.5) reasons.push("duration_change");
     if (!sameCategory && after.minutes > before.workout.minutes * 1.2 + 0.5) reasons.push("duration_change");
     if (RANK[after.intensity] > RANK[before.workout.intensity]) reasons.push("harder");
     if (maxPct(after.steps) > maxPct(before.workout.steps) + 0.5) reasons.push("harder");

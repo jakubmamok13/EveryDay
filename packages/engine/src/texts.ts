@@ -63,6 +63,7 @@ function inputText(r: Readiness, key: string): string | null {
     case "check_in": {
       if (i.rating === "ok") return "nogi świeże";
       const d = i.detail ?? "";
+      if (d.includes("legs") && d.includes("sleepQuality")) return "ciężkie nogi i słaby sen";
       if (d.includes("legs")) return "ciężkie nogi";
       if (d.includes("sleepQuality")) return "słaby sen";
       if (d.includes("motivation")) return "niska motywacja";
@@ -86,6 +87,7 @@ export function readinessReason(r: Readiness, withCheckIn: boolean): string {
     text = parts.length ? parts.join(", ") : "sygnały w normie";
   } else {
     text = inputText(r, r.mainReason.split(":")[0]!) ?? "sygnały w normie";
+    if (r.effective === "green") text += ", reszta w normie";
   }
   return withCheckIn ? text : `${text} (bez check-inu — tylko dane z zegarka)`;
 }

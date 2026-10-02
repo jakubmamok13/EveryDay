@@ -176,7 +176,7 @@ Each input is rated **ok / caution / bad**:
 | Body Battery (morning max) | < 50 | < 30 |
 | Garmin Training Readiness | < 50 | < 25 |
 | Form (% of Fitness) | < −30% | < −45% |
-| Check-in: legs / sleep quality / motivation | any ≤ 2 | legs = 1 |
+| Check-in: legs / sleep quality / motivation | one answer ≤ 2 | legs = 1, or two or more answers ≤ 2 (D-041) |
 
 - **Score** = 100 − 10 × (cautions) − 25 × (bads), limited to 0–100.
 - **State:** Green = no bad and ≤ 1 caution · Yellow = 1 bad or ≥ 2

@@ -69,7 +69,8 @@ function minutesText(m: number): string {
 function tomorrowLine(date: ISODate, upcoming: PlannedDay[]): string {
   const next = upcoming.filter((d) => d.date > date).sort((a, b) => (a.date < b.date ? -1 : 1));
   const tomorrow = next.find((d) => d.date === addDays(date, 1));
-  if (tomorrow) return `${tomorrow.workout.name} · ${minutesText(tomorrow.workout.minutes)}.`;
+  const withTime = (d: PlannedDay) => (/\d+ (h|min)\b/.test(d.workout.name) ? d.workout.name : `${d.workout.name} · ${minutesText(d.workout.minutes)}`);
+  if (tomorrow) return `${withTime(tomorrow)}.`;
   const later = next.find((d) => d.date <= addDays(date, 6));
   return later ? `wolne. ${cap(WEEKDAY_PL_LONG[weekday(later.date)]!)}: ${later.workout.name}.` : "wolne.";
 }
@@ -182,7 +183,9 @@ export function assembleBrief(f: BriefFacts, slots: BriefSlots = {}): { lines: B
   lines.push({
     key: "today",
     label: "Dziś",
-    text: f.workout ? `${f.workout.name} · ${minutesText(f.workout.minutes)} · ${f.workout.modeLabel}` : "dzień wolny",
+    text: f.workout
+      ? `${/\d+ (h|min)\b/.test(f.workout.name) && !/×/.test(f.workout.name) ? f.workout.name : `${f.workout.name} · ${minutesText(f.workout.minutes)}`} · ${f.workout.modeLabel}`
+      : "dzień wolny",
   });
   lines.push({ key: "readiness", label: "Gotowość", text: `${f.readiness.emoji} ${f.readiness.word} — ${f.readiness.reason}` });
   if (f.workout) lines.push({ key: "focus", label: "Skup się", text: cap(slots.focus ?? f.templates.focus) });

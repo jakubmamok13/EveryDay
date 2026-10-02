@@ -95,6 +95,28 @@ function workoutName(def: WorkoutDef, steps: StepOrRepeat[]): string {
   return def.name;
 }
 
+/**
+ * Shorten to at most `minutes`: stretchable rides shrink their fill step,
+ * interval sessions lose repeats, and as a last resort it becomes an easy Z2 ride.
+ */
+export function shortenTo(w: ScaledWorkout, minutes: number, def?: WorkoutDef): ScaledWorkout {
+  if (w.minutes <= minutes) return w;
+  const steps = cloneSteps(w.steps);
+  const fill = steps.find((s): s is Step => !isRepeat(s) && !!s.fill);
+  if (fill) {
+    fill.minutes = Math.max(10, fill.minutes - (w.minutes - minutes));
+    const out = restamp(w, steps);
+    if (def) return { ...out, name: scaleWorkout(def, { targetMinutes: out.minutes }).name };
+    return out;
+  }
+  const block = steps.find(isRepeat);
+  if (block) {
+    while (block.repeat > 1 && totalMinutes(steps) > minutes) block.repeat -= 1;
+    if (totalMinutes(steps) <= minutes) return restamp(w, steps);
+  }
+  return shortenAndCap(w, minutes / w.minutes);
+}
+
 /** Easier version for a Yellow day: one repeat less, or −3% on work steps. */
 export function reduceWorkout(w: ScaledWorkout): ScaledWorkout {
   const steps = cloneSteps(w.steps);
