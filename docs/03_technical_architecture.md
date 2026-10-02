@@ -1,88 +1,130 @@
 # 03 — Technical Architecture
 
-Status: **DRAFT** — D-002 one user · D-004 intervals.icu · D-011 rules + AI adjust · D-012 all on PC · D-013 Qwen 3.8
+Status: **SPEC v1** — based on D-002, D-004, D-011, D-012, D-017, D-018,
+D-026, D-030, D-035. Items marked **[spike]** must be confirmed in Phase 0.
 
-## Known constraints
+## 1. Shape
 
-- Web app (browser UI).
-- One user (D-002). Data stored persistently on the "account" (where:
-  Q-ARC-05).
-- Coach AI runs on the author's PC (D-003).
-- Data comes from intervals.icu via a personal API key (D-004). Polling is
-  enough; webhooks are optional.
-
-## Deployment shape — DECIDED: option 2 (D-012)
-
-| Option | How | + | − |
-|---|---|---|---|
-| **1. All on the PC** | Local web app at `localhost`; DB file on disk; AI via Ollama/WebGPU | €0, simplest, fully private | Phone sees nothing unless the PC is on and reachable |
-| **2. PC + private access from phone** | Same as 1, plus a private tunnel (e.g. Tailscale) so the phone opens the PC's app | €0, phone works anywhere | PC must be on in the morning (or schedule the brief overnight) |
-| **3. Small cloud server + AI on PC** | Server holds DB + UI + sync; PC runs the AI and pushes the brief up | Phone works even when the PC is off; brief cached | €3–6/month; two parts to maintain |
-
-Note: the brief can be generated **the evening before** or **early morning on
-a schedule**, so a PC that is on at night (or wakes for it) is enough. The
-plan itself (rules) can run anywhere.
-
-## Proposed principle: split "brain" from "voice"
-
-| Layer | Job | Tech nature |
-|---|---|---|
-| **Plan Engine** | Generate and adapt the Training Plan; compute Load, Fitness, Fatigue, Form and Readiness; **validate any AI proposal** against the safe envelope (D-011) | Deterministic rules + math based on Coggan & Allen (D-010). Testable, explainable, cheap; same input gives the same output |
-| **Coach AI** | Turn the engine's decision + reasons into the short Daily Brief; Coach Chat (D-019); grounded in the Knowledge Base (D-006, D-022) | Uncensored Qwen 3.8 27B (~4-bit) via Ollama on the AMD RX 7800 XT (D-017, D-026); never invents workouts or numbers; clarity rules (D-021) |
-
-Why: small local models are unreliable at arithmetic and long-horizon
-planning, but good at short, friendly explanations of facts they are given.
-This also limits the damage of a wrong AI output.
-
-## Stack proposal (D-035, to confirm in spikes)
-
-| Part | Proposal | Why |
-|---|---|---|
-| Language | TypeScript everywhere | One language; Claude maintains it |
-| Server | Node.js LTS (as a Windows service) | Runs well on Windows; easy auto-start |
-| Front-end | React + Vite, installable PWA | Works on iOS + Android + PC; push support |
-| Database | SQLite (one file) | No DB server; backup = copy one file |
-| AI | Ollama HTTP API on localhost | Swappable model (D-026) |
-| Tunnel | Tailscale (HTTPS certificates) | Private access from the phone; needed for push (D-018) |
-
-## Building blocks (to decide)
-
-- Frontend: installable PWA (framework TBD), HTTPS inside the tunnel (D-018).
-- Backend + DB: accounts, Sources, OAuth tokens, sync jobs, plan storage.
-- Sync worker: webhooks + scheduled polling per Source.
-- FIT parser (S07).
-- Coach AI runtime: in-browser WebGPU vs self-hosted server model (S06).
-- Hosting: region EU (GDPR), budget TBD.
-
-## Open questions
-
-- ~~Q-ARC-01~~ → D-035: TypeScript end to end; Claude builds it.
-- ~~Q-ARC-02~~ €0 (D-012).
-- ~~Q-ARC-03~~ Claude builds it (D-035).
-- **Q-ARC-04** Offline use needed (e.g. view today's workout without internet)?
-- ~~Q-ARC-05~~ → D-012 (option 2: all on PC + tunnel).
-- ~~Q-ARC-06~~ → D-017: AMD RX 7800 XT 16 GB, 32 GB RAM.
-- ~~Q-ARC-07~~ → D-011 (rules decide, AI may adjust within limits).
-- ~~Q-ARC-08~~ → PC on 24/7 (D-012).
-- ~~Q-ARC-09~~ → D-017.
-- ~~Q-ARC-10~~ → D-030: Windows (Ollama for Windows first, LM Studio/Vulkan fallback; auto-start service).
-- ~~Q-ARC-11~~ → D-026 (uncensored Qwen 3.8; official as fallback).
-
-## Runtime overview (D-012)
+One user, one Windows PC that is on 24/7, no cloud server, €0 hosting (D-012).
 
 ```
                     Author's PC (Windows, 24/7)
- ┌────────────────────────────────────────────────────────────────┐
- │  Web app (UI + API) ── DB (local file / embedded DB)            │
- │       │                                                        │
- │  Sync worker ── polls intervals.icu (rides, wellness)          │
- │       │         writes Planned Workouts to intervals.icu        │
- │  Plan Engine (rules, Coggan & Allen)                           │
- │       │  facts + decision                                       │
- │  Coach AI ── Ollama on RX 7800 XT (Qwen 3.8) + Knowledge Base  │
- │       │                                                        │
- │  Scheduler: sync → adapt → draft brief → web push              │
- └───────┬──────────────────────────────┬─────────────────────────┘
-         │ private tunnel, HTTPS          │ outbound only
-     Phone (PWA) / PC browser      Web Push service ─► phone notification
+ ┌──────────────────────────────────────────────────────────────────┐
+ │  EveryDay server (Node.js, Windows service)                       │
+ │   ├─ HTTP API + PWA files (HTTPS, Tailscale certificate)          │
+ │   ├─ Sync ── intervals.icu API (read rides/wellness, write plan)  │
+ │   ├─ Plan Engine (pure TypeScript, no I/O)                        │
+ │   ├─ Coach ── Ollama (localhost:11434) ── Qwen 3.8 on RX 7800 XT  │
+ │   │           └─ Knowledge Base (SQLite + vector index)           │
+ │   ├─ Push ── Web Push (VAPID) ─────────────────────────────┐      │
+ │   └─ Scheduler (night job, notifications, 15-min sync)     │      │
+ │  data/  everyday.db · fit/ · backups/ · logs/              │      │
+ └───────┬────────────────────────────────────────────────────┼──────┘
+         │ Tailscale tunnel (private, HTTPS)                  │ outbound
+   Phone (PWA, iOS + Android) / PC browser        Apple / Google push service
+                                                        └─► notification on phone
+ intervals.icu (cloud) ─► MyWhoosh (KICKR CORE) · Wahoo (BOLT v2) · Garmin (Fenix 8)
 ```
+
+If the PC is down, devices still have the workouts already in the
+intervals.icu calendar. Only the brief, notifications and adaptation stop.
+
+## 2. Brain and voice (D-011)
+
+| Layer | Job | Nature |
+|---|---|---|
+| **Plan Engine** | Plan generation, Load / Fitness / Fatigue / Form, Readiness, Adaptation, Safe Envelope validation, brief facts | Pure functions, deterministic, unit-tested; Coggan & Allen rules (D-010) |
+| **Coach AI** | Writes the brief's text slots, Coach Chat, proposes changes | Uncensored Qwen 3.8 27B via Ollama (D-026); never the source of numbers |
+
+The Coach AI never writes to the database or the calendar directly. It
+returns **structured JSON**; the engine validates it and applies it.
+
+## 3. Stack (D-035)
+
+| Part | Choice | Notes |
+|---|---|---|
+| Language | **TypeScript** everywhere | Claude builds and maintains it |
+| Runtime | **Node.js LTS** | Installed on Windows |
+| Server framework | Fastify (or Hono) | Small, typed, fast |
+| Front-end | **React + Vite**, installable **PWA** | Mobile-first (R8-23); service worker for offline Today (R8-21) and push |
+| Database | **SQLite**, one file `data/everyday.db` | Typed query layer (Drizzle or Kysely); migrations in repo |
+| Vector search | SQLite vector extension (e.g. sqlite-vec) **[spike]** | Knowledge Base retrieval |
+| Embeddings | Multilingual embedding model in Ollama (e.g. bge-m3) **[spike]** | Polish + English text |
+| LLM | **Ollama for Windows** (AMD ROCm/HIP); LM Studio (Vulkan) as fallback **[spike S22]** | Qwen 3.8 27B uncensored, ~4-bit |
+| Push | Web Push with VAPID keys | iOS 16.4+ (Home Screen PWA) + Android Chrome |
+| Tunnel + HTTPS | **Tailscale** + Tailscale HTTPS certificate **[spike S20]** | No public port |
+| Windows service | Auto-start at boot (e.g. NSSM, node-windows or a startup task) **[spike]** | Restarts on crash and after Windows Update |
+
+## 4. Repository layout (proposal)
+
+```
+/apps/server            HTTP API, scheduler, sync, push, Windows service files
+/apps/web               React PWA (Polish UI)
+/packages/engine        Plan Engine: load, readiness, planner, adapter, validator (pure)
+/packages/coach         Ollama client, prompts, output validator, RAG
+/packages/shared        Types shared by server and web
+/library/workouts       Workout Library (~40 workouts, data files, our content)
+/knowledge/method-notes Method Notes (our Polish text, in git)
+/docs                   These planning docs
+/data                   Runtime data — gitignored
+/private                The book and anything private — gitignored
+```
+
+## 5. Jobs and timing (Europe/Warsaw time, DST-safe)
+
+| Job | When | Steps |
+|---|---|---|
+| **Night** | 03:00 daily | Full sync (rides, wellness, FIT) → duplicates guard → Load, Fitness, Fatigue, Form → missed-workout rule → plan maintenance (keep 4 weeks planned) → calendar writes for the next 7 days (default Ride Mode) → FTP / Long Ride proposals → DB backup |
+| **Day sync** | every 15 min, 05:00–23:00 | New rides → match to Planned Workout → compliance → Ride Rating prompt |
+| **Notification** | per-day time (D-034) | Web push |
+| **Check-in** | on submit | Readiness → Adaptation → calendar write (chosen variant) → brief (AI slots, ~10–30 s) |
+| **No check-in** | notification + 2 h | Garmin-only Readiness → brief (R8-16) |
+| **Catch-up** | at server start | If a night job was missed (PC was off), run it now |
+
+## 6. Coach AI pipeline
+
+1. Engine builds **facts JSON** (today's workout, targets in W / HR, Readiness
+   and reasons, adaptation, tomorrow, fueling numbers, active Chat Notes).
+2. Retrieve 2–3 (brief) or up to 5 (chat) Knowledge Base passages.
+3. Prompt (Polish system prompt: friendly buddy, clear, no disclaimers, no
+   numbers that are not in the facts) → Ollama `/api/chat` with a JSON
+   output schema. `num_ctx` is set explicitly; the default truncates input.
+4. **Validator:** JSON shape; slot length (≤ 160 characters each); every
+   number in the text must appear in the facts; language looks Polish;
+   banned-phrase list (hedging, disclaimers). Fail → one retry with a
+   stricter prompt → else template text for that slot.
+5. Chat change requests: the model returns `propose_change` / `save_note`
+   tool calls → the engine validates (Safe Envelope) → applied with Undo, or
+   refused with a reason the model then explains.
+
+GPU sharing: Ollama keeps the model loaded for a few minutes after use
+(`keep_alive`) and then frees the GPU, so games and other GPU apps still
+work. The first request after unloading takes longer (model load).
+
+## 7. Security and privacy
+
+- Server listens **only on localhost and the Tailscale interface**; no port
+  forwarding, no public URL.
+- HTTPS with the Tailscale certificate (needed for the service worker and push).
+- Password hashed (argon2); "remember this device" = long-lived HTTP-only
+  session cookie; sessions listed and revocable in Settings.
+- intervals.icu API key stored **encrypted** on disk (Windows DPAPI or a
+  local key file outside the repo) **[spike]**.
+- **No health data in logs** (08).
+- AI runs locally; no data leaves the PC except to intervals.icu (by design)
+  and push payloads (short notification text only, no health data).
+
+## 8. Platform notes (Windows, D-030)
+
+- Disable sleep; set "restart apps after sign-in"; the service starts
+  without user login.
+- Ollama for Windows on the RX 7800 XT: ROCm/HIP support to verify; LM
+  Studio with Vulkan as fallback (S22).
+- Backups: nightly copy of `everyday.db` (SQLite backup API) to
+  `data/backups/` (keep 14 daily + 8 weekly). An optional second location
+  (another disk or a synced cloud folder) can be set in Settings.
+
+## Open questions
+
+None blocking. Technical confirmations: S05, S14, S18, S20, S21, S22 and the
+[spike] items above.

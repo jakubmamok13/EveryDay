@@ -1,7 +1,7 @@
 # 01 — Product Vision
 
-Status: **DRAFT — rounds 1–7 answered**
-Working name: **EveryDay** (repo name; final product name = Q-VIS-01)
+Status: **SPEC v1** — interview rounds 0–9 complete
+Name: **EveryDay** (R8-01)
 
 ## 1. One-line pitch
 
@@ -38,7 +38,7 @@ next sessions.
 | Planned Workout | A structured session scheduled for a day |
 | Activity | A completed ride imported from a Source |
 | Wellness | Daily non-ride data: sleep, HRV, resting HR, Body Battery, check-in |
-| Readiness | Our daily score/state derived from Wellness + training load |
+| Readiness | Our daily score (0–100) and state (green / yellow / red) from Wellness, Load and the Morning Check-in |
 | Adaptation | A change the engine makes to the plan (and why) |
 | Daily Brief | The short daily coaching message |
 
@@ -80,7 +80,7 @@ compromises for other users.
 | Z6 Anaerobic Capacity | 121–150% | 327–405 |
 | Z7 Neuromuscular | > 150% | > 405 |
 
-HR zones for outdoor rides need **LTHR** (Q-VIS-15).
+HR zones for outdoor rides use **LTHR** from the Fenix 8 / intervals.icu (R8-24).
 
 ## 5. What makes it different (hypotheses to confirm)
 
@@ -94,16 +94,17 @@ HR zones for outdoor rides need **LTHR** (Q-VIS-15).
 - **Grounded in a method**: the Coach AI answers from a training book or
   method (D-006), not from generic internet knowledge.
 
-## 6. Non-goals (proposed — confirm)
+## 6. Non-goals (v1)
 
 - Not a social network (no feed, kudos, leaderboards).
-- Not a ride-recording app (Garmin/Zwift/MyWhoosh record; we read results).
-- Not a medical device; no medical advice.
-- v1: cycling only (no run/swim/triathlon).
+- Not a ride-recording app (MyWhoosh, BOLT and Fenix record; we read results).
+- Not a medical device; no medical, diet or weight-loss advice (R8-15).
+- No strength sessions (R8-09), no Zwift, no own trainer control (D-009).
+- Cycling only (no run / swim / triathlon).
 
 ## Open questions
 
-- **Q-VIS-01** Final product name? (keep "EveryDay"?)
+- ~~Q-VIS-01~~ → EveryDay (R8-01).
 - ~~Q-VIS-02~~ → D-002 (only me).
 - ~~Q-VIS-03~~ "Free" is moot for a personal tool. Target: €0 running cost.
 - ~~Q-VIS-04~~ → D-003 (AI on user's PC).
@@ -112,14 +113,11 @@ HR zones for outdoor rides need **LTHR** (Q-VIS-15).
 - ~~Q-VIS-07~~ → D-013: Polish.
 - ~~Q-VIS-08~~ → D-007: phone browser + PC browser (+ Garmin, + pushed message).
   Native app: not planned.
-- **Q-VIS-09** Who are the competitors you know / use today, and what do you
-  like or hate about them?
+- **Q-VIS-09** (optional) Competitors you use or know, and what you like or hate about them.
 - ~~Q-VIS-10~~ → D-006: the "book" is the Coach AI's knowledge source.
 - ~~Q-VIS-11~~ → D-010: Allen & Coggan, "Training and Racing with a Power Meter".
 - ~~Q-VIS-12~~ Book not found yet → D-022 (start with our own Method Notes).
 - ~~Q-VIS-13~~ → D-027 (Mon, Wed, Sat, Sun).
 - ~~Q-VIS-14~~ → profile above + D-028.
-- **Q-VIS-15** LTHR / max HR for outdoor HR zones? Proposal: take them from
-  the Fenix 8 (it detects lactate threshold with the chest strap) or
-  intervals.icu estimates.
+- ~~Q-VIS-15~~ → R8-24: LTHR / max HR from Fenix 8 auto-detection or intervals.icu.
 - ~~Q-VIS-16~~ → D-033: 200 km+ / 7 h+.

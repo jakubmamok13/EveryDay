@@ -325,3 +325,36 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   confirms it (default: indoor ramp test on the KICKR in MyWhoosh). Zones
   update only after the Athlete accepts.
 - **Source:** User (round 8).
+
+## D-037 · 2026-10-02 · Round 9: all 24 proposed defaults approved
+- **Decision:** The author approved every proposed default ("OK"). They are
+  now binding and are written into the module docs:
+
+| # | Topic | Decision |
+|---|---|---|
+| R8-01 | Name | **EveryDay** |
+| R8-02 | Login | Email + password, "remember this device"; onboarding runs for a new account |
+| R8-03 | Data | Export all data + delete account in Settings |
+| R8-04 | Onboarding | ≤ 10 questions (~3 min), pre-filled from intervals.icu |
+| R8-05 | First test | No test in week 1; first test at the end of block 1 |
+| R8-06 | Horizon | Rolling 4-week blocks; with an Event, periodize to its date |
+| R8-07 | Manual moves | Move / skip / swap allowed; the rest of the week re-flows |
+| R8-08 | Long rides | One Long Ride Day (5–7 h) every 4–6 weeks, confirmed a week ahead + back-to-back weekends |
+| R8-09 | Strength | No strength sessions in v1; off-bike tips only |
+| R8-10 | Library | Curated library (~40 workouts), each with indoor + outdoor variant |
+| R8-11 | Missed workout | Key Workout → next free day this week if Form allows, else dropped; others dropped |
+| R8-12 | Safe Envelope | ±20% duration, same-type swap, ±1 day, easier only; never 2 hard days in a row |
+| R8-13 | Readiness | Our own score; Garmin's Training Readiness shown next to it and used as one input |
+| R8-14 | FIT upload | Yes, manual upload as fallback |
+| R8-15 | Nutrition | Fueling + hydration for rides > 90 min; no diet / weight-loss advice |
+| R8-16 | No check-in | Brief waits; 2 h after the notification it uses Garmin data only and says so |
+| R8-17 | Outdoor | HR ranges; long rides = guidance rides with fueling reminders |
+| R8-18 | Analytics | Minimal: Fitness/Form, FTP + W/kg, long-ride progress, weekly compliance |
+| R8-19 | Chat memory | Important facts saved as Chat Notes with an end date; visible + deletable |
+| R8-20 | Ride rating | RPE 1–10 + too easy / just right / too hard |
+| R8-21 | Offline | Today's workout viewable offline (PWA cache) |
+| R8-22 | Raw data | Keep all ride data forever |
+| R8-23 | Look | Mobile-first; dark/light follows the phone |
+| R8-24 | LTHR | From Fenix 8 auto-detection or intervals.icu estimate; no extra test |
+
+- **Source:** User (round 9).

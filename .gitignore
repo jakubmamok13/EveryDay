@@ -13,3 +13,6 @@ private/
 Thumbs.db
 .vscode/
 .idea/
+
+# Runtime data: database, ride files, backups, logs (never committed)
+data/

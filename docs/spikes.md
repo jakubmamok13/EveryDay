@@ -16,7 +16,7 @@ terms and test the APIs ourselves.
 | S06 | Qwen 3.8 27B on the author's **AMD RX 7800 XT 16 GB** writes clear **Polish** briefs and chats fast enough | **High** | Research: ~15–25 tok/s expected; test on the PC |
 | S07 | FIT parsing in browser / server | Low | Unverified (Garmin FIT SDK has JS) |
 | S08 | Smart-trainer control via Web Bluetooth (FTMS / ERG) | — | Deferred: out of scope v1 (D-009) |
-| S09 | Readiness model: how to combine Body Battery, Garmin Training Readiness, HRV, RHR, sleep, Load, Check-in | Med | Design work |
+| S09 | Readiness thresholds (02 M5.2) predict worse rides | Med | Designed; calibrate after the Learning Period with real data |
 | S10 | Polar / Wahoo / COROS / Suunto / Whoop / Oura API eligibility | — | Deferred (personal tool) |
 | S11 | Apple Health / Health Connect unreachable from web | Low | Believed true |
 | S12 | GDPR: health data = special category (Art. 9) | Low | Mostly moot for a single-user tool; revisit if opened up |
