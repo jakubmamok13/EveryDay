@@ -63,11 +63,12 @@ function inputText(r: Readiness, key: string): string | null {
     case "check_in": {
       if (i.rating === "ok") return "nogi świeże";
       const d = i.detail ?? "";
-      if (d.includes("legs") && d.includes("sleepQuality")) return "ciężkie nogi i słaby sen";
-      if (d.includes("legs")) return "ciężkie nogi";
-      if (d.includes("sleepQuality")) return "słaby sen";
-      if (d.includes("motivation")) return "niska motywacja";
-      return "słabsze samopoczucie";
+      const parts = [
+        d.includes("legs") ? "ciężkie nogi" : null,
+        d.includes("sleepQuality") ? "słaby sen" : null,
+        d.includes("motivation") ? "niska motywacja" : null,
+      ].filter(Boolean);
+      return parts.length ? parts.join(" i ") : "słabsze samopoczucie";
     }
   }
   return null;

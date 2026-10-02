@@ -91,6 +91,10 @@ describe("chat", () => {
     const r = ruleBasedChat("Mam dziś tylko 45 min", ctx);
     expect(r.actions).toEqual([{ type: "shorten", date: "2026-10-05", minutes: 45 }]);
   });
+  it("rule-based: 'why this workout' explains today's workout", () => {
+    const r = ruleBasedChat("Dlaczego ten trening?", ctx);
+    expect(r.reply).toBe("Sweet Spot 3×12 min: FTP");
+  });
   it("rule-based: pain becomes a note and an easier day", () => {
     const r = ruleBasedChat("Boli mnie kolano", ctx);
     expect(r.actions.map((a) => a.type)).toEqual(["easier", "note"]);

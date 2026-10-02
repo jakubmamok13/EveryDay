@@ -256,8 +256,8 @@ export function todayView(app: App, athleteId: number) {
   );
   const unrated = app.db.all(
     `SELECT a.id, a.name, a.date, a.moving_seconds, a.compliance_pct, p.workout_json FROM activity a LEFT JOIN planned_workout p ON p.id = a.planned_workout_id
-     WHERE a.athlete_id = ? AND a.is_master = 1 AND a.feel IS NULL AND a.date >= ? ORDER BY a.date DESC LIMIT 3`,
-    athleteId, addDays(date, -2),
+     WHERE a.athlete_id = ? AND a.is_master = 1 AND a.feel IS NULL AND a.date >= ? ORDER BY a.date DESC, a.start_at DESC LIMIT 1`,
+    athleteId, addDays(date, -1),
   );
   const conn = app.db.get("SELECT status, last_sync_at, last_error FROM source_connection WHERE athlete_id = ? AND provider = 'intervals_icu'", athleteId);
   const garmin = r?.inputs.find((i) => i.key === "garmin_readiness")?.value ?? null;

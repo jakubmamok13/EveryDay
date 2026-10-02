@@ -129,6 +129,7 @@ export function applyAction(app: App, athleteId: number, a: ChatAction, origin: 
   let label: string;
   switch (a.type) {
     case "shorten": {
+      if (w.minutes <= a.minutes) return { ok: true, text: `„${w.name}” trwa ${w.minutes} min — mieści się w ${a.minutes} min, bez zmian.` };
       const nw = shortenTo(w, a.minutes, def);
       p = { date: a.date, fromDate: a.date, workout: nw };
       label = `${w.name} → ${nw.name} (${nw.minutes} min)`;
@@ -181,11 +182,13 @@ export async function chat(app: App, athleteId: number, message: string) {
     .reverse()
     .slice(0, -1)
     .map((m) => ({ role: m.role === "coach" ? ("assistant" as const) : ("user" as const), content: m.content }));
-  const passages = await searchKnowledge(app, message, 4);
+  const facts = briefRow ? JSON.parse(briefRow.facts_json) : null;
+  // "Ten trening" means today's workout: search with its name and type too.
+  const passages = await searchKnowledge(app, `${message} ${facts?.workout?.name ?? ""} ${facts?.workout?.category?.replace("_", " ") ?? ""}`, 4);
   const llm = await app.llm();
   const res = await runChat(message, {
     today,
-    facts: briefRow ? JSON.parse(briefRow.facts_json) : null,
+    facts,
     planLines,
     notes: activeNotes(app, athleteId, today),
     history,
@@ -196,7 +199,7 @@ export async function chat(app: App, athleteId: number, message: string) {
   const results = ordered.map((a) => applyAction(app, athleteId, a, "chat"));
   if (results.some((r) => r.ok)) await refreshBrief(app, athleteId, today);
   const extra = results.map((r) => r.text).filter((t) => !res.reply.includes(t));
-  const reply = [res.reply, ...extra].join("\n");
+  const reply = [res.reply, ...extra].filter(Boolean).join("\n");
   app.db.run(
     "INSERT INTO chat_message (athlete_id, role, content, meta_json, created_at) VALUES (?,?,?,?,?)",
     athleteId, "coach", reply, JSON.stringify({ source: res.source, results, problems: res.problems }), nowIso(),

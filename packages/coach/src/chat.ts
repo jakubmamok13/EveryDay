@@ -132,7 +132,7 @@ export function ruleBasedChat(message: string, ctx: ChatContext): ChatResult {
   }
   if (minutes && /(tylko|mam|zdąż|czasu)/.test(m)) {
     const n = Number(minutes[1]);
-    return done(`Jasne, skracam dzisiejszy trening do ${n} min.`, [{ type: "shorten", date: today, minutes: n }]);
+    return done("", [{ type: "shorten", date: today, minutes: n }]);
   }
   if (/wyjazd|wyjeżdżam|urlop|delegac/.test(m)) {
     return done("Zapisałem wyjazd na 7 dni. Jeśli w tym czasie nie możesz jeździć, zmień dostępność w Ustawieniach.", [
@@ -144,6 +144,10 @@ export function ruleBasedChat(message: string, ctx: ChatContext): ChatResult {
   }
   if (/odpocz|wolne|pomiń|pomijam|nie dam rady/.test(m)) {
     return done("OK, dziś odpoczynek.", [{ type: "rest", date: today }]);
+  }
+  const w = ctx.facts?.workout;
+  if (w && /(dlaczego|po co|czemu).*(ten|dzisiejsz|dziś|trening)/.test(m)) {
+    return done(`${w.name}: ${w.purpose}`);
   }
   const best = ctx.passages[0];
   if (best && /dlaczego|po co|czemu|jak |co to|ile /.test(m + " ")) {
