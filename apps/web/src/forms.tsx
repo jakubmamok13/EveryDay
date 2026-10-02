@@ -41,8 +41,8 @@ export function goalsFromApi(goals: any[]): GoalForm {
   return {
     primary: p?.type ?? "raise_ftp",
     secondary: s?.type ?? "",
-    targetKm: end?.targetDistanceKm ?? 200,
-    targetHours: end?.targetMinutes ? end.targetMinutes / 60 : 7,
+    targetKm: end?.targetDistanceKm ?? 150,
+    targetHours: end?.targetMinutes ? end.targetMinutes / 60 : 5.5,
     eventName: p?.eventName ?? "",
     eventDate: p?.eventDate ?? "",
     priority: p?.priority ?? "A",
@@ -88,7 +88,7 @@ export interface DayForm {
   notifyTime: string;
 }
 
-export function AvailabilityEditor({ days, set, showTimes }: { days: DayForm[]; set: (d: DayForm[]) => void; showTimes?: boolean }) {
+export function AvailabilityEditor({ days, set }: { days: DayForm[]; set: (d: DayForm[]) => void }) {
   const upd = (i: number, patch: Partial<DayForm>) => set(days.map((d, j) => (j === i ? { ...d, ...patch } : d)));
   return (
     <div>
@@ -109,9 +109,6 @@ export function AvailabilityEditor({ days, set, showTimes }: { days: DayForm[]; 
               </select>
             </>
           ) : <span className="muted small">wolne</span>}
-          {showTimes && (
-            <input type="time" aria-label={`Powiadomienie ${WEEKDAYS[d.weekday]}`} value={d.notifyTime} onChange={(e) => upd(i, { notifyTime: e.target.value })} style={{ minHeight: 40, borderRadius: 10, marginLeft: "auto" }} />
-          )}
         </div>
       ))}
     </div>
@@ -120,8 +117,8 @@ export function AvailabilityEditor({ days, set, showTimes }: { days: DayForm[]; 
 
 export const DEFAULT_DAYS: DayForm[] = [1, 2, 3, 4, 5, 6, 7].map((weekday) => ({
   weekday,
-  available: [1, 3, 6, 7].includes(weekday),
-  maxMinutes: weekday === 1 || weekday === 3 ? 60 : weekday >= 6 ? 240 : 0,
+  available: [2, 4, 6, 7].includes(weekday),
+  maxMinutes: weekday === 2 || weekday === 4 ? 60 : weekday === 6 ? 180 : weekday === 7 ? 120 : 0,
   defaultRideMode: weekday >= 6 ? "outdoor" : "indoor",
   notifyTime: "07:00",
 }));

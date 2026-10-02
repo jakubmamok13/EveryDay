@@ -1,23 +1,33 @@
 import { useState } from "react";
+import { PAIN_PARTS } from "@everyday/core";
 import { api } from "../api";
 import { AvailabilityEditor, DEFAULT_DAYS, GoalEditor, goalsToApi, type DayForm, type GoalForm } from "../forms";
-import { enablePush } from "../push";
+import { InstallHint, ReminderGuide } from "../reminder";
+import { setMode } from "../runtime";
 import { Card, useAction, useToast } from "../ui";
 
-const STEPS = ["intervals.icu", "Profil", "Cele", "Tydzień", "Długie jazdy", "Sprzęt", "Powiadomienia", "Zdrowie", "Gotowe"];
+const STEPS = ["Start", "Profil", "Cele", "Tydzień", "Długie jazdy", "Sprzęt", "Zdrowie", "Przypomnienie", "Gotowe"];
+const EQUIPMENT = [
+  { key: "trainer", label: "Trenażer smart (MyWhoosh)" },
+  { key: "computer", label: "Licznik rowerowy (np. Wahoo)" },
+  { key: "watch", label: "Zegarek (HRV, sen, Body Battery)" },
+  { key: "hr", label: "Pas HR" },
+  { key: "pm", label: "Miernik mocy na rowerze" },
+] as const;
+type EquipKey = (typeof EQUIPMENT)[number]["key"];
+const TIMES = ["06:00", "06:30", "07:00", "07:30", "08:00", "09:00"];
 
 export function Onboarding({ demo, onDone }: { demo: boolean; onDone: () => void }) {
   const [step, setStep] = useState(0);
   const [apiKey, setApiKey] = useState("");
   const [athleteId, setAthleteId] = useState("");
-  const [profile, setProfile] = useState({ weightKg: 80, heightCm: 175, ftp: 220, lthr: 0, maxHr: 0, outdoorPowerMeter: false });
-  const [goals, setGoals] = useState<GoalForm>({ primary: "raise_ftp", secondary: "endurance", targetKm: 200, targetHours: 7, eventName: "", eventDate: "", priority: "A" });
+  const [profile, setProfile] = useState({ weightKg: 75, heightCm: 178, ftp: 220, lthr: 0, maxHr: 0 });
+  const [goals, setGoals] = useState<GoalForm>({ primary: "raise_ftp", secondary: "endurance", targetKm: 150, targetHours: 5.5, eventName: "", eventDate: "", priority: "A" });
   const [days, setDays] = useState<DayForm[]>(DEFAULT_DAYS);
   const [longRides, setLongRides] = useState({ allowed: true, every: 5 });
-  const [equip, setEquip] = useState({ trainer: "Wahoo KICKR CORE", computer: "Wahoo ELEMNT BOLT v2", watch: "Garmin Fenix 8", hr: "Pas HR", pm: "" });
-  const [notifyTime, setNotifyTime] = useState("07:00");
-  const [health, setHealth] = useState("");
-  const [pushMsg, setPushMsg] = useState("");
+  const [equip, setEquip] = useState<Record<EquipKey, boolean>>({ trainer: true, computer: true, watch: true, hr: false, pm: false });
+  const [health, setHealth] = useState<{ kind: "injury" | "illness"; text: string } | null>(null);
+  const [time, setTime] = useState("07:00");
   const { busy, run } = useAction();
   const toast = useToast();
 
@@ -33,24 +43,25 @@ export function Onboarding({ demo, onDone }: { demo: boolean; onDone: () => void
 
   const finish = () => run(async () => {
     await api.post("/api/onboarding/complete", {
-      profile: { ...profile, lthr: profile.lthr || null, maxHr: profile.maxHr || null },
+      profile: { ...profile, lthr: profile.lthr || null, maxHr: profile.maxHr || null, outdoorPowerMeter: equip.pm },
       goals: goalsToApi(goals),
-      availability: { days: days.map((d) => ({ ...d, notifyTime })), longRideDaysAllowed: longRides.allowed, longRideEveryWeeks: longRides.every },
+      availability: { days: days.map((d) => ({ ...d, notifyTime: time })), longRideDaysAllowed: longRides.allowed, longRideEveryWeeks: longRides.every },
       equipment: [
-        equip.trainer && { kind: "trainer", model: equip.trainer, role: "indoor_recorder" },
-        equip.computer && { kind: "bike_computer", model: equip.computer, role: "outdoor_master" },
-        equip.watch && { kind: "watch", model: equip.watch, role: equip.computer ? "outdoor_fallback" : "outdoor_master" },
-        equip.hr && { kind: "hr_strap", model: equip.hr },
-        equip.pm && { kind: "power_meter", model: equip.pm },
+        equip.trainer && { kind: "trainer", model: "Trenażer", role: "indoor_recorder" },
+        equip.computer && { kind: "bike_computer", model: "Licznik rowerowy", role: "outdoor_master" },
+        equip.watch && { kind: "watch", model: "Zegarek", role: equip.computer ? "outdoor_fallback" : "outdoor_master" },
+        equip.hr && { kind: "hr_strap", model: "Pas HR" },
+        equip.pm && { kind: "power_meter", model: "Miernik mocy" },
       ].filter(Boolean),
-      health: health.trim() ? { kind: "injury", text: health.trim() } : null,
+      health,
     });
+    await api.put("/api/settings/reminder", { time });
     onDone();
   });
 
   const num = (k: keyof typeof profile, label: string) => (
     <label className="field"><span>{label}</span>
-      <input type="number" inputMode="numeric" value={(profile[k] as number) || ""} onChange={(e) => setProfile({ ...profile, [k]: Number(e.target.value) })} />
+      <input type="number" inputMode="numeric" value={profile[k] || ""} onChange={(e) => setProfile({ ...profile, [k]: Number(e.target.value) })} />
     </label>
   );
 
@@ -58,24 +69,30 @@ export function Onboarding({ demo, onDone }: { demo: boolean; onDone: () => void
     <div className="app">
       <header className="topbar"><h1>EveryDay</h1><span className="sub">{step + 1}/{STEPS.length} · {STEPS[step]}</span></header>
       <div className="progress-dots" aria-hidden="true">{STEPS.map((_, i) => <i key={i} className={i <= step ? "on" : ""} />)}</div>
+      {step === 0 && <InstallHint />}
       <Card>
         {step === 0 && (
           <div className="stack">
-            <p style={{ marginTop: 0 }}>Połącz intervals.icu — stamtąd przychodzą jazdy, HRV, sen i Body Battery, a tam trafiają treningi dla MyWhoosh, BOLT i Fenix.</p>
+            <p style={{ marginTop: 0 }}>Darmowy trener kolarski, który działa w całości na tym telefonie. Dane przychodzą z <strong>intervals.icu</strong> (jazdy, HRV, sen, Body Battery), a treningi trafiają tam z powrotem — do MyWhoosh, licznika i zegarka.</p>
             {demo ? <p className="muted small">Tryb demo: dane są symulowane.</p> : (
               <>
-                <label className="field"><span>Klucz API (intervals.icu › Settings › Developer)</span><input value={apiKey} onChange={(e) => setApiKey(e.target.value)} autoComplete="off" /></label>
-                <label className="field"><span>ID zawodnika (opcjonalnie, np. i12345)</span><input value={athleteId} onChange={(e) => setAthleteId(e.target.value)} /></label>
+                <label className="field"><span>Klucz API (intervals.icu › Settings › Developer)</span>
+                  <input value={apiKey} onChange={(e) => setApiKey(e.target.value)} autoComplete="off" autoCapitalize="off" spellCheck={false} />
+                </label>
+                <label className="field"><span>ID zawodnika (opcjonalnie, np. i12345)</span>
+                  <input value={athleteId} onChange={(e) => setAthleteId(e.target.value)} autoCapitalize="off" />
+                </label>
               </>
             )}
             <button className="btn primary block" disabled={busy || (!demo && !apiKey.trim())} onClick={connect}>{busy ? "Sprawdzam…" : "Połącz"}</button>
+            {!demo && <button className="btn block" disabled={busy} onClick={() => void setMode("demo")}>Najpierw wypróbuj demo</button>}
+            <p className="small muted">Klucz zostaje tylko na tym telefonie i służy wyłącznie do rozmowy z intervals.icu.</p>
           </div>
         )}
         {step === 1 && (
           <>
             {num("weightKg", "Waga (kg)")}{num("heightCm", "Wzrost (cm)")}{num("ftp", "FTP (W)")}
-            {num("lthr", "Tętno progowe LTHR (ud/min) — z Fenixa lub intervals.icu")}{num("maxHr", "Tętno maksymalne (ud/min)")}
-            <label className="check"><input type="checkbox" checked={profile.outdoorPowerMeter} onChange={(e) => setProfile({ ...profile, outdoorPowerMeter: e.target.checked })} /> Mam miernik mocy na rowerze szosowym</label>
+            {num("lthr", "Tętno progowe LTHR (ud/min) — z zegarka lub intervals.icu")}{num("maxHr", "Tętno maksymalne (ud/min)")}
           </>
         )}
         {step === 2 && <GoalEditor g={goals} set={setGoals} />}
@@ -87,7 +104,7 @@ export function Onboarding({ demo, onDone }: { demo: boolean; onDone: () => void
         )}
         {step === 4 && (
           <div className="stack">
-            <p style={{ marginTop: 0 }}>Co kilka tygodni trener zaproponuje Dzień długiej jazdy (5–7 h), zawsze z tygodniowym wyprzedzeniem i do potwierdzenia.</p>
+            <p style={{ marginTop: 0 }}>Co kilka tygodni trener zaproponuje Dzień długiej jazdy (4–7 h), zawsze z tygodniowym wyprzedzeniem i do potwierdzenia.</p>
             <label className="check"><input type="checkbox" checked={longRides.allowed} onChange={(e) => setLongRides({ ...longRides, allowed: e.target.checked })} /> Proponuj Dni długiej jazdy</label>
             <label className="field"><span>Co ile tygodni</span>
               <select value={longRides.every} onChange={(e) => setLongRides({ ...longRides, every: Number(e.target.value) })}>
@@ -97,28 +114,40 @@ export function Onboarding({ demo, onDone }: { demo: boolean; onDone: () => void
           </div>
         )}
         {step === 5 && (
-          <>
-            {(["trainer", "computer", "watch", "hr", "pm"] as const).map((k) => (
-              <label key={k} className="field"><span>{{ trainer: "Trenażer", computer: "Licznik rowerowy", watch: "Zegarek", hr: "Pas tętna", pm: "Miernik mocy (jeśli masz)" }[k]}</span>
-                <input value={equip[k]} onChange={(e) => setEquip({ ...equip, [k]: e.target.value })} />
-              </label>
-            ))}
-          </>
+          <div className="stack">
+            <p className="small muted" style={{ marginTop: 0 }}>Czego używasz? Dotknij, aby zaznaczyć.</p>
+            <div className="chips">
+              {EQUIPMENT.map((e) => (
+                <button key={e.key} className={`btn${equip[e.key] ? " on" : ""}`} aria-pressed={equip[e.key]} onClick={() => setEquip({ ...equip, [e.key]: !equip[e.key] })}>
+                  {equip[e.key] ? "✓ " : ""}{e.label}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
         {step === 6 && (
           <div className="stack">
-            <label className="field"><span>Godzina porannego powiadomienia (dla każdego dnia możesz ją zmienić w Ustawieniach)</span>
-              <input type="time" value={notifyTime} onChange={(e) => setNotifyTime(e.target.value)} />
-            </label>
-            <button className="btn block" onClick={async () => setPushMsg(await enablePush().catch((e) => e.message))}>Włącz powiadomienia na tym telefonie</button>
-            {pushMsg && <p className="small">{pushMsg}</p>}
-            <p className="small muted">iPhone: najpierw Udostępnij → „Do ekranu początkowego”, potem otwórz EveryDay z ikony.</p>
+            <p style={{ marginTop: 0 }}>Coś Cię teraz boli albo dochodzisz do siebie po chorobie?</p>
+            <div className="chips">
+              <button className={`btn${!health ? " on" : ""}`} aria-pressed={!health} onClick={() => setHealth(null)}>Wszystko OK</button>
+              <button className={`btn${health?.kind === "illness" ? " on" : ""}`} aria-pressed={health?.kind === "illness"} onClick={() => setHealth({ kind: "illness", text: "Po chorobie" })}>Po chorobie</button>
+              {PAIN_PARTS.map((p) => {
+                const on = health?.text === `Ból: ${p}`;
+                return <button key={p} className={`btn${on ? " on" : ""}`} aria-pressed={on} onClick={() => setHealth({ kind: "injury", text: `Ból: ${p}` })}>Boli: {p.toLowerCase()}</button>;
+              })}
+            </div>
+            <p className="small muted">Przez tydzień trener odpuści mocne akcenty.</p>
           </div>
         )}
         {step === 7 && (
-          <label className="field"><span>Coś Cię teraz boli albo dochodzisz do siebie po chorobie? (opcjonalnie)</span>
-            <textarea rows={3} value={health} onChange={(e) => setHealth(e.target.value)} placeholder="np. lewe kolano od tygodnia" />
-          </label>
+          <div className="stack">
+            <p style={{ marginTop: 0 }}>O której przypominać o porannym check-inie?</p>
+            <div className="chips">
+              {TIMES.map((t) => <button key={t} className={`btn small${t === time ? " on" : ""}`} aria-pressed={t === time} onClick={() => setTime(t)}>{t}</button>)}
+            </div>
+            <ReminderGuide time={time} />
+            <p className="small muted">Możesz to zrobić później — instrukcja jest też w Ustawieniach.</p>
+          </div>
         )}
         {step === 8 && (
           <div className="stack">

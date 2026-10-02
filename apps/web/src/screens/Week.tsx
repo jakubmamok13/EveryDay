@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { api, fmtDate, fmtMinutes } from "../api";
-import { Card, Sheet, useAction } from "../ui";
+import { api, CHANGED, fmtDate, fmtMinutes } from "../api";
+import { Card, Sheet, useAction, useToast } from "../ui";
 
 const FOCUS: Record<string, string> = {
   sweet_spot: "Sweet Spot", threshold: "Próg", vo2max: "VO2max", base: "Baza", build: "Budowanie", peak: "Szczyt formy", taper: "Taper",
@@ -20,20 +20,26 @@ export function Week() {
   const [sel, setSel] = useState<any>(null);
   const [alts, setAlts] = useState<any[] | null>(null);
   const { busy, run } = useAction();
+  const toast = useToast();
 
   const load = async (s: string | null) => setW(await api.get(`/api/week${s ? `?start=${s}` : ""}`));
   useEffect(() => {
     void load(start);
+    const on = () => void load(start);
+    window.addEventListener(CHANGED, on);
+    return () => window.removeEventListener(CHANGED, on);
   }, [start]);
   if (!w) return <p className="muted center">Ładuję…</p>;
 
   const act = async (fn: () => Promise<any>, ok: string) => {
     const r = await run(fn, ok);
-    if (r?.warning) alert(r.warning);
+    if (r?.warning) toast(r.warning);
     setSel(null);
     setAlts(null);
     await load(w.start);
   };
+
+  const canTap = (x: any, date: string) => date >= w.today && (x.status === "planned" || x.status === "skipped");
 
   return (
     <>
@@ -68,8 +74,8 @@ export function Week() {
             <div>
               {d.workouts.length === 0 && d.rides.length === 0 && <span className="muted small">wolne</span>}
               {d.workouts.map((x: any) => (
-                <button key={x.id} className={`w-item ${x.status}`} style={{ display: "block", width: "100%", textAlign: "left", border: 0, cursor: x.status === "planned" ? "pointer" : "default" }}
-                  onClick={() => x.status === "planned" && d.date >= w.today && setSel({ ...x, date: d.date })}>
+                <button key={x.id} className={`w-item ${x.status}`} style={{ display: "block", width: "100%", textAlign: "left", border: 0, cursor: canTap(x, d.date) ? "pointer" : "default" }}
+                  onClick={() => canTap(x, d.date) && setSel({ ...x, date: d.date })}>
                   <div className="spread">
                     <strong className="small">{x.isKey ? "★ " : ""}{x.name}</strong>
                     <span className="small muted">{fmtMinutes(x.minutes)}</span>
@@ -92,7 +98,13 @@ export function Week() {
       </Card>
 
       <Sheet open={!!sel} onClose={() => { setSel(null); setAlts(null); }} title={sel?.name ?? ""}>
-        {sel && (
+        {sel?.status === "skipped" && (
+          <div className="stack">
+            <p className="small muted" style={{ margin: 0 }}>{fmtDate(sel.date)} · pominięty</p>
+            <button className="btn primary block" disabled={busy} onClick={() => act(() => api.post(`/api/planned/${sel.id}/restore`), "Przywrócono trening.")}>Przywróć trening</button>
+          </div>
+        )}
+        {sel?.status === "planned" && (
           <div className="stack">
             <p className="small muted" style={{ margin: 0 }}>{fmtDate(sel.date)} · {fmtMinutes(sel.minutes)} · obciążenie {sel.load}</p>
             <div className="small">Przenieś na:</div>

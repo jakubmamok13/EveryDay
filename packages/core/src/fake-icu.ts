@@ -56,17 +56,17 @@ export class FakeIcuClient implements IcuClient {
         raw: { demo: true },
       };
     };
-    if ((wd === 1 || wd === 3) && r() > 0.12) {
+    if ((wd === 2 || wd === 4) && r() > 0.12) {
       const ints = 0.78 + r() * 0.08;
       out.push(mk(`d${date}-mw`, 18, 60, true, "mywhoosh", ints, true));
       out.push(mk(`d${date}-fx`, 18, 60, true, "fenix", ints, false));
     }
     if (wd === 6 && r() > 0.1) {
-      const m = 150 + Math.round(r() * 6) * 15;
+      const m = 120 + Math.round(r() * 4) * 15;
       out.push(mk(`d${date}-bolt`, 9, m, false, "bolt", 0.68, false));
       out.push(mk(`d${date}-fx`, 9, m + 2, false, "fenix", 0.68, false));
     }
-    if (wd === 7 && r() > 0.25) out.push(mk(`d${date}-bolt`, 10, 90 + Math.round(r() * 4) * 15, false, "bolt", 0.65, false));
+    if (wd === 7 && r() > 0.25) out.push(mk(`d${date}-bolt`, 10, 75 + Math.round(r() * 3) * 15, false, "bolt", 0.65, false));
     return out;
   }
 

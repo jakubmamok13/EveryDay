@@ -1,49 +1,42 @@
 import { useEffect, useState } from "react";
-import { api, fmtDate, fmtMinutes } from "../api";
+import { FEELINGS, PAIN_PARTS, type Feeling } from "@everyday/core";
+import { api, CHANGED, fmtDate, fmtMinutes, saveFile } from "../api";
 import { StepGraph, StepList } from "../StepGraph";
 import { Card, Seg, Sheet, useAction } from "../ui";
 
-const FACES = [
-  { value: 1, label: "😫", aria: "1 — bardzo źle" },
-  { value: 2, label: "😕", aria: "2 — słabo" },
-  { value: 3, label: "😐", aria: "3 — średnio" },
-  { value: 4, label: "🙂", aria: "4 — dobrze" },
-  { value: 5, label: "😄", aria: "5 — świetnie" },
-];
 const MODES = [
   { value: "indoor" as const, label: "W domu" },
   { value: "outdoor" as const, label: "Na zewnątrz" },
 ];
-const FEEL = [
+const RIDE_FEEL = [
   { value: "too_easy" as const, label: "Za łatwo" },
   { value: "just_right" as const, label: "W sam raz" },
   { value: "too_hard" as const, label: "Za ciężko" },
 ];
+const EMOJI: Record<Feeling, string> = { great: "💪", good: "🙂", ok: "😐", worse: "😕", exhausted: "😫", sick: "🤒" };
 
-export function Today({ goChat }: { goChat: () => void }) {
+export function Today({ goCoach }: { goCoach: () => void }) {
   const [t, setT] = useState<any>(null);
-  const [offline, setOffline] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [editCheckIn, setEditCheckIn] = useState(false);
   const { busy, run } = useAction();
 
   const load = async () => {
     try {
-      const d = await api.get("/api/today");
-      if (d?.offline) setOffline(true);
-      else {
-        setT(d);
-        setOffline(false);
-      }
-    } catch {
-      setOffline(true);
+      setT(await api.get("/api/today"));
+    } catch (e) {
+      setError((e as Error).message);
     }
   };
   useEffect(() => {
     void load();
+    const on = () => void load();
+    window.addEventListener(CHANGED, on);
+    return () => window.removeEventListener(CHANGED, on);
   }, []);
 
-  if (!t) return <p className="muted center">{offline ? "Brak połączenia z komputerem." : "Ładuję…"}</p>;
-  const needsCheckIn = !t.checkIn || editCheckIn;
+  if (!t) return <p className="muted center">{error ?? "Ładuję…"}</p>;
+  const needsCheckIn = (!t.checkIn && !t.brief) || editCheckIn;
 
   return (
     <>
@@ -51,14 +44,14 @@ export function Today({ goChat }: { goChat: () => void }) {
         <h1>Dziś</h1>
         <span className="sub">{t.weekday}, {fmtDate(t.date).split(" ")[1]}{t.demo ? " · demo" : ""}</span>
       </header>
-      {offline && <p className="muted small">Offline — pokazuję ostatnie dane.</p>}
 
       {t.unrated?.map((r: any) => <RideRating key={r.id} ride={r} onDone={setT} />)}
 
-      {needsCheckIn ? (
-        <CheckInCard initial={t.checkIn} defaultMode={t.defaultRideMode} busy={busy}
-          onSubmit={(body) => run(async () => { setT(await api.post("/api/checkin", body)); setEditCheckIn(false); })} />
-      ) : null}
+      {needsCheckIn && (
+        <CheckInCard initial={t.checkIn} defaultMode={t.defaultRideMode} busy={busy} editing={editCheckIn}
+          onSubmit={(body) => run(async () => { setT(await api.post("/api/checkin", body)); setEditCheckIn(false); })}
+          onSkip={() => run(async () => { setT(await api.post("/api/checkin/skip")); setEditCheckIn(false); })} />
+      )}
 
       {t.readiness && (
         <Card title="Gotowość">
@@ -70,7 +63,11 @@ export function Today({ goChat }: { goChat: () => void }) {
             </div>
             <span className="score" aria-label={`wynik ${t.readiness.score} na 100`}>{t.readiness.score}</span>
           </div>
-          {t.checkIn && !editCheckIn && <button className="linkbtn" onClick={() => setEditCheckIn(true)}>Popraw check-in</button>}
+          {!needsCheckIn && (
+            <button className="linkbtn" onClick={() => setEditCheckIn(true)}>
+              {t.checkIn ? `Samopoczucie: ${FEELINGS[t.checkIn.feeling as Feeling]?.label ?? "zapisane"} · zmień` : "Dodaj samopoczucie"}
+            </button>
+          )}
         </Card>
       )}
 
@@ -89,7 +86,7 @@ export function Today({ goChat }: { goChat: () => void }) {
       )}
 
       {t.workout ? (
-        <WorkoutCard w={t.workout} busy={busy} run={run} setT={setT} goChat={goChat} />
+        <WorkoutCard w={t.workout} busy={busy} run={run} setT={setT} goCoach={goCoach} />
       ) : (
         <RestDay t={t} busy={busy} run={run} setT={setT} />
       )}
@@ -102,60 +99,68 @@ export function Today({ goChat }: { goChat: () => void }) {
           {t.upcoming.map((u: any) => (
             <div key={u.date} className="spread small" style={{ padding: "4px 0" }}>
               <span>{fmtDate(u.date)}</span>
-              <span>{u.isKey ? "★ " : ""}{u.name} <span className="muted">· {fmtMinutes(u.minutes)}</span></span>
+              <span>{u.isKey ? "★ " : ""}{u.name}{/\d+ (h|min)$/.test(u.name) ? null : <span className="muted"> · {fmtMinutes(u.minutes)}</span>}</span>
             </div>
           ))}
         </Card>
       )}
       {t.sync && t.sync.status !== "ok" && (
-        <p className="error">Problem z intervals.icu: {t.sync.status === "auth_error" ? "klucz API odrzucony — sprawdź Ustawienia › Połączenia." : "brak połączenia, dane mogą być nieaktualne."}</p>
+        <p className="error">Problem z intervals.icu: {t.sync.status === "auth_error" ? "klucz API odrzucony — sprawdź Ustawienia › intervals.icu." : "brak połączenia, dane mogą być nieaktualne."}</p>
       )}
     </>
   );
 }
 
-function CheckInCard({ initial, defaultMode, busy, onSubmit }: { initial: any; defaultMode: "indoor" | "outdoor"; busy: boolean; onSubmit: (b: any) => void }) {
-  const [sleep, setSleep] = useState<number | null>(initial?.sleepQuality ?? null);
-  const [legs, setLegs] = useState<number | null>(initial?.legs ?? null);
-  const [mot, setMot] = useState<number | null>(initial?.motivation ?? null);
-  const [sick, setSick] = useState<boolean>(initial?.sick ?? false);
-  const [pain, setPain] = useState<boolean>(initial?.pain ?? false);
-  const [painNote, setPainNote] = useState<string>(initial?.painNote ?? "");
+/** One tap: pick where you ride, optionally what hurts, then how you feel (D-044). */
+function CheckInCard({ initial, defaultMode, busy, editing, onSubmit, onSkip }: {
+  initial: any; defaultMode: "indoor" | "outdoor"; busy: boolean; editing: boolean;
+  onSubmit: (b: any) => void; onSkip: () => void;
+}) {
   const [mode, setMode] = useState<"indoor" | "outdoor">(initial?.rideMode ?? defaultMode);
-  const ready = sleep && legs && mot;
+  const [painOpen, setPainOpen] = useState(false);
+  const [part, setPart] = useState<string | null>(null);
   return (
-    <Card title="Poranny check-in">
+    <Card title="Jak się dziś czujesz?">
       <div className="stack">
-        <div><div className="small muted">Jak się spało?</div><Seg label="Sen" value={sleep} options={FACES} onChange={setSleep} /></div>
-        <div><div className="small muted">Nogi</div><Seg label="Nogi" value={legs} options={FACES} onChange={setLegs} /></div>
-        <div><div className="small muted">Motywacja</div><Seg label="Motywacja" value={mot} options={FACES} onChange={setMot} /></div>
-        <div className="row">
-          <label className="check"><input type="checkbox" checked={sick} onChange={(e) => setSick(e.target.checked)} /> Choroba</label>
-          <label className="check"><input type="checkbox" checked={pain} onChange={(e) => setPain(e.target.checked)} /> Coś boli</label>
+        <Seg text label="Gdzie dziś jedziesz" value={mode} options={MODES} onChange={setMode} />
+        <div className="feelings" role="group" aria-label="Samopoczucie">
+          {(Object.keys(FEELINGS) as Feeling[]).map((k) => (
+            <button key={k} className={`feeling${initial?.feeling === k ? " on" : ""}${k === "exhausted" || k === "sick" ? " stop" : ""}`} disabled={busy}
+              onClick={() => onSubmit({ feeling: k, rideMode: mode, painPart: part })}>
+              <span className="e" aria-hidden="true">{EMOJI[k]}</span>{FEELINGS[k].label}
+            </button>
+          ))}
         </div>
-        {pain && (
-          <label className="field"><span>Co boli?</span>
-            <input value={painNote} onChange={(e) => setPainNote(e.target.value)} placeholder="np. lewe kolano" maxLength={200} />
-          </label>
+        {!painOpen ? (
+          <div className="spread">
+            <button className="linkbtn" onClick={() => setPainOpen(true)}>Coś boli?</button>
+            {!editing && <button className="linkbtn" disabled={busy} onClick={onSkip}>Pomiń</button>}
+          </div>
+        ) : (
+          <div>
+            <div className="small muted" style={{ marginBottom: 6 }}>Co boli? Potem wybierz samopoczucie.</div>
+            <div className="chips">
+              {PAIN_PARTS.map((p) => (
+                <button key={p} className={`btn small${part === p ? " on" : ""}`} aria-pressed={part === p} onClick={() => setPart(part === p ? null : p)}>{p}</button>
+              ))}
+            </div>
+          </div>
         )}
-        <div><div className="small muted">Gdzie dziś jedziesz?</div><Seg text label="Gdzie dziś jedziesz" value={mode} options={MODES} onChange={setMode} /></div>
-        <button className="btn primary block" disabled={!ready || busy}
-          onClick={() => onSubmit({ sleepQuality: sleep, legs, motivation: mot, sick, pain, painNote: pain ? painNote : undefined, rideMode: mode })}>
-          {busy ? "Trener myśli…" : "Gotowe"}
-        </button>
       </div>
     </Card>
   );
 }
 
-function WorkoutCard({ w, busy, run, setT, goChat }: { w: any; busy: boolean; run: any; setT: (t: any) => void; goChat: () => void }) {
+const SHORTEN = [30, 45, 60, 75, 90];
+
+function WorkoutCard({ w, busy, run, setT, goCoach }: { w: any; busy: boolean; run: any; setT: (t: any) => void; goCoach: () => void }) {
   const [minutesOpen, setMinutesOpen] = useState(false);
   const [swapOpen, setSwapOpen] = useState(false);
-  const [minutes, setMinutes] = useState(Math.max(15, Math.round(w.minutes * 0.75 / 5) * 5));
   const [alts, setAlts] = useState<any[] | null>(null);
   const outdoor = w.rideMode === "outdoor";
-  const delivery = w.deliveryStatus === "written" ? (outdoor ? "BOLT / Fenix ✔" : "MyWhoosh ✔") : w.deliveryStatus === "failed" ? "nie wysłano ✖" : "wysyłam…";
+  const delivery = w.deliveryStatus === "written" ? (outdoor ? "licznik / zegarek ✔" : "MyWhoosh ✔") : w.deliveryStatus === "failed" ? "nie wysłano ✖" : "wysyłam…";
   const done = w.status === "completed" || w.status === "partial";
+  const options = SHORTEN.filter((m) => m < w.minutes);
   return (
     <Card title="Trening">
       <div className="spread">
@@ -171,18 +176,23 @@ function WorkoutCard({ w, busy, run, setT, goChat }: { w: any; busy: boolean; ru
       <p className="small muted">{w.purpose}</p>
       {!done && (
         <div className="row">
-          <button className="btn small" disabled={busy} onClick={() => setMinutesOpen(true)}>Mam tylko … min</button>
+          {options.length > 0 && <button className="btn small" disabled={busy} onClick={() => setMinutesOpen(true)}>Mam mniej czasu</button>}
           <button className="btn small" disabled={busy} onClick={async () => { setSwapOpen(true); setAlts(await api.get(`/api/planned/${w.id}/alternatives`)); }}>Zamień</button>
-          <button className="btn small" disabled={busy} onClick={() => run(async () => { await api.post(`/api/planned/${w.id}/skip`); setT(await api.get("/api/today")); }, "Pominięto trening.")}>Pomiń</button>
-          <button className="btn small ghost" onClick={goChat}>Czat</button>
-          {!outdoor && <a className="btn small ghost" href={`/api/planned/${w.id}/zwo`} download>.zwo</a>}
+          <button className="btn small" disabled={busy} onClick={goCoach}>Więcej…</button>
+          {!outdoor && (
+            <button className="btn small ghost" onClick={() => run(async () => { const f = await api.get(`/api/planned/${w.id}/zwo`); await saveFile(f.filename, f.content, f.type); })}>.zwo</button>
+          )}
         </div>
       )}
       <Sheet open={minutesOpen} onClose={() => setMinutesOpen(false)} title="Ile masz czasu?">
-        <label className="field"><span>Minuty</span>
-          <input type="number" inputMode="numeric" min={15} max={w.minutes} step={5} value={minutes} onChange={(e) => setMinutes(Number(e.target.value))} />
-        </label>
-        <button className="btn primary block" disabled={busy} onClick={() => run(async () => { setT(await api.post("/api/today/minutes", { minutes })); setMinutesOpen(false); }, "Skrócono trening.")}>Skróć trening</button>
+        <div className="chips">
+          {options.map((m) => (
+            <button key={m} className="btn" disabled={busy}
+              onClick={() => run(async () => { await api.post("/api/actions/shorten", { minutes: m }); setT(await api.get("/api/today")); setMinutesOpen(false); }, "Skrócono trening.")}>
+              {m} min
+            </button>
+          ))}
+        </div>
       </Sheet>
       <Sheet open={swapOpen} onClose={() => setSwapOpen(false)} title="Zamień na podobny">
         {!alts ? <p className="muted">Ładuję…</p> : alts.length === 0 ? <p className="muted">Brak zamienników na ten czas.</p> : (
@@ -200,42 +210,39 @@ function WorkoutCard({ w, busy, run, setT, goChat }: { w: any; busy: boolean; ru
   );
 }
 
+const BONUS = [30, 45, 60, 90, 120];
+
 function RestDay({ t, busy, run, setT }: { t: any; busy: boolean; run: any; setT: (t: any) => void }) {
   const [open, setOpen] = useState(false);
-  const [minutes, setMinutes] = useState(60);
   const [mode, setMode] = useState<"indoor" | "outdoor">(t.defaultRideMode);
   return (
-    <Card title={t.skippedToday ? "Trening pominięty" : "Dzień wolny"}>
+    <Card title={t.skippedToday ? "Dziś odpoczynek" : "Dzień wolny"}>
       <p className="small">{t.skippedToday ? "Odpoczywasz — jutro wracamy do planu." : "Regeneracja to też trening. Masz jednak czas?"}</p>
       {!t.skippedToday && <button className="btn block" onClick={() => setOpen(true)}>Mam dziś czas</button>}
       <Sheet open={open} onClose={() => setOpen(false)} title="Dodatkowa jazda">
         <p className="small muted">Spokojny trening, który nie zaszkodzi kolejnemu kluczowemu.</p>
-        <label className="field"><span>Ile minut?</span>
-          <input type="number" inputMode="numeric" min={20} max={300} step={5} value={minutes} onChange={(e) => setMinutes(Number(e.target.value))} />
-        </label>
         <Seg text label="Gdzie" value={mode} options={MODES} onChange={setMode} />
-        <button className="btn primary block" style={{ marginTop: 12 }} disabled={busy}
-          onClick={() => run(async () => { setT(await api.post("/api/bonus", { minutes, rideMode: mode })); setOpen(false); }, "Dodano jazdę.")}>Dodaj</button>
+        <div className="chips" style={{ marginTop: 12 }}>
+          {BONUS.map((m) => (
+            <button key={m} className="btn" disabled={busy}
+              onClick={() => run(async () => { setT(await api.post("/api/bonus", { minutes: m, rideMode: mode })); setOpen(false); }, "Dodano jazdę.")}>
+              {fmtMinutes(m)}
+            </button>
+          ))}
+        </div>
       </Sheet>
     </Card>
   );
 }
 
 function RideRating({ ride, onDone }: { ride: any; onDone: (t: any) => void }) {
-  const [rpe, setRpe] = useState<number | null>(null);
   const { busy, run } = useAction();
   return (
     <Card title={`Jak było? · ${fmtDate(ride.date)}`}>
       <p className="small" style={{ marginTop: 0 }}>{ride.name} · {fmtMinutes(ride.minutes)}{ride.compliance != null ? ` · wykonanie ${Math.round(ride.compliance)}%` : ""}</p>
-      <div className="small muted">Wysiłek (RPE 1–10)</div>
-      <div className="seg" role="radiogroup" aria-label="RPE" style={{ flexWrap: "wrap" }}>
-        {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-          <button key={n} role="radio" aria-checked={rpe === n} className={rpe === n ? "on" : ""} style={{ flex: "1 0 16%", fontSize: 15 }} onClick={() => setRpe(n)}>{n}</button>
-        ))}
-      </div>
-      <div className="seg text" style={{ marginTop: 8 }}>
-        {FEEL.map((f) => (
-          <button key={f.value} disabled={!rpe || busy} onClick={() => run(async () => onDone(await api.post(`/api/rides/${ride.id}/rating`, { rpe, feel: f.value })), "Dzięki!")}>{f.label}</button>
+      <div className="seg text">
+        {RIDE_FEEL.map((f) => (
+          <button key={f.value} disabled={busy} onClick={() => run(async () => onDone(await api.post(`/api/rides/${ride.id}/rating`, { feel: f.value })), "Dzięki!")}>{f.label}</button>
         ))}
       </div>
     </Card>
@@ -248,7 +255,7 @@ function FtpCard({ s, run, reload }: { s: any; run: any; reload: () => void }) {
   return (
     <Card title="FTP">
       <p className="small" style={{ marginTop: 0 }}>
-        {manual ? "Test zrobiony — wpisz FTP z MyWhoosh." : `Twoje FTP wygląda na ${s.suggested_ftp} W (${s.suggested_ftp > s.current_ftp ? "+" : ""}${s.suggested_ftp - s.current_ftp} W).`}
+        {manual ? "Test zrobiony — podaj FTP z MyWhoosh." : `Twoje FTP wygląda na ${s.suggested_ftp} W (${s.suggested_ftp > s.current_ftp ? "+" : ""}${s.suggested_ftp - s.current_ftp} W).`}
       </p>
       {manual && <label className="field"><span>FTP (W)</span><input type="number" inputMode="numeric" value={ftp} onChange={(e) => setFtp(Number(e.target.value))} /></label>}
       <div className="row">
@@ -262,7 +269,7 @@ function FtpCard({ s, run, reload }: { s: any; run: any; reload: () => void }) {
 function LongRideCard({ p, run, reload }: { p: any; run: any; reload: () => void }) {
   return (
     <Card title="Dzień długiej jazdy">
-      <p className="small" style={{ marginTop: 0 }}>Propozycja: {fmtDate(p.proposed_date)} — {fmtMinutes(p.minutes)} spokojnie w Z2. Krok w stronę 200 km.</p>
+      <p className="small" style={{ marginTop: 0 }}>Propozycja: {fmtDate(p.proposed_date)} — {fmtMinutes(p.minutes)} spokojnie w Z2. Krok w stronę długich tras.</p>
       <div className="row">
         <button className="btn primary" onClick={() => run(async () => { await api.post(`/api/long-ride/${p.id}`, { confirm: true }); reload(); }, "Zaplanowano długą jazdę.")}>Potwierdzam</button>
         <button className="btn" onClick={() => run(async () => { await api.post(`/api/long-ride/${p.id}`, { confirm: false }); reload(); })}>Nie tym razem</button>

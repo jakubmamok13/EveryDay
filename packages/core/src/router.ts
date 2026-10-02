@@ -260,6 +260,19 @@ export function createRouter(app: App): Router {
     return { ok: true };
   });
 
+  on("POST", "/api/planned/:id/restore", async ({ params }) => {
+    const id = athlete();
+    const row = app.db.get<PlannedRow>("SELECT * FROM planned_workout WHERE id = ? AND athlete_id = ? AND status = 'skipped'", Number(params.id), id);
+    if (!row || row.date < today()) bad("Tego treningu nie da się przywrócić.", 404);
+    const a = app.db.get<{ id: number }>(
+      "SELECT id FROM adaptation WHERE athlete_id = ? AND planned_workout_id = ? AND action = 'rest' AND undone_at IS NULL ORDER BY id DESC LIMIT 1", id, row.id,
+    );
+    if (!a || !undo(app, id, a.id)) bad("Tego treningu nie da się przywrócić.", 404);
+    if (row.date === today()) await refreshBrief(app, id, today());
+    await calendarSoon(id);
+    return { ok: true };
+  });
+
   on("GET", "/api/planned/:id/alternatives", ({ params }) =>
     alternatives(ownedRow(Number(params.id))).map((w) => ({ slug: w.slug, name: w.name, minutes: w.minutes, load: w.load })));
 

@@ -90,8 +90,11 @@ export function rateCheckIn(c: CheckIn | null | undefined): ReadinessInput {
   if (!c) return { key: "check_in", rating: "missing" };
   const low = (["legs", "sleepQuality", "motivation"] as const).filter((k) => c[k] <= 2);
   // Our rule (D-041): legs = 1, or two or more low answers, is a strong signal.
-  if (c.legs <= 1 || low.length >= 2) return { key: "check_in", rating: "bad", detail: low.join(",") || "legs" };
-  return { key: "check_in", rating: low.length ? "caution" : "ok", ...(low.length ? { detail: low.join(",") } : {}) };
+  // One-tap check-in (D-044): the button pressed explains the rating best.
+  const feeling = c.feeling ? `feeling:${c.feeling}` : null;
+  if (c.legs <= 1 || low.length >= 2) return { key: "check_in", rating: "bad", detail: feeling ?? (low.join(",") || "legs") };
+  const detail = feeling ?? (low.length ? low.join(",") : null);
+  return { key: "check_in", rating: low.length ? "caution" : "ok", ...(detail ? { detail } : {}) };
 }
 
 function noteActive(notes: ChatNote[] | undefined, kind: ChatNote["kind"], date: ISODate): boolean {

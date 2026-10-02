@@ -58,7 +58,7 @@ describe("demo athlete: full morning loop with buttons", () => {
     const t = await call("POST", "/api/checkin", { feeling: "good", rideMode: "outdoor" });
     expect(t.workout.rideMode).toBe("outdoor");
     expect(t.workout.steps.find((s: any) => s.zone === 4).outdoor).toMatch(/Z4 HR \d+–\d+ ud\/min/);
-    expect(t.brief.lines[0].text).toContain("Na zewnątrz (BOLT / Fenix)");
+    expect(t.brief.lines[0].text).toContain("Na zewnątrz (licznik / zegarek)");
   });
 
   it("'Totalne wyczerpanie' and 'Choroba' mean rest; Undo brings the workout back", async () => {
@@ -90,6 +90,11 @@ describe("demo athlete: full morning loop with buttons", () => {
     const week = await call("GET", "/api/week");
     const thu = week.days.find((d: any) => d.date === "2026-10-08");
     expect(thu.workouts.every((w: any) => w.status !== "planned")).toBe(true);
+    const skipped = thu.workouts.find((w: any) => w.status === "skipped");
+    expect(skipped).toBeTruthy();
+    await call("POST", `/api/planned/${skipped.id}/restore`);
+    const thu2 = (await call("GET", "/api/week")).days.find((d: any) => d.date === "2026-10-08");
+    expect(thu2.workouts.some((w: any) => w.status === "planned")).toBe(true);
     const ri = await call("GET", "/api/actions");
     expect(ri.notes.some((n: any) => n.kind === "travel" && n.start_date === "2026-10-08")).toBe(true);
   });

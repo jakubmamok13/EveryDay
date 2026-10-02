@@ -216,14 +216,31 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(76px + env(safe-area-inset-bottom)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 12px; z-index: 30; max-width: 90vw; font-size: 14px; }
 .error { color: var(--bad-text); font-size: 14px; }
 
-.chat { display: flex; flex-direction: column; gap: 8px; }
-.bubble { max-width: 85%; padding: 10px 14px; border-radius: 16px; white-space: pre-wrap; }
-.bubble.user { align-self: flex-end; background: var(--accent); color: var(--accent-ink); border-bottom-right-radius: 4px; }
-.bubble.coach { align-self: flex-start; background: var(--surface); border: 1px solid var(--ring); border-bottom-left-radius: 4px; }
-.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
 .chips button { white-space: nowrap; }
-.composer { position: sticky; bottom: calc(68px + env(safe-area-inset-bottom)); display: flex; gap: 8px; background: var(--bg); padding: 8px 0; }
-.composer input { flex: 1; min-height: 48px; border-radius: 12px; border: 1px solid var(--axis); padding: 0 12px; background: var(--surface); }
+.chips button.on { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+
+/* one-tap check-in (D-044) */
+.feelings { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.feeling {
+  display: flex; align-items: center; gap: 10px;
+  min-height: 56px; padding: 10px 12px;
+  border-radius: 14px; border: 1px solid var(--ring);
+  background: var(--surface-2); color: var(--ink);
+  font: inherit; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer;
+}
+.feeling .e { font-size: 24px; line-height: 1; }
+.feeling.on { outline: 2px solid var(--accent); outline-offset: -2px; }
+.feeling.stop { color: var(--bad-text); }
+.feeling:disabled { opacity: 0.5; }
+.note { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); }
+.note:first-of-type { border-top: 0; }
+.md h1 { font-size: 20px; margin: 0 0 8px; }
+.md h2 { font-size: 16px; color: var(--ink); margin: 16px 0 6px; }
+.md p, .md li { font-size: 15px; line-height: 1.5; }
+.md ul { padding-left: 20px; }
+.steps-guide { padding-left: 20px; margin: 8px 0; }
+.steps-guide li { padding: 3px 0; font-size: 15px; }
 
 .week-day { display: grid; grid-template-columns: 64px 1fr; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
 .week-day:first-of-type { border-top: 0; }

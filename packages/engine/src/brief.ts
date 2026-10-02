@@ -55,7 +55,7 @@ export interface BriefInput {
   gutLevel?: number;
 }
 
-const MODE_LABEL: Record<RideMode, string> = { indoor: "W domu (MyWhoosh)", outdoor: "Na zewnątrz (BOLT / Fenix)" };
+const MODE_LABEL: Record<RideMode, string> = { indoor: "W domu (MyWhoosh)", outdoor: "Na zewnątrz (licznik / zegarek)" };
 
 const cap = (s: string) => (s ? s[0]!.toUpperCase() + s.slice(1) : s);
 

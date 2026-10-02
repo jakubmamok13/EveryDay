@@ -58,6 +58,8 @@ export interface ActionResult {
   noteId?: number;
 }
 
+const shortDate = (d: ISODate) => `${Number(d.slice(8, 10))}.${d.slice(5, 7)}`;
+
 function overridesFor(app: App, athleteId: number, date: ISODate) {
   const json = dailyState(app, athleteId, date)?.readiness_json;
   return json ? JSON.parse(json).overrides ?? [] : [];
@@ -69,7 +71,7 @@ export function applyAction(app: App, athleteId: number, a: Action, origin: "man
       "INSERT INTO chat_note (athlete_id, kind, text, start_date, end_date, created_at) VALUES (?,?,?,?,?,?)",
       athleteId, a.noteKind, a.noteText, a.startDate ?? app.today(), a.endDate, nowIso(),
     ).id;
-    return { ok: true, text: `Zapamiętałem: „${a.noteText}” (do ${a.endDate}).`, noteId: id };
+    return { ok: true, text: `Zapamiętałem: „${a.noteText}” (do ${shortDate(a.endDate)}).`, noteId: id };
   }
   const row = plannedActiveOn(app, athleteId, a.date);
   if (!row || row.status !== "planned") return { ok: false, text: `Nie mogę: ${ENVELOPE_REASON.no_planned_workout}.` };

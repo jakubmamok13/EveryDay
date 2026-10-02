@@ -60,7 +60,7 @@ export function Progress() {
         <p className="small muted">Ujemna po ciężkim tygodniu to normalne. Poniżej −30% Kondycji trener zwalnia.</p>
       </Card>
 
-      <Card title="Droga do 200 km">
+      <Card title={lr.targetKm ? `Droga do ${lr.targetKm} km` : "Długie jazdy"}>
         <div className="small">Najdłuższa jazda: <strong>{fmtMinutes(lr.longestMinutes)}</strong>{lr.longestKm ? ` · ${lr.longestKm} km` : ""}</div>
         <div className="small muted">Cel: {fmtMinutes(target)}{lr.targetKm ? ` · ${lr.targetKm} km` : ""}</div>
         <div className="meter" role="meter" aria-valuemin={0} aria-valuemax={target} aria-valuenow={lr.longestMinutes} aria-label="Postęp długiej jazdy">

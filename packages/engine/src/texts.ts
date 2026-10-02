@@ -62,8 +62,9 @@ function inputText(r: Readiness, key: string): string | null {
     case "form":
       return i.rating === "ok" ? "zmęczenie pod kontrolą" : `duże zmęczenie treningowe (Forma ${i.value}%)`;
     case "check_in": {
-      if (i.rating === "ok") return "nogi świeże";
       const d = i.detail ?? "";
+      if (d.startsWith("feeling:")) return FEELING_TEXT[d.slice(8)] ?? "samopoczucie";
+      if (i.rating === "ok") return "nogi świeże";
       const parts = [
         d.includes("legs") ? "ciężkie nogi" : null,
         d.includes("sleepQuality") ? "słaby sen" : null,
@@ -74,6 +75,15 @@ function inputText(r: Readiness, key: string): string | null {
   }
   return null;
 }
+
+const FEELING_TEXT: Record<string, string> = {
+  great: "pełnia sił",
+  good: "dobre samopoczucie",
+  ok: "średnie samopoczucie",
+  worse: "gorsze samopoczucie",
+  exhausted: "totalne wyczerpanie",
+  sick: "choroba",
+};
 
 /** One short reason for the Readiness line. */
 export function readinessReason(r: Readiness, withCheckIn: boolean): string {
