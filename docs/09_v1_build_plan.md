@@ -105,7 +105,7 @@ Zwift · own trainer control · Strava · multi-device sync · English UI.
 | Trener buttons | ✔ shorten / easier / rest / tomorrow / pain / travel / why / notes | ✔ tests, screenshots | — |
 | Progress, FTP, long rides | ✔ charts, eFTP + ramp test, Long Ride Days, fueling | ✔ tests | eFTP / best-minute fields (S26) |
 | Data | ✔ export / import JSON, delete everything, demo mode | ✔ round-trip test | — |
-| Hosting | ✔ GitHub Actions → Pages | build passes locally | Pages enabled (Settings → Pages → Source: GitHub Actions) |
+| Hosting | ✔ GitHub Actions → `gh-pages` branch → Pages | CI: typecheck, tests, build pass | site live (if not: Settings → Pages → Deploy from branch `gh-pages`) |
 
 Known gaps (not blocking first use):
 - FTP accepted in the app must also be changed in intervals.icu / MyWhoosh by hand (the app reminds you).

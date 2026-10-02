@@ -102,6 +102,7 @@ Structure:
 - `library/workouts`: 40 workouts.
 - `knowledge/method-notes`: Polish coaching notes, bundled into the app.
 
-Every push to `master` runs the typecheck and the tests, then deploys to
-GitHub Pages (`.github/workflows/pages.yml`). One-time setup: repository
-**Settings → Pages → Source: GitHub Actions**.
+Every push to `master` runs the typecheck and the tests, builds the app and
+publishes it to the `gh-pages` branch (`.github/workflows/pages.yml`). If the
+site does not appear, set **Settings → Pages → Source: Deploy from a branch →
+`gh-pages` / (root)** once.

@@ -55,7 +55,7 @@ change passes the Safe Envelope.
 | intervals.icu | `fetch` with `Authorization: Basic base64("API_KEY:<key>")` | CORS is allowed for `/api/v1/`; key stored only in the phone's database |
 | Knowledge Base | Method Notes bundled at build time (`import.meta.glob`, raw Markdown) | Keyword search; tiny safe Markdown renderer |
 | Offline | Service worker: network-first page, cache-first hashed assets | The data is local, so the whole app works offline except sync |
-| Hosting | **GitHub Pages**, built and deployed by GitHub Actions (`.github/workflows/pages.yml`) | Typecheck + tests must pass before deploy |
+| Hosting | **GitHub Pages** from the `gh-pages` branch, built and pushed by GitHub Actions (`.github/workflows/pages.yml`) | Typecheck + tests must pass before deploy |
 | Tests | Vitest: engine (pure) + core (sql.js in Node, full morning loop via the router) | Playwright screenshots for UI checks |
 
 ## 4. Repository layout
