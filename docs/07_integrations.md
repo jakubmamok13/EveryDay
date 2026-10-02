@@ -1,6 +1,6 @@
 # 07 — Integrations
 
-Status: **SPEC v1** — intervals.icu hub (D-004); field names to confirm in spike S05
+Status: **SPEC v1.1** — intervals.icu hub (D-004), called directly from the phone (D-043); field names to confirm in spike S05 / S26
 
 The user wants automatic import from Strava, Garmin, MyWhoosh, Zwift, etc.
 Research on 2026-10-01 found that **most of these are closed or restricted
@@ -52,24 +52,28 @@ for a new, small, free app**. This shapes the whole product, so it comes first.
                                         │   Training Readiness)
  MyWhoosh (indoor) ─────────────────────┼──► intervals.icu ──API (read)──► EveryDay
                                         │
- Wahoo ELEMNT BOLT v2 ─► Wahoo cloud ───┤  (outdoor rides — Master Copy, D-029)
+ Wahoo bike computer ─► Wahoo cloud ────┤  (outdoor rides — Master Copy, D-029)
                                         │
  OUT (planned workouts)                 │
- EveryDay ──API (write calendar)──► intervals.icu ─┬─► Garmin Connect ─► Fenix 8 (outdoor, HR)
-                                                   ├─► Wahoo ─► ELEMNT BOLT v2 (outdoor, HR)  [S21]
-                                                   └─► MyWhoosh ─► KICKR CORE (indoor, ERG power)
+ EveryDay (phone) ──API (write calendar)──► intervals.icu ─┬─► Garmin Connect ─► watch (outdoor, HR)
+                                                           ├─► Wahoo ─► bike computer (outdoor, HR)  [S21]
+                                                           └─► MyWhoosh ─► smart trainer (indoor, ERG power)
 ```
 
 Zwift is out of scope (D-009).
 
 **Duplicate rule (S19, D-024):** each ride must count **once**. Indoors both
-MyWhoosh and the Fenix record, so filter Garmin "VirtualRide" in
+MyWhoosh and the watch record, so filter Garmin "VirtualRide" in
 intervals.icu and keep the MyWhoosh copy (it has power). Outdoors both the
-BOLT v2 and the Fenix record: the **BOLT copy is master**, with Fenix as
-fallback (D-029). The app has its own duplicate guard as a safety net.
+bike computer and the watch record: the **bike computer copy is master**,
+with the watch as fallback (D-029). The app has its own duplicate guard as a safety net.
 
 **Indoor vs outdoor variant (D-020):** the variant chosen in the Morning
 Check-in is the one written to the calendar for that day.
+
+**From the phone (D-043):** the PWA calls the API with `fetch`; intervals.icu
+allows cross-origin requests on `/api/v1/` (confirm from the installed app:
+S27). The key is kept only in the phone's database.
 
 Rule: never rely on the **Strava → intervals.icu** path; those activities are
 stubs in the API.
@@ -82,24 +86,24 @@ from the intervals.icu settings.
 | Need | Expected endpoint | Notes |
 |---|---|---|
 | Rides | `GET /api/v1/athlete/{id}/activities?oldest=&newest=` | Includes source/device, load, power, HR fields |
-| Ride file | activity FIT download endpoint | Stored in `data/fit/` (R8-22) |
 | Wellness | `GET /api/v1/athlete/{id}/wellness?oldest=&newest=` | HRV, resting HR, sleep, custom `BodyBatteryMin/Max`, readiness |
 | Write workout | `POST /api/v1/athlete/{id}/events` (category WORKOUT) | Returns event id → `planned_workout.icu_event_id` |
 | Replace workout | `PUT` / `DELETE` on that event | Ride Mode switch, adaptations, undo |
 | eFTP | athlete / activity fields | Used for FTP suggestions (M12) |
 
-Polling only (15 min by day, nightly full sync); webhooks optional later.
+Polling only, when the app is opened (catch-up: 14 days on the first open of
+the day, 3 days on later opens ≥ 15 min apart). No webhooks (no server).
 The exact paths and field names are written here after spike S05.
 
 ## Open questions
 
 - ~~Q-INT-01~~ → D-004.
-- ~~Q-INT-02~~ Fenix 8 + HR strap; Wahoo KICKR CORE + MyWhoosh indoors (01 §4).
+- ~~Q-INT-02~~ Garmin watch + HR strap; smart trainer + MyWhoosh indoors (01 §4).
 - ~~Q-INT-03~~ → R8-13: our own Readiness; Garmin's shown next to it and used as one input.
 - ~~Q-INT-04~~ → Two-way, via the intervals.icu calendar (D-009).
 - ~~Q-INT-05~~ Moot for a personal tool (D-002).
-- ~~Q-INT-06~~ → R8-14: yes, manual FIT upload as fallback.
+- ~~Q-INT-06~~ → R8-14, changed by D-043: FIT upload is done in intervals.icu itself.
 - ~~Q-INT-07~~ No account yet → Phase 0 setup (D-032).
 - ~~Q-INT-08~~ → D-023 (HR now, power meter later).
 - ~~Q-INT-09~~ → D-024 (both record indoors → keep MyWhoosh copy).
-- ~~Q-INT-10~~ → D-029: both record and show; BOLT v2 = Master Copy.
+- ~~Q-INT-10~~ → D-029: both record and show; the bike computer = Master Copy.

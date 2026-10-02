@@ -1,130 +1,120 @@
 # 03 — Technical Architecture
 
-Status: **SPEC v1** — based on D-002, D-004, D-011, D-012, D-017, D-018,
-D-026, D-030, D-035. Items marked **[spike]** must be confirmed in Phase 0.
+Status: **SPEC v1.1** — phone only (D-043), no AI (D-044). Earlier PC shape
+(D-012, D-017, D-030, D-039) is superseded and kept only in the decision log.
 
 ## 1. Shape
 
-One user, one Windows PC that is on 24/7, no cloud server, €0 hosting (D-012).
+One athlete, one phone, no server of ours, €0 hosting.
 
 ```
-                    Author's PC (Windows, 24/7)
+ GitHub Pages (static files only: HTML, JS, CSS, sql.js WebAssembly, icons)
+        │  first visit / updates
+        ▼
+ Phone — EveryDay PWA (Home Screen app, iOS + Android)
  ┌──────────────────────────────────────────────────────────────────┐
- │  EveryDay server (Node.js, Windows service)                       │
- │   ├─ HTTP API + PWA files (HTTPS, Tailscale certificate)          │
- │   ├─ Sync ── intervals.icu API (read rides/wellness, write plan)  │
- │   ├─ Plan Engine (pure TypeScript, no I/O)                        │
- │   ├─ Coach ── Ollama (localhost:11434) ── Qwen 3.8 on RX 7800 XT  │
- │   │           └─ Knowledge Base (SQLite + vector index)           │
- │   ├─ Push ── Web Push (VAPID) ─────────────────────────────┐      │
- │   └─ Scheduler (night job, notifications, 15-min sync)     │      │
- │  data/  everyday.db · fit/ · backups/ · logs/              │      │
- └───────┬────────────────────────────────────────────────────┼──────┘
-         │ Tailscale tunnel (private, HTTPS)                  │ outbound
-   Phone (PWA, iOS + Android) / PC browser        Apple / Google push service
-                                                        └─► notification on phone
- intervals.icu (cloud) ─► MyWhoosh (KICKR CORE) · Wahoo (BOLT v2) · Garmin (Fenix 8)
+ │  React UI (Polish)                                                │
+ │   └─ in-process router  (handle("POST", "/api/checkin", …))       │
+ │       ├─ Plan Engine (pure TypeScript)                            │
+ │       ├─ Sync ── fetch ──► intervals.icu API (CORS, Basic auth)   │
+ │       ├─ Daily: readiness, adaptation, brief templates            │
+ │       └─ Catch-up jobs on open / return to the screen             │
+ │  SQLite (sql.js, WebAssembly) in memory                           │
+ │   └─ saved to IndexedDB after every change                        │
+ │  Service worker: offline app shell                                │
+ └──────────────────────────────────────────────────────────────────┘
+        │ calendar writes                      ▲ rides, wellness
+        ▼                                      │
+ intervals.icu (cloud) ─► MyWhoosh · Wahoo · Garmin   (delivered without the app open)
+
+ iPhone Shortcuts automation ─► "Czas na poranny check-in" notification (D-045)
 ```
 
-If the PC is down, devices still have the workouts already in the
-intervals.icu calendar. Only the brief, notifications and adaptation stop.
+If the phone is off or the app is not opened, devices still have the
+workouts already in the intervals.icu calendar (7 days ahead). Adaptation
+happens when the Athlete opens the app.
 
-## 2. Brain and voice (D-011)
+## 2. Brain (D-011, D-044)
 
 | Layer | Job | Nature |
 |---|---|---|
-| **Plan Engine** | Plan generation, Load / Fitness / Fatigue / Form, Readiness, Adaptation, Safe Envelope validation, brief facts | Pure functions, deterministic, unit-tested; Coggan & Allen rules (D-010) |
-| **Coach AI** | Writes the brief's text slots, Coach Chat, proposes changes | Uncensored Qwen 3.8 27B via Ollama (D-026); never the source of numbers |
+| **Plan Engine** (`packages/engine`) | Plan generation, Load / Fitness / Fatigue / Form, Readiness, Adaptation, Safe Envelope, brief facts and Polish templates | Pure functions, deterministic, unit-tested; Coggan & Allen rules (D-010) |
+| **Core** (`packages/core`) | Database, sync, morning flow, actions, catch-up jobs, router | Runs in the browser; tested in Node with sql.js |
 
-The Coach AI never writes to the database or the calendar directly. It
-returns **structured JSON**; the engine validates it and applies it.
+There is no language model. Every text comes from fixed templates; every
+change passes the Safe Envelope.
 
-## 3. Stack (D-035)
+## 3. Stack
 
 | Part | Choice | Notes |
 |---|---|---|
-| Language | **TypeScript** everywhere | Claude builds and maintains it |
-| Runtime | **Node.js LTS** | Installed on Windows |
-| Server framework | Fastify (or Hono) | Small, typed, fast |
-| Front-end | **React + Vite**, installable **PWA** | Mobile-first (R8-23); service worker for offline Today (R8-21) and push |
-| Database | **SQLite** via built-in `node:sqlite`, one file `data/everyday.db` | SQL migrations in repo (D-039) |
-| Vector search | Embeddings in SQLite + cosine similarity in JS (D-039) | Knowledge Base retrieval |
-| Embeddings | Multilingual embedding model in Ollama (e.g. bge-m3) **[spike]** | Polish + English text |
-| LLM | **Ollama for Windows** (AMD ROCm/HIP); LM Studio (Vulkan) as fallback **[spike S22]** | Qwen 3.8 27B uncensored, ~4-bit |
-| Push | Web Push with VAPID keys | iOS 16.4+ (Home Screen PWA) + Android Chrome |
-| Tunnel + HTTPS | **Tailscale Serve** → `https://<pc>.<tailnet>.ts.net` → app on localhost (D-039) **[spike S20]** | No public port |
-| Windows service | Task Scheduler task "EveryDay" (S4U, at startup, restart on failure) via `scripts/install-windows.ps1` (D-042) **[verify on PC: S24]** | Restarts on crash and after Windows Update |
+| Language | **TypeScript** everywhere | Claude builds and maintains it (D-035) |
+| Front-end | **React 19 + Vite**, installable **PWA** | Mobile-first (R8-23); relative base path so it works under `/EveryDay/` |
+| Database | **SQLite via sql.js** (WebAssembly) | Same SQL schema and migrations as v1; ~650 kB wasm, cached by the service worker |
+| Persistence | **IndexedDB** (`everyday` › `files`: `db`, `db-demo`, `mode`) | `db.export()` 300 ms after a change and at once when the app is hidden; `navigator.storage.persist()` requested |
+| intervals.icu | `fetch` with `Authorization: Basic base64("API_KEY:<key>")` | CORS is allowed for `/api/v1/`; key stored only in the phone's database |
+| Knowledge Base | Method Notes bundled at build time (`import.meta.glob`, raw Markdown) | Keyword search; tiny safe Markdown renderer |
+| Offline | Service worker: network-first page, cache-first hashed assets | The data is local, so the whole app works offline except sync |
+| Hosting | **GitHub Pages**, built and deployed by GitHub Actions (`.github/workflows/pages.yml`) | Typecheck + tests must pass before deploy |
+| Tests | Vitest: engine (pure) + core (sql.js in Node, full morning loop via the router) | Playwright screenshots for UI checks |
 
-## 4. Repository layout (proposal)
+## 4. Repository layout
 
 ```
-/apps/server            HTTP API, scheduler, sync, push, Windows service files
-/apps/web               React PWA (Polish UI)
-/packages/engine        Plan Engine: load, readiness, planner, adapter, validator (pure)
-/packages/coach         Ollama client, prompts, output validator, RAG
-/packages/shared        Types shared by server and web
-/library/workouts       Workout Library (~40 workouts, data files, our content)
-/knowledge/method-notes Method Notes (our Polish text, in git)
+/apps/web               React PWA (Polish UI), runtime (sql.js + IndexedDB), service worker
+/packages/core          Browser "server": db, sync, daily, plan, actions, catch-up, router
+/packages/engine        Plan Engine: load, readiness, planner, rules, brief (pure)
+/packages/shared        Types and date helpers
+/library/workouts       Workout Library (~40 workouts, JSON, our content)
+/knowledge/method-notes Method Notes (our Polish text, bundled into the app)
 /docs                   These planning docs
-/data                   Runtime data — gitignored
-/private                The book and anything private — gitignored
+/private                Anything private (e.g. a book) — gitignored, never bundled
 ```
 
-## 5. Jobs and timing (Europe/Warsaw time, DST-safe)
+## 5. Jobs and timing (catch-up, D-043)
+
+The phone cannot run background jobs, so the former schedule runs when the
+app opens or becomes visible (`catchUp()`, one at a time):
 
 | Job | When | Steps |
 |---|---|---|
-| **Night** | 03:00 daily | Full sync (rides, wellness, FIT) → duplicates guard → Load, Fitness, Fatigue, Form → missed-workout rule → plan maintenance (keep 4 weeks planned) → calendar writes for the next 7 days (default Ride Mode) → FTP / Long Ride proposals → DB backup |
-| **Day sync** | every 15 min, 05:00–23:00 | New rides → match to Planned Workout → compliance → Ride Rating prompt |
-| **Notification** | per-day time (D-034) | Web push |
-| **Check-in** | on submit | Readiness → Adaptation → calendar write (chosen variant) → brief (AI slots, ~10–30 s) |
-| **No check-in** | notification + 2 h | Garmin-only Readiness → brief (R8-16) |
-| **Catch-up** | at server start | If a night job was missed (PC was off), run it now |
+| **Daily** (former night job) | first open of the day (`last_night_job < today`) | Sync 14 days (rides, wellness) → duplicates guard → Load, Fitness, Fatigue, Form → missed-workout rule → block advance → Long Ride proposal → keep 4 weeks planned → calendar writes (yesterday … +7 days) → FTP check |
+| **Day sync** | later opens, ≥ 15 min apart | Sync 3 days → match rides → compliance → Ride Rating prompt; retry pending calendar writes |
+| **Check-in** | on the feeling tap | Readiness → Adaptation → calendar write (chosen variant) → brief (instant, templates) |
+| **Reminder** | iPhone Shortcut at the chosen time | Notification only; the Athlete opens the app |
 
-## 6. Coach AI pipeline
+Dates use the phone's time zone (`Intl…timeZone`), DST-safe.
 
-1. Engine builds **facts JSON** (today's workout, targets in W / HR, Readiness
-   and reasons, adaptation, tomorrow, fueling numbers, active Chat Notes).
-2. Retrieve 2–3 (brief) or up to 5 (chat) Knowledge Base passages.
-3. Prompt (Polish system prompt: friendly buddy, clear, no disclaimers, no
-   numbers that are not in the facts) → Ollama `/api/chat` with a JSON
-   output schema. `num_ctx` is set explicitly; the default truncates input.
-4. **Validator:** JSON shape; slot length (≤ 160 characters each); every
-   number in the text must appear in the facts; language looks Polish;
-   banned-phrase list (hedging, disclaimers). Fail → one retry with a
-   stricter prompt → else template text for that slot.
-5. Chat change requests: the model returns `propose_change` / `save_note`
-   tool calls → the engine validates (Safe Envelope) → applied with Undo, or
-   refused with a reason the model then explains.
+## 6. Data flow of one morning
 
-GPU sharing: Ollama keeps the model loaded for a few minutes after use
-(`keep_alive`) and then frees the GPU, so games and other GPU apps still
-work. The first request after unloading takes longer (model load).
+1. The Shortcut notification → the Athlete opens EveryDay from the Home Screen.
+2. The app loads the database from IndexedDB, shows Today at once, and runs
+   catch-up in the background (sync + daily job); Today refreshes when it ends.
+3. One tap on a feeling → readiness + adaptation + brief → the chosen
+   variant is written to intervals.icu → MyWhoosh / Wahoo / Garmin.
+4. After the ride, the next open syncs it, matches it to the plan and asks
+   „Jak było?” (three buttons).
 
 ## 7. Security and privacy
 
-- Server listens **only on localhost and the Tailscale interface**; no port
-  forwarding, no public URL.
-- HTTPS with the Tailscale certificate (needed for the service worker and push).
-- Password hashed (scrypt, built into Node — D-039); "remember this device" = long-lived HTTP-only
-  session cookie; sessions listed and revocable in Settings.
-- intervals.icu API key stored **encrypted** on disk (Windows DPAPI or a
-  local key file outside the repo) **[spike]**.
-- **No health data in logs** (08).
-- AI runs locally; no data leaves the PC except to intervals.icu (by design)
-  and push payloads (short notification text only, no health data).
+- No server, no account, no analytics. The app's files are public; **the
+  data is not**: it stays in the phone's IndexedDB.
+- The intervals.icu key is stored only on the phone and sent only to
+  `intervals.icu` over HTTPS. Export files never contain it.
+- iPhone: Safari and the Home Screen app have separate storage; Home Screen
+  apps are exempt from Safari's 7-day eviction of script-written storage.
+- Losing the phone or deleting the app loses the data → the Settings screen
+  asks for a periodic **export** (JSON) to Files / iCloud.
+- No personal data in the repository (D-046).
 
-## 8. Platform notes (Windows, D-030)
+## 8. Limits (accepted)
 
-- Disable sleep; set "restart apps after sign-in"; the service starts
-  without user login.
-- Ollama for Windows on the RX 7800 XT: ROCm/HIP support to verify; LM
-  Studio with Vulkan as fallback (S22).
-- Backups: nightly copy of `everyday.db` (SQLite backup API) to
-  `data/backups/` (keep 14 daily + 8 weekly). An optional second location
-  (another disk or a synced cloud folder) can be set in Settings.
+- No multi-device sync (export / import moves the data).
+- Adaptation needs the app to be opened; devices still get the default plan.
+- intervals.icu outage → the app works from local data; sync retries on the
+  next open.
 
 ## Open questions
 
-None blocking. Technical confirmations: S05, S14, S18, S20, S21, S22 and the
-[spike] items above.
+None blocking. Confirm on the phone: S05 (the real account),
+S14 (API writes reach the devices), S26 (field names), S27 (CORS from the installed app).

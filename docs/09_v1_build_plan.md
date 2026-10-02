@@ -1,10 +1,10 @@
 # 09 — v1 Build Plan
 
-Status: **v1 BUILT (2026-10-02)** — see "Build status" at the end. Each phase ends with something **usable** and an exit
-test the author can check on the phone. The AI comes after the rule-based
-daily loop works, so the app is useful even if the AI spike disappoints.
+Status: **v1 BUILT (2026-10-02), then rebuilt phone-only as v1.1** (D-043 –
+D-046) — see "Build status" at the end. Each phase ends with something
+**usable** and an exit test the author can check on the phone.
 
-## Phase 0 — Setup and spikes (before any code)
+## Phase 0 — Setup and spikes
 
 ### 0a. Author's checklist (D-032)
 
@@ -13,153 +13,108 @@ daily loop works, so the app is useful even if the AI spike disappoints.
    "Download wellness data", and add custom wellness fields
    `BodyBatteryMin` / `BodyBatteryMax`.
 3. Link **MyWhoosh** (workout sync + ride upload).
-4. Link **Wahoo** (BOLT v2: workout sync + ride upload).
+4. Link **Wahoo** (bike computer: workout sync + ride upload).
 5. Add a filter so Garmin **VirtualRide** is ignored (D-024).
-6. Set FTP 270 W, weight 86 kg, LTHR / max HR (R8-24).
+6. Set FTP, weight, LTHR / max HR in intervals.icu (R8-24).
 7. Let it import history (Garmin backfill), so Fitness starts with real data.
 8. Generate a personal **API key** (Settings → Developer).
-9. On the PC: install **Ollama for Windows** and pull Qwen 3.8 (uncensored);
-   install **Tailscale** on the PC and the phone.
-10. Look for the Coggan & Allen book (optional; Method Notes come first).
 
 ### 0a progress (2026-10-02)
 
 | Step | Status |
 |---|---|
 | 1. intervals.icu account | ✔ done (API key created) |
-| 2–4. Link Garmin / MyWhoosh / Wahoo | ✔ done (2026-10-02) |
+| 2–4. Link Garmin / MyWhoosh / Wahoo | ✔ done |
 | 5. VirtualRide filter | ? to confirm |
 | 6–7. FTP / weight / history import | ? to confirm |
-| S14 test workout | ✔ Manual test done (2026-10-02): workout created by hand in the intervals.icu calendar arrived on the devices ("it works") |
-| 8. API key | ✔ done. Shared in chat → **regenerate it after Phase 0**; the app stores its own copy encrypted (03 §7). Never committed. |
-| 9. Tailscale | ✔ phone · ✖ PC (no access to the PC right now) |
-| 9. Ollama on the PC | ✖ waiting for PC access |
+| S14 test workout | ✔ Manual test done: a workout added by hand to the intervals.icu calendar arrived on the devices |
+| 8. API key | ✔ done. It was shared in chat → **regenerate it** and paste the new one only into the app on the phone. Never committed. |
 
-The Claude cloud environment blocks `intervals.icu` (checked in this session
-and in a fresh test session). This does not affect the app, which runs on
-the author's PC. The **API parts** of S05 / S14 move to Phase 1 on the PC (D-038).
+The Claude cloud environment blocks `intervals.icu`, so the **API parts** of
+S05 / S14 run on the author's phone (D-038, D-043).
 
-### 0b. Spikes on the real setup (Claude, with the author's help)
+### 0b. Spikes on the real setup (on the phone)
 
 | Spike | Question | Exit |
 |---|---|---|
-| S05 | Wellness + activity fields via the API (HRV, Body Battery, readiness, load, eFTP) | Field map written into 07 |
-| S14 | A workout written via the API arrives in MyWhoosh, on the BOLT v2 and on the Fenix 8 | Seen on all three |
+| S05 / S26 | Wellness + activity fields via the API (HRV, Body Battery, readiness, load, eFTP) | Field map written into 07 |
+| S27 | The installed PWA can call the intervals.icu API (CORS) | Onboarding „Połącz” succeeds on the phone |
+| S14 | A workout written via the API arrives in MyWhoosh, on the bike computer and on the watch | Seen on all three |
 | S18 | Same-morning swap indoor ↔ outdoor arrives in time | Delay measured; fallback chosen if needed |
-| S21 | BOLT v2 shows HR-target steps correctly | Photo of the BOLT screen |
-| S22 + S16 | Ollama on Windows + RX 7800 XT runs the uncensored Qwen 3.8: speed, Polish quality, source check | ≥ 10 tok/s, 10 sample briefs reviewed by the author |
-| S20 | Web push via the Tailscale HTTPS PWA on iPhone **and** Android | Test notification received on both |
-| S23 | HR strap on BOLT + Fenix at the same time | Both recordings have HR |
+| S21 | The bike computer shows HR-target steps correctly | Photo of the screen |
+| S23 | HR strap on bike computer + watch at the same time | Both recordings have HR |
 
 Spike results update the docs (confirmed → architecture; problem → DECISIONS).
 
-## Phase 1 — Foundation
+## Phases 1–6 (v1, PC version — done)
 
-- Repository scaffold (03 §4), TypeScript build, tests.
-- Windows service with auto-start; Tailscale HTTPS; PWA shell (installable).
-- Login + "remember this device" (R8-02).
-- SQLite schema (04) + migrations; nightly backup.
-- intervals.icu sync: activities (+ FIT), wellness; duplicates guard + Master Copy.
-- Load, Fitness, Fatigue, Form.
-- Status page.
+1. **Foundation:** scaffold, SQLite schema + migrations, intervals.icu sync,
+   duplicates guard, Load / Fitness / Fatigue / Form.
+2. **Plan Engine & delivery:** Workout Library (~40), onboarding, rolling
+   4-week blocks, event periodization, calendar writes, Week moves, 12-week simulation.
+3. **Daily loop:** check-in, readiness (Learning Period), adaptation + Undo,
+   template brief, ride matching, progression, missed-workout rule, Bonus Day.
+4. **Coach AI** (later removed by D-044): Ollama client, prompts, validator;
+   **Method Notes** stay as the Knowledge Base.
+5. **Coach Chat** (replaced by Trener buttons, D-044); Chat Notes stay.
+6. **Progress, FTP, long rides, data:** charts, eFTP + ramp test, Long Ride
+   Days, fueling, export.
 
-**Exit:** on the phone, Today shows yesterday's rides, wellness and Form,
-with numbers matching intervals.icu (± rounding).
+## Phase 7 — Phone only, buttons only (v1.1, D-043 – D-046)
 
-## Phase 2 — Plan Engine and delivery
+- Move the server logic into `packages/core` (runs in the browser); sql.js +
+  IndexedDB; in-process router; catch-up jobs on open.
+- Remove the PC parts: Fastify server, login, web push, Windows scripts,
+  Tailscale, Ollama / coach package.
+- One-tap check-in (six feelings + pain body parts); „Totalne wyczerpanie” → rest.
+- Trener tab: quick actions, pain, travel, „Dlaczego ten trening?”, Baza wiedzy, Pamiętam.
+- JSON export / import, delete everything, demo mode in the browser.
+- iPhone Shortcut reminder guide.
+- GitHub Pages workflow (typecheck + tests + build + deploy).
+- Personal data replaced by a sample athlete in docs, code and tests.
 
-- Workout Library v1 (~40 workouts, indoor + outdoor variants).
-- Onboarding (≤ 10 screens) with intervals.icu pre-fill.
-- Plan generation: rolling 4-week blocks, the author's weekly template,
-  event periodization.
-- Calendar writes (default Ride Mode per weekday), delivery status, `.zwo` fallback.
-- Week screen: move / skip / swap with re-flow.
-- Engine unit tests + a **12-week simulation** (checks ramp cap, recovery
-  weeks, no two hard days in a row).
-
-**Exit:** the next 7 days of real workouts are in MyWhoosh, on the BOLT v2
-and on the Fenix 8; a manual move updates the devices.
-
-## Phase 3 — Daily loop (no AI yet)
-
-- Morning Check-in incl. Ride Mode; Ride Rating.
-- Readiness (with Learning Period) + Adaptation rules + Undo.
-- Web push at the per-day time, every day; Today screen states.
-- **Template brief** (all slots from templates).
-- Ride matching, compliance, Progression ±1 step, missed-workout rule.
-- Bonus Day.
-
-**Exit:** 2 weeks of real daily use: a notification every morning, a correct
-brief, and adaptations that make sense to the author.
-
-## Phase 4 — Coach AI
-
-- Ollama client, prompts (Polish), JSON output, validator, template fallback.
-- **Method Notes** (Polish, in git) + Knowledge Base index (embeddings).
-- AI slots in the brief; AI proposals via the Safe Envelope.
-
-**Exit:** 7 consecutive AI briefs pass the validator, and the author rates them clear.
-
-## Phase 5 — Coach Chat
-
-- Chat screen with streaming; quick chips.
-- Change requests → proposals → engine → Undo.
-- Chat Notes (create, end date, list, delete) feeding Readiness and planning.
-
-**Exit:** "mam tylko 45 min", "boli mnie kolano" and "dlaczego ten trening?"
-all work as specified in 02 M10.
-
-## Phase 6 — Progress, FTP, long rides, data
-
-- Progress screen (R8-18).
-- eFTP suggestions + ramp test in the Recovery Week (M12).
-- Long Ride Day proposals + confirmation; fueling lines (M13).
-- Export ZIP, delete account, backup second location.
-
-**Exit:** a full 4-week block runs end to end with a ramp test and an FTP update.
-
-## v1 = Phases 0–6 complete
+**Exit:** the app opens from the Home Screen, onboarding connects
+intervals.icu, and a full morning (check-in → brief → workout on the
+devices) works with no PC.
 
 ## Later (not v1)
 
-Outdoor power meter switch-over polish (when bought) · book indexing (when
-found) · strength sessions · Zwift · own trainer control · Strava ·
-multi-user · English UI.
+Outdoor power meter switch-over polish (when bought) · strength sessions ·
+Zwift · own trainer control · Strava · multi-device sync · English UI.
 
 ## Testing approach
 
-- **Engine:** unit tests for every rule + golden-file tests (fixed input →
-  expected plan) + the 12-week simulation.
-- **Coach:** a fixed set of 20 fact scenarios (green / yellow / red / sick
-  / long ride / rest day) → validator must pass; the author reviews the
-  texts when the model or prompt changes.
-- **Integration:** a recorded intervals.icu sandbox (saved API responses) so
-  tests run without the real account.
+- **Engine:** unit tests for every rule + the 12-week simulation (sample athlete).
+- **Core:** the whole morning loop through the in-process router on sql.js in
+  Node: one-tap feelings, undo, outdoor variant, exhausted / sick rest,
+  quick actions, travel + restore, export → import round trip, catch-up,
+  wipe; intervals.icu mapping tests.
+- **UI:** Playwright on a phone-sized viewport (demo mode): onboarding →
+  demo → check-in → reload (data persists) → Trener → Week → Progress →
+  Settings → exit demo; screenshots light and dark.
 
 ---
 
-## Build status (2026-10-02)
+## Build status (2026-10-02, v1.1)
 
-The author asked for a full automatic build ("go full auto coding"). Everything
-that does not need the author's PC is built, tested and pushed.
-
-| Phase | Built | Verified here (demo mode) | Still to verify on the PC |
+| Part | Built | Verified here (demo mode) | Still to verify on the phone |
 |---|---|---|---|
-| 1 Foundation | ✔ server, SQLite, login, sync, duplicates, Fitness/Form, status, backups | ✔ tests + running server | real intervals.icu fields (S05/S26), Windows autostart (S24), Tailscale HTTPS (S20) |
-| 2 Plan Engine & delivery | ✔ 40-workout library, onboarding, planner, calendar writes, Week moves | ✔ 12-week simulation, calendar writes to the fake intervals.icu | API write reaches MyWhoosh / BOLT / Fenix (S14, S21), same-morning switch (S18) |
-| 3 Daily loop | ✔ check-in, readiness, adaptation + undo, push, template brief, ratings, bonus day | ✔ end-to-end tests, screenshots | web push on iPhone via Tailscale (S20) |
-| 4 Coach AI | ✔ Ollama client, Polish prompts, validator, Method Notes, knowledge search | ✔ with a fake model (valid / invalid / outage) | real Qwen 3.8 on the RX 7800 XT: speed and Polish quality (S06, S16, S22) |
-| 5 Coach Chat | ✔ chat, actions via Safe Envelope, Chat Notes; rule-based fallback | ✔ tests | AI chat quality |
-| 6 Progress, FTP, long rides, data | ✔ charts, eFTP + ramp-test suggestions, Long Ride Days, fueling, export, delete | ✔ tests, screenshots | eFTP / best-minute fields (S26) |
+| Core in the browser | ✔ sql.js DB, IndexedDB save, router, catch-up | ✔ tests, Playwright (data survives reload) | real intervals.icu fields (S05/S26), CORS (S27) |
+| Plan Engine & delivery | ✔ unchanged engine, calendar writes from the phone | ✔ 12-week simulation, fake intervals.icu | API write reaches MyWhoosh / bike computer / watch (S14, S21), same-morning switch (S18) |
+| Daily loop | ✔ one-tap check-in, readiness, adaptation + undo, template brief, ratings, bonus day | ✔ end-to-end tests, screenshots | — |
+| Trener buttons | ✔ shorten / easier / rest / tomorrow / pain / travel / why / notes | ✔ tests, screenshots | — |
+| Progress, FTP, long rides | ✔ charts, eFTP + ramp test, Long Ride Days, fueling | ✔ tests | eFTP / best-minute fields (S26) |
+| Data | ✔ export / import JSON, delete everything, demo mode | ✔ round-trip test | — |
+| Hosting | ✔ GitHub Actions → Pages | build passes locally | Pages enabled (Settings → Pages → Source: GitHub Actions) |
 
 Known gaps (not blocking first use):
 - FTP accepted in the app must also be changed in intervals.icu / MyWhoosh by hand (the app reminds you).
-- LM Studio fallback not implemented (S25).
+- Adaptation happens only when the app is opened (devices keep the default plan otherwise).
 - Exact intervals.icu field names are mapped defensively; the first real sync confirms them (S26).
 
 ### Next step for the author
 
-1. On the PC: install Node.js, run the steps in `README.md` (install, `npm start`, onboarding with the API key).
-2. Run `scripts/install-windows.ps1` and `tailscale serve --bg 8787`; open the app on the iPhone and turn notifications on.
-3. Pull the models in Ollama.
-4. Tell Claude the results; the spikes above are then closed in these docs.
+1. On the iPhone open **https://jakubmamok13.github.io/EveryDay/** in Safari → Udostępnij → „Do ekranu początkowego”.
+2. Open EveryDay **from the icon**, paste the (new) intervals.icu API key, finish onboarding.
+3. Set the Shortcut reminder (Ustawienia › Poranne przypomnienie).
+4. Tell Claude what works and what does not; the spikes above are then closed in these docs.

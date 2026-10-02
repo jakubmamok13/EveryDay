@@ -4,8 +4,9 @@ Canonical planning documents for the app. No code is written until these
 are agreed (see DECISIONS.md, D-001).
 
 Note: the original template targeted single-user desktop apps. This app is
-a **web app with registered accounts and server-side storage**, so 03/07/08
-also cover hosting, auth, privacy (GDPR) and third-party API terms.
+a **phone-only web app (PWA)** with all data on the phone (D-043), so 03/07/08
+also cover static hosting, on-device storage, privacy and third-party API terms.
+No personal data goes into these docs (D-046): examples use a sample athlete.
 
 ```
 00_index.md                   Running index of all docs and their status

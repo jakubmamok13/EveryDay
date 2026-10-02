@@ -1,63 +1,56 @@
 # 08 — Errors, Logging & Feedback
 
-Status: **SPEC v1**. Guiding rule: **the morning brief always arrives**,
-even if sync, the AI or the calendar fails. It then says what is missing.
+Status: **SPEC v1.1** (phone only, D-043; no AI, D-044). Guiding rule:
+**the morning brief always arrives**, even if sync or the calendar fails. It
+then says what is missing.
 
 ## 1. Failure handling
 
 | Failure | Detection | What the app does | What the Athlete sees |
 |---|---|---|---|
-| intervals.icu unreachable | HTTP error / timeout | Retry with backoff (1, 5, 15 min, then every 15 min) | "Dane z HH:MM" on Today; after 24 h a banner + one line in the notification |
-| intervals.icu API key invalid | 401 / 403 | Stop syncing, `status = auth_error` | Banner → Settings › Połączenia |
-| Calendar write failed | API error | Retry 3×, then `delivery_status = failed` | Workout card: "MyWhoosh ✖" + **Pobierz .zwo** button |
-| Device did not get the workout | Delivery check unavailable (S14/S18) | — | Card shows "zapisano w intervals.icu"; manual check |
-| Watch not worn (no wellness) | Missing fields | Readiness skips those inputs | "brak HRV / snu" in the Readiness reasons |
-| Duplicate rides | Duplicates guard (M3) | Non-master gets no Load | Small "duplikat" tag in Week |
-| Ollama not running / timeout (> 60 s) | Health check / timeout | Template text for AI slots; chat shows "Trener AI niedostępny" + retry | Brief still complete |
-| AI output invalid | Validator (03 §6) | 1 retry, then template slot | Nothing (slot marked 'template' in DB) |
-| AI proposal outside Safe Envelope | Engine validation | Rejected and logged | In chat: "Nie mogę: …" with the reason |
-| Push failed / subscription gone (404/410) | Push service reply | Remove the subscription | Settings › Powiadomienia shows "urządzenie odłączone" |
-| iPhone without Home Screen install | No subscription possible | — | Onboarding / Settings guide |
-| PC was off at 03:00 | Catch-up check at start | Run the missed night job | Brief notes "plan zaktualizowany o HH:MM" |
-| Windows Update restart | Service auto-start | Resume; catch-up | Nothing |
-| Disk almost full | Status check | Stop FIT downloads, keep DB | Banner on the status page |
-| DB corruption | SQLite integrity check at start | Restore last good backup (asks first) | Restore dialog |
+| No internet / intervals.icu unreachable | fetch error / timeout | Work from local data; retry on the next open | Today works; "Problem z intervals.icu: brak połączenia" line |
+| intervals.icu API key invalid | 401 / 403 | `status = auth_error`, stop syncing | Line on Today → Ustawienia › intervals.icu |
+| Calendar write failed | API error | `delivery_status = failed`, retried on every open | Workout card "nie wysłano ✖" + **.zwo** button |
+| Device did not get the workout | Delivery check unavailable (S14/S18) | — | Card shows the intervals.icu status only; manual check |
+| Watch not worn (no wellness) | Missing fields | Readiness skips those inputs | "brak danych z zegarka" in the Readiness reason |
+| Duplicate rides | Duplicates guard (M3) | Non-master gets no Load | "+ duplikat z zegarka (nie liczy się)" in Week |
+| Button change outside the Safe Envelope | Engine validation | Refused | Toast "Nie mogę: …" with the reason |
+| App not opened for days | Catch-up on the next open | Daily job runs once: sync 14 days, missed-workout rule, plan maintenance | Plan up to date after a few seconds |
+| Storage write failed | IndexedDB error | Logged to the console; retried on the next change | — (rare; export regularly) |
+| iPhone: data "missing" after installing | Safari vs Home Screen storage are separate | — | Onboarding hint: install first, then open from the icon |
+| Wasm / start-up failure | Exception on start | — | "Nie udało się uruchomić aplikacji" + „Spróbuj ponownie” |
 
 ## 2. Training safety rails (engine, not configurable)
 
 - Planned Fitness ramp ≤ +5 per week.
 - Never two hard days in a row (also for manual moves: warning).
-- Sick → rest; after illness 1–2 easy days before intensity.
+- Sick or Totalne wyczerpanie → rest; after illness 1–2 easy days before intensity.
 - Pain note active → no hard workouts.
 - Long Ride Day only after explicit confirmation; step ≤ +60 min over the
   previous longest ride.
-- Recovery Week every 4th week, not skippable by the AI (manual override possible).
-- The AI cannot raise intensity or weekly Load (Safe Envelope).
+- Recovery Week every 4th week.
+- Buttons cannot raise intensity or weekly Load (Safe Envelope).
 
 ## 3. Logging
 
-- Rotating log files in `data/logs/` (14 days), levels info / warn / error.
-- **No health data in logs**: no HRV, HR, sleep, weight, notes or chat
-  text. Only IDs, job names, statuses, durations and error codes.
-- `job_run` table records each job (04 §8).
-- Prompts and AI outputs are stored **only in the DB** (daily_brief,
-  ai_proposal), never in log files.
+- No log files and no telemetry: there is no server.
+- `job_run` table records the daily job (status, error code; no health data).
+- Errors go to the browser console only.
 
-## 4. Status page (Settings › System)
+## 4. Status (Settings › System)
 
-Last night job · last day sync · intervals.icu status · Ollama status +
-model + last response time · push status per device · DB size · free disk ·
-last backup.
+Last daily job · last sync · rides / wellness days stored · Method Notes ·
+time zone · intervals.icu status (in the intervals.icu card).
 
 ## 5. Feedback loops (how the coach improves)
 
 | Signal | Source | Used for |
 |---|---|---|
-| Ride Rating (RPE + feel) | Athlete (R8-20) | Progression ±1 step (M4.6) |
+| Ride Rating (three buttons) | Athlete (R8-20) | Progression ±1 step (M4.6) |
 | Compliance % | Ride vs plan | Progression; missed-workout rule |
-| **Undo** of an adaptation | Athlete | Weekly review: if AI or engine changes are often undone, rules get tuned |
-| Chat refusals | Engine | Shows which requests users make that the envelope blocks |
+| **Undo** of an adaptation | Athlete | If engine changes are often undone, rules get tuned |
+| Refused button actions | Engine | Shows which requests the envelope blocks |
 | Readiness vs ride outcome | Data | After the Learning Period: check whether Yellow/Red days really had worse rides → calibrate thresholds |
 
-A short **monthly review** (generated by the engine, read by Claude when
-maintaining the app) lists these numbers, so the rules can be tuned with data.
+The exported JSON contains these tables, so a review can be done with the
+export file when the app is maintained.

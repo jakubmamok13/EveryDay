@@ -1,32 +1,31 @@
 # 02 — Feature Modules
 
-Status: **SPEC v1** — all interview decisions applied (D-001 … D-037).
+Status: **SPEC v1.1** — interview decisions D-001 … D-046 applied (phone only, no AI, buttons only since D-043/D-044).
 Rules marked *(our rule)* are not taken from the book; they are our own
 choices and are tuned after the first weeks of real use.
 
 Modules:
 M1 Account & Profile · M2 Onboarding · M3 Data Sync · M4 Plan Engine ·
 M5 Readiness & Adaptation · M6 Daily Brief · M7 Workout Delivery ·
-M8 Progress · M9 Notifications · M10 Coach Chat · M11 Knowledge Base ·
+M8 Progress · M9 Reminder · M10 Trener (quick actions) · M11 Knowledge Base ·
 M12 FTP Management · M13 Long Rides & Fueling
 
 ---
 
-## M1. Account & Profile
+## M1. Profile & Data
 
-**Purpose:** one protected account for the author; the data model stays
-multi-account-ready (D-002).
+**Purpose:** one athlete per phone; the data model stays multi-athlete-ready (D-002).
 
-- Login: **email + password**, "remember this device" (long-lived device
-  session). Reachable only inside the private tunnel (D-012). (R8-02)
-- Creating a **new account** runs Onboarding (M2). The Goal can be set again
-  there, or changed later in Settings for the existing account (D-028).
+- **No login** (D-043): the data lives only on this phone (IndexedDB). The
+  first open runs Onboarding (M2). The Goal can be changed later in Settings (D-028).
 - **Profile:** weight, height, FTP, LTHR, max HR, outdoor power meter
   yes/no, equipment list. Physiology values are **versioned**: every change
   creates a Fitness Snapshot with a date and a source (test, eFTP accepted,
-  manual, Fenix). Old rides keep the values that were valid on their date.
-- **Data:** export everything (ZIP: JSON + FIT files) and delete the account
-  from Settings. (R8-03)
+  manual). Old rides keep the values that were valid on their date.
+- **Data:** export everything (one JSON file, without the API key), import it
+  on this or another phone, and delete everything, in Settings (R8-03).
+- **Demo mode:** simulated data in a separate store; enter and leave from
+  onboarding or Settings.
 
 ## M2. Onboarding
 
@@ -35,20 +34,22 @@ intervals.icu (R8-04).
 
 | # | Screen | Pre-filled from |
 |---|---|---|
-| 1 | Create account (email, password) | — |
-| 2 | Connect intervals.icu (athlete ID + API key, "Test") | — |
-| 3 | Profile: weight, height, FTP, LTHR, max HR | intervals.icu |
-| 4 | Primary Goal (Raise FTP / Endurance / Event / General fitness) | — |
-| 5 | Secondary Goal (optional) + target (e.g. 200 km / 7 h) | — |
-| 6 | Event (optional): name, date, priority A/B/C | — |
-| 7 | Weekly Availability: per weekday available?, max minutes, default Ride Mode | — |
-| 8 | Equipment: trainer, bike computer, watch, HR strap, power meter | intervals.icu connections |
-| 9 | Notifications: time per day + enable push (iPhone: "Add to Home Screen" guide) | default 07:00 |
-| 10 | Health: current injury or illness? → saved as a Chat Note | — |
+| 1 | Start: connect intervals.icu (API key + optional athlete ID) — or „Najpierw wypróbuj demo” | — |
+| 2 | Profile: weight, height, FTP, LTHR, max HR | intervals.icu |
+| 3 | Goals: Primary (Raise FTP / Endurance / Event / General fitness), Secondary + target, Event date | — |
+| 4 | Weekly Availability: per weekday available?, max minutes, default Ride Mode | — |
+| 5 | Long Ride Days: yes/no, every 4/5/6 weeks | — |
+| 6 | Equipment: tap to select (smart trainer, bike computer, watch, HR strap, power meter) | — |
+| 7 | Health: „Wszystko OK” / „Po chorobie” / „Boli: …” buttons → Chat Note for 7 days | — |
+| 8 | Reminder: time + iPhone Shortcut guide (M9) | default 07:00 |
+| 9 | Ready → „Zaczynamy” | — |
 
-Result: a **plan preview** (next 4 weeks) → "Start".
+Result: history import + 4 weeks planned → Today.
 
-- **No fitness test in week 1**: FTP 270 W is recent. The first test is at
+On iPhone the onboarding shows „Dodaj do ekranu początkowego” first: Safari
+and the Home Screen app keep **separate data** (D-043).
+
+- **No fitness test in week 1**: the entered FTP is used. The first test is at
   the end of block 1 (R8-05).
 - History import: Fitness and Fatigue start from the imported history, so
   the first plan is scaled to real current Load.
@@ -58,17 +59,19 @@ Result: a **plan preview** (next 4 weeks) → "Start".
 **Purpose:** get rides and wellness from intervals.icu and send planned
 workouts back (D-004, D-009). Details: 07_integrations.md.
 
-- **In:** activities (MyWhoosh indoor, BOLT v2 + Fenix 8 outdoor), wellness
+- **In:** activities (MyWhoosh indoor, bike computer + watch outdoor), wellness
   (HRV, resting HR, sleep, Body Battery min/max, Garmin Training Readiness,
-  weight), FIT files.
+  weight). The phone calls the intervals.icu API directly (D-043).
 - **Out:** the chosen Workout Variant for each Planned Workout, written to
   the intervals.icu calendar. intervals.icu then pushes it to MyWhoosh,
-  Garmin (Fenix 8) and Wahoo (BOLT v2).
+  Garmin and Wahoo.
 - **Master Copy rule** (D-024, D-029): every ride counts once.
-  Indoors = MyWhoosh copy. Outdoors = BOLT copy, with the Fenix copy as
-  fallback. Duplicate guard: same day + overlapping time + duration within
+  Indoors = MyWhoosh copy. Outdoors = bike computer copy, with the watch copy
+  as fallback. Duplicate guard: same day + overlapping time + duration within
   15% → the non-master copy is marked `duplicate_of` and gets no Load.
-- **Manual FIT upload** as a fallback (R8-14).
+- **When:** on every app open / return to the screen (catch-up, M5.5). No
+  background sync on the phone.
+- FIT upload: done in intervals.icu itself (R8-14 changed by D-043).
 
 ## M4. Plan Engine
 
@@ -90,17 +93,20 @@ Availability + current Fitness, following the Coggan & Allen method
   Base → Build → Peak → Taper (7–10 days), aiming for Form **+15 to +25** on
   event day (Coggan Performance Manager guidance).
 
-### 4.2 The author's weekly template (D-027, D-028, D-033)
+### 4.2 Weekly template (D-027, D-028, D-033)
+
+Roles are assigned from the Weekly Availability. Example for a sample week
+(Tue/Thu 1 h, Sat 3 h, Sun 2 h):
 
 | Day | Max | Role | Content |
 |---|---|---|---|
-| Mon | 1 h | **Key Workout 1** | Quality session of the Block Focus (usually indoor, ERG) |
-| Wed | 1 h | **Key Workout 2** | Quality session of the Block Focus |
-| Sat | ≤ 4 h | **Key Workout 3: long ride** | Z2 with Tempo / Sweet Spot segments in later weeks; grows toward the long-ride target |
-| Sun | ≤ 4 h (default 2–2.5 h) | Back-to-back endurance | Z2; Tempo only if Form allows |
+| Tue | 1 h | **Key Workout 1** | Quality session of the Block Focus (usually indoor, ERG) |
+| Thu | 1 h | **Key Workout 2** | Quality session of the Block Focus |
+| Sat | ≤ 3 h | **Key Workout 3: long ride** | Z2 with Tempo / Sweet Spot segments in later weeks; grows toward the long-ride target |
+| Sun | ≤ 2 h | Back-to-back endurance | Z2; Tempo only if Form allows |
 | Other days | — | Rest | Bonus Day possible (M5.6) |
 
-- Recovery Week: Mon easy spin, **Wed ramp test** (M12), Sat/Sun Z2 shorter.
+- Recovery Week: first quality day easy spin, **second quality day = ramp test** (M12), weekend Z2 shorter.
 - **Never two hard days in a row** (Sun endurance counts as not hard).
 - Workouts are chosen from the Workout Library (4.4) and **scaled** to FTP
   (indoor) / LTHR (outdoor) and to the day's max minutes.
@@ -148,21 +154,25 @@ Availability + current Fitness, following the Coggan & Allen method
 **Purpose:** decide every morning whether today's workout fits the body,
 and change it automatically if not (D-014).
 
-### 5.1 Morning Check-in (D-015)
+### 5.1 Morning Check-in (D-015, D-044)
 
-Taps only, ~10 seconds:
+**One tap**, ~3 seconds. Choose where you ride (pre-filled with the weekday
+default), optionally „Coś boli?” → body part, then tap a feeling — that tap
+submits:
 
-| Item | Scale |
-|---|---|
-| Sleep quality | 1–5 |
-| Legs | 1–5 |
-| Motivation | 1–5 |
-| Sick? | yes / no |
-| Pain? | yes / no (+ short note → Chat Note) |
-| **Gdzie dziś jedziesz?** (Ride Mode) | W domu / Na zewnątrz (pre-filled with the weekday default) |
-| (Rest day only) | "Mam dziś czas" → Bonus Day |
+| Button | Means (sleep / legs / motivation) | Effect |
+|---|---|---|
+| 💪 W pełni sił | 5 / 5 / 5 | normal |
+| 🙂 Dobrze | 4 / 4 / 4 | normal |
+| 😐 Średnio | 3 / 3 / 3 | normal |
+| 😕 Czuję się gorzej | 3 / 2 / 2 | strong signal → usually Yellow |
+| 😫 Totalne wyczerpanie | 2 / 1 / 1 + exhausted | **Red, rest** (override) |
+| 🤒 Choroba | sick | **Red, rest** (override) |
+| Coś boli? → Kolano / Plecy / Biodro / Kark / Łydka / Achilles / Inne | — | Pain override + injury note for 7 days |
 
-If yesterday's ride is not rated yet, the check-in asks for the Ride Rating first (M6.4).
+„Pomiń” builds the brief from watch data only (R8-16). After the check-in,
+„zmień” re-opens it. On a rest day the card is the same; „Mam dziś czas”
+offers a Bonus Day. An unrated ride from yesterday or today shows first (M6.4).
 
 ### 5.2 Readiness score *(our rule — calibrated after the Learning Period)*
 
@@ -176,13 +186,13 @@ Each input is rated **ok / caution / bad**:
 | Body Battery (morning max) | < 50 | < 30 |
 | Garmin Training Readiness | < 50 | < 25 |
 | Form (% of Fitness) | < −30% | < −45% |
-| Check-in: legs / sleep quality / motivation | one answer ≤ 2 | legs = 1, or two or more answers ≤ 2 (D-041) |
+| Check-in (from the feeling button) | one answer ≤ 2 | legs = 1, or two or more answers ≤ 2 (D-041) |
 
 - **Score** = 100 − 10 × (cautions) − 25 × (bads), limited to 0–100.
 - **State:** Green = no bad and ≤ 1 caution · Yellow = 1 bad or ≥ 2
   cautions · Red = ≥ 2 bads.
-- **Hard overrides:** Sick → **Red**, rest. Pain → no hard workouts until
-  the note ends or the Athlete clears it.
+- **Hard overrides:** Sick or Totalne wyczerpanie → **Red**, rest (score ≤ 20).
+  Pain → no hard workouts until the note ends or the Athlete clears it.
 - **Learning Period:** first **14 days** (no HRV/RHR baseline yet): state
   shows "uczę się" (learning); only sleep, Body Battery, Form and the
   check-in count.
@@ -203,9 +213,10 @@ Each input is rated **ok / caution / bad**:
   in the brief, and **undoable with one tap** (D-014). Undo restores the
   previous version and rewrites the calendar.
 
-### 5.4 Safe Envelope for the Coach AI (D-011, R8-12)
+### 5.4 Safe Envelope (D-011, R8-12)
 
-The Coach AI (brief or chat) may **propose** only:
+There is no AI any more (D-044); the same envelope checks every button
+action. A change may only be:
 - duration change of **±20%**;
 - **swap** to a library workout of the **same category**;
 - **move** by **±1 day** (to an available day);
@@ -213,18 +224,24 @@ The Coach AI (brief or chat) may **propose** only:
 
 The engine **rejects** any proposal that: increases intensity above the
 plan; raises the week's planned Load; creates **two hard days in a row**;
-uses an unavailable day; or ignores a Sick / Pain override. Every proposal
-and its verdict is logged.
+uses an unavailable day; or ignores a Sick / Pain override. The Athlete's own
+requests („Mam mniej czasu”, „Dziś odpoczynek”) may shorten by more than 20% (D-041).
 
-### 5.5 Daily timing
+### 5.5 Daily timing (catch-up, D-043)
+
+There is no server, so jobs run when the app is opened or comes back to the
+screen:
 
 | When | What |
 |---|---|
-| 03:00 | Nightly sync, duplicates guard, Load / Fitness / Form, missed-workout rule, calendar writes for the next 7 days (with the **default** Ride Mode per weekday), backup |
-| Notification time (per day, D-034) | Web push → Today screen |
+| First open of the day | Sync last 14 days, duplicates guard, Load / Fitness / Form, missed-workout rule, block advance, long-ride proposal, keep 4 weeks planned, calendar writes for the next 7 days (default Ride Mode per weekday), FTP check |
+| Later opens (≥ 15 min apart) | Sync last 3 days → match rides to the plan → ask for the Ride Rating; re-send pending calendar writes |
+| Reminder time (M9) | iPhone Shortcut notification → the Athlete opens EveryDay |
 | On check-in | Readiness → Adaptation → write the **chosen** variant to the calendar → brief |
-| Notification + 2 h, no check-in | Readiness from Garmin data + Form only; default variant stays; brief says "bez check-inu" (R8-16) |
-| Every 15 min (05:00–23:00) | Sync new rides → match to plan → ask for the Ride Rating |
+| „Pomiń” (no check-in) | Readiness from watch data + Form only; brief says "bez check-inu" (R8-16) |
+
+intervals.icu delivers the calendar to MyWhoosh / Wahoo / Garmin on its own,
+so devices are up to date even when the app is closed.
 
 ### 5.6 Bonus Day (D-027)
 
@@ -239,37 +256,33 @@ Green and the next day is a rest day).
 
 ### 6.1 Fixed format
 
-The engine fills every line that holds a number. The Coach AI writes only the
-`focus`, `off-bike` and `change-explanation` slots:
+The engine fills every line from fixed Polish templates (no AI, D-044):
 
 ```
 Dziś: {workout} · {duration} · {W domu / Na zewnątrz}        ← engine
 Gotowość: {🟢/🟡/🔴} {state} — {main reason}                   ← engine
-Skup się: {one sentence}                                     ← AI slot
-Zmiana: {what changed and why} [Cofnij]                      ← engine + AI slot (only if changed)
+Skup się: {one sentence}                                     ← template per workout
+Zmiana: {what changed and why} [Cofnij]                      ← engine (only if changed)
 Jedzenie: {g} g węglowodanów/h, {ml} ml/h                    ← engine (rides > 90 min)
-Poza rowerem: {one action}                                   ← AI slot
+Poza rowerem: {one action}                                   ← template
 Jutro: {tomorrow in one line}                                ← engine
 ```
 
-Example (Monday, Sweet Spot, FTP 270 W):
+Example (Tuesday, Sweet Spot, FTP 250 W):
 
 ```
 Dziś: Sweet Spot 3×12 min · 60 min · W domu (MyWhoosh)
-Gotowość: 🟢 dobra — HRV w normie, nogi świeże
-Skup się: równe 245 W w blokach, kadencja 90+, bez przyspieszania na końcu.
+Gotowość: 🟢 dobra — HRV w normie, dobre samopoczucie
+Skup się: równe 225 W w blokach, kadencja 90+, bez przyspieszania na końcu.
 Poza rowerem: kolacja z porcją węglowodanów i sen przed 23:00.
-Jutro: wolne. Środa: progowe 2×15 min.
+Jutro: wolne. Czwartek: progowe 2×15 min.
 ```
 
 ### 6.2 Rules
 
 - Polish, friendly buddy, **short** (whole brief ≤ ~600 characters).
 - **Clear:** no hedging, no disclaimers, no filler (D-021).
-- The AI never invents numbers: every number in an AI slot must exist in
-  the engine's facts, or the validator rejects it (M11 / 03).
-- If the AI fails or the validator rejects twice → the **template text**
-  for that slot is used. The brief always arrives.
+- Every number comes from the engine's facts (templates only, D-044).
 - Rest day: Readiness + recovery tip + Bonus Day offer + tomorrow.
 
 ### 6.3 Off-bike topics
@@ -279,9 +292,9 @@ weight-loss advice** (R8-15). No strength sessions (R8-09).
 
 ### 6.4 Ride Rating (R8-20)
 
-After a matched ride: **RPE 1–10** + **too easy / just right / too hard**.
-Shown on Today after the ride sync; if skipped, it is asked at the next
-check-in. It feeds Progression (M4.6).
+After a matched ride: three buttons **Za łatwo / W sam raz / Za ciężko**
+(RPE derived: 4 / 6 / 8, D-044). Shown on Today after the ride sync (rides
+from yesterday or today). It feeds Progression (M4.6).
 
 ## M7. Workout Delivery
 
@@ -289,18 +302,18 @@ check-in. It feeds Progression (M4.6).
 
 | Ride Mode | Variant | Path | Device |
 |---|---|---|---|
-| W domu (indoor) | Indoor: % FTP steps, ERG | app → intervals.icu → MyWhoosh | KICKR CORE |
-| Na zewnątrz (outdoor) | Outdoor: HR zones + RPE (power when a meter exists, D-023) | app → intervals.icu → Wahoo / Garmin | BOLT v2 + Fenix 8 |
+| W domu (indoor) | Indoor: % FTP steps, ERG | app → intervals.icu → MyWhoosh | smart trainer |
+| Na zewnątrz (outdoor) | Outdoor: HR zones + RPE (power when a meter exists, D-023) | app → intervals.icu → Wahoo / Garmin | bike computer + watch |
 
-- Night: default variant written for the next 7 days (Mon/Wed default
-  indoor, Sat/Sun default outdoor; editable per weekday).
+- First open of the day: default variant written for the next 7 days
+  (default Ride Mode per weekday, editable in Availability).
 - Morning: if the check-in changes the Ride Mode, the app **replaces**
   today's calendar entry with the other variant (S18 checks timing).
 - Outdoor rides are **structured with HR ranges**. **Long rides** are
   **guidance rides** (zone cap + duration + fueling reminders), not
   interval-by-interval (R8-17).
 - Delivery status is shown on the workout card (written / delivered / failed).
-- Fallback: download `.zwo` for MyWhoosh by hand.
+- Fallback: save a `.zwo` file for MyWhoosh (share sheet on the phone).
 - Out of scope v1: Zwift, own trainer control (D-009).
 
 ## M8. Progress (R8-18)
@@ -308,43 +321,46 @@ check-in. It feeds Progression (M4.6).
 Minimal on purpose; deep analysis stays in intervals.icu.
 - **Fitness / Fatigue / Form** chart (last 90 days + 4-week plan projection).
 - **FTP and W/kg** history (with test markers).
-- **Long-ride progress:** longest ride (h, km) vs the target 200 km / 7 h,
-  with milestones 4 h → 5 h → 6 h → 7 h.
+- **Long-ride progress:** longest ride (h, km) vs the long-ride target
+  (e.g. 200 km / 7 h), with milestones 4 h → 5 h → 6 h → 7 h.
 - **Weekly compliance:** planned vs completed (count + Load).
 
-## M9. Notifications (D-018, D-031, D-034)
+## M9. Reminder (D-031, D-045)
 
-- **One web push per day**, every day, at the time set per weekday (default 07:00).
-- Training day: "Dzień dobry! 30 s na check-in, potem plan na dziś."
-  Rest day: "Dzień wolny. Zrób check-in, sprawdź regenerację."
-- Tap → Today screen.
-- Works on **iOS and Android** (D-025); iPhone needs the app on the Home
-  Screen (shown in onboarding).
-- No second push for the ride rating; it waits on Today.
+- No web push (no server). One **iPhone Shortcuts automation** per day:
+  Automatyzacja → Pora dnia (chosen time, default 07:00) → Uruchom
+  natychmiast → Pokaż powiadomienie „Czas na poranny check-in 🚴”.
+- The Athlete then taps the **EveryDay** icon (a Shortcut cannot open a Home
+  Screen web app directly). Android: a clock alarm.
+- The step-by-step guide is in onboarding and in Settings › Poranne przypomnienie.
 
-## M10. Coach Chat (D-019)
+## M10. Trener — quick actions (D-044, replaces Coach Chat)
 
-- Free text in Polish, answers streamed. Context: today's facts, last 14
-  days summary, active **Chat Notes**, retrieved Knowledge Base passages.
-- **Questions** ("dlaczego dziś sweet spot?") → answered from the Knowledge Base.
-- **Change requests** ("mam tylko 45 min") → the AI produces a structured
-  proposal → the engine validates it against the Safe Envelope → applied
-  with Undo, or refused with the reason.
-- **Facts** ("boli mnie kolano", "w przyszłym tygodniu wyjazd") → saved as a
-  **Chat Note** with kind (injury / illness / travel / other) and an end
-  date (default 7 days). Active notes affect Readiness and planning (pain → no
-  hard workouts; travel → no rides on those days). Notes are visible and
-  deletable (R8-19).
-- Same clarity rules as the brief (D-021).
+All buttons, no typing. Every change passes the Safe Envelope (5.4), is
+written to intervals.icu and can be undone („Cofnij” on Today, „Przywróć”
+for a skipped day in Tydzień).
+
+| Button | Effect |
+|---|---|
+| Mam mniej czasu → 30 / 45 / 60 / 75 / 90 min | Today's workout shortened (structure kept where possible) |
+| Lżej dziś | Key Workout: −1 rep / −3%; other: −25% and capped at Z2; with pain: easy Z2 ≤ 60 min |
+| Dziś odpoczynek | Today skipped |
+| Przesuń na jutro | Today's workout moved by one day (envelope checks two hard days) |
+| Coś boli → body part | Injury note for 7 days (no hard workouts) + today easier |
+| Wyjazd → od dziś / od jutra × 3 / 7 / 14 dni | Travel note + planned rides in that window skipped |
+| Dlaczego ten trening? | Purpose + focus cue + the 2 best matching Method Note sections |
+| Baza wiedzy | Read the Method Notes |
+| Pamiętam | Active notes with an end date; „Zapomnij” deletes (R8-19) |
 
 ## M11. Knowledge Base (D-006, D-022)
 
 - **Method Notes:** our own Polish text summarizing the Coggan & Allen
   method: zones, Performance Manager, Load, ramp rates, workout purposes,
   testing, tapering, fueling. Stored in `knowledge/method-notes/` (in git).
-- **Book:** added later if found; indexed locally from `private/`, never in git.
-- Retrieval: local embeddings + vector search (03). The brief uses the 2–3
-  best passages; chat uses up to 5.
+- Bundled with the app at build time; readable offline in Trener › Baza wiedzy.
+- Retrieval for „Dlaczego ten trening?”: keyword search (TF-IDF-like, crude
+  Polish stemming) over note sections; no embeddings (D-044).
+- **Book:** not used (copyrighted text stays out of the repo and the app).
 
 ## M12. FTP Management (D-036)
 
@@ -353,20 +369,20 @@ Minimal on purpose; deep analysis stays in intervals.icu.
 - **Suggestion** when eFTP differs from current FTP by **≥ 3%** on two
   syncs in a row. The Athlete accepts or rejects. Accept → new Fitness
   Snapshot, future workouts rescaled, calendar rewritten.
-- **Ramp test** at the end of each block (Wed of the Recovery Week), indoor
-  on the KICKR in ERG: start 100 W, +20 W per minute until failure; **FTP =
+- **Ramp test** at the end of each block (second quality day of the Recovery
+  Week), indoor on the smart trainer in ERG: start 100 W, +20 W per minute until failure; **FTP =
   75% of the best 1-minute power**. The result becomes a suggestion as above.
-- LTHR / max HR: from Fenix 8 auto-detection or intervals.icu (R8-24); a
+- LTHR / max HR: from the watch's auto-detection or intervals.icu (R8-24); a
   change also creates a Fitness Snapshot.
 
 ## M13. Long Rides & Fueling (D-033, R8-08, R8-15)
 
-- **Saturday long ride** grows by **15–30 min per load week**, up to 4 h.
+- **Weekend long ride** grows by **15–30 min per load week**, up to the day's max.
 - **Long Ride Day:** every **4–6 weeks** the engine proposes one ride of
   **last long ride + 45–60 min** (5–7 h+), Z2 with an intensity cap. It is
   shown **7 days ahead** and goes into the plan only after the Athlete
-  **confirms** it; if declined, the weekend becomes back-to-back (Sat 4 h +
-  Sun 2–3 h).
+  **confirms** it; if declined, the weekend becomes back-to-back (long Sat +
+  shorter Sun).
 - **Fueling lines** (rides > 90 min) *(our rule, from mainstream sports-
   nutrition guidance)*:
   - carbohydrates **60 g/h**; on rides > 3 h raise gradually toward

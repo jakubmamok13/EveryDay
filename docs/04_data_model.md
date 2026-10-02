@@ -1,8 +1,13 @@
 # 04 — Data Model
 
-Status: **SPEC v1**. One SQLite file `data/everyday.db` (03). FIT files on
-disk in `data/fit/YYYY/MM/`. All dates are local dates (Europe/Warsaw);
-timestamps are UTC.
+Status: **SPEC v1.1**. One SQLite database (sql.js, WebAssembly) kept in the
+phone's IndexedDB (D-043, 03). No FIT files are stored (the ride summary
+from intervals.icu is enough). All dates are local dates in the phone's
+time zone; timestamps are UTC.
+
+Tables from the PC version that are **no longer used** but kept in the
+schema (harmless, empty): `device_session`, `push_subscription`,
+`ai_proposal`, `chat_message`, `knowledge_chunk`, `notification_log`.
 
 Conventions: `id` = integer primary key; `*_json` = JSON text; every table
 has `created_at` / `updated_at` (omitted below). Canonical names follow glossary.md.
@@ -14,21 +19,15 @@ account 1─1 athlete
 athlete 1─N fitness_snapshot · equipment · goal · availability(→ availability_day)
 athlete 1─N source_connection · activity · wellness_day · check_in · daily_state
 athlete 1─N training_plan 1─N block 1─N plan_week 1─N planned_workout N─1 workout
-planned_workout 1─N adaptation (1─0..1 ai_proposal) · 0..1 activity (master)
-athlete 1─N daily_brief · chat_message · chat_note · ftp_suggestion · long_ride_proposal
-account 1─N device_session · push_subscription
-knowledge_chunk · job_run (system tables)
+planned_workout 1─N adaptation · 0..1 activity (master)
+athlete 1─N daily_brief · chat_note · ftp_suggestion · long_ride_proposal
+job_run · setting · meta (system tables)
 ```
 
 ## 2. Account & profile
 
-**account** — `email`, `password_hash`, `locale` ('pl'), `timezone` ('Europe/Warsaw').
-
-**device_session** — `account_id`, `device_name`, `token_hash`,
-`remember` (bool), `last_seen_at`, `revoked_at`.
-
-**push_subscription** — `account_id`, `endpoint`, `p256dh`, `auth`,
-`platform` ('ios' | 'android' | 'desktop'), `last_success_at`, `failure_count`.
+**account** — one local row created on first open (`email` = 'local',
+empty `password_hash`; no login, D-043). Owns the settings.
 
 **athlete** — `account_id`, `display_name`, `height_cm`,
 `outdoor_power_meter` (bool, D-023), `learning_until` (date, end of the
@@ -37,19 +36,19 @@ Learning Period).
 **fitness_snapshot** (versioned physiology) — `athlete_id`,
 `effective_from` (date), `ftp_w`, `lthr_bpm`, `max_hr_bpm`, `weight_kg`,
 `source` ('onboarding' | 'ramp_test' | '20min_test' | 'eftp_accepted' |
-'fenix' | 'manual'), `note`. The value for any date = the latest snapshot
+'watch' | 'manual'), `note`. The value for any date = the latest snapshot
 with `effective_from ≤ date`.
 
 **equipment** — `athlete_id`, `kind` ('trainer' | 'bike_computer' | 'watch' |
-'hr_strap' | 'power_meter'), `model` (e.g. 'Wahoo KICKR CORE', 'ELEMNT BOLT v2',
-'Fenix 8'), `role` ('indoor_recorder' | 'outdoor_master' |
+'hr_strap' | 'power_meter'), `model` (generic label, e.g. 'Trenażer',
+'Licznik rowerowy', 'Zegarek'), `role` ('indoor_recorder' | 'outdoor_master' |
 'outdoor_fallback' | null), `active`.
 
 ## 3. Goals & availability
 
 **goal** — `athlete_id`, `role` ('primary' | 'secondary'), `type`
 ('raise_ftp' | 'endurance' | 'event' | 'general_fitness'), `target_json`
-(e.g. `{"distance_km":200,"duration_min":420}`), `event_name`, `event_date`,
+(e.g. `{"targetDistanceKm":150,"targetMinutes":330}`), `event_name`, `event_date`,
 `priority` ('A' | 'B' | 'C'), `status` ('active' | 'archived'), `archived_at`.
 Changing a goal archives the old row and creates a new one (D-028).
 
@@ -58,10 +57,10 @@ Changing a goal archives the old row and creates a new one (D-028).
 
 **availability_day** — `availability_id`, `weekday` (1 = Mon … 7 = Sun),
 `available` (bool), `max_minutes`, `default_ride_mode` ('indoor' |
-'outdoor'), `notify_time` ('07:00').
+'outdoor'), `notify_time` (kept; the reminder time is now a setting, D-045).
 
-Author's current rows: Mon 60 indoor · Wed 60 indoor · Sat 240 outdoor ·
-Sun 240 outdoor · other days unavailable · all notify 07:00.
+Example (sample athlete): Tue 60 indoor · Thu 60 indoor · Sat 180 outdoor ·
+Sun 120 outdoor · other days unavailable.
 
 ## 4. Plan
 
@@ -110,7 +109,9 @@ also kept in `raw_json`, in case the field names differ (S05).
 
 **check_in** — `athlete_id`, `date`, `sleep_quality` (1–5), `legs` (1–5),
 `motivation` (1–5), `sick` (bool), `pain` (bool), `pain_note`, `ride_mode`,
-`bonus_minutes` (rest-day Bonus Day), `submitted_at`.
+`bonus_minutes` (rest-day Bonus Day), `submitted_at`, `exhausted` (bool,
+D-044), `feeling` (the button tapped: 'great' | 'good' | 'ok' | 'worse' |
+'exhausted' | 'sick'). The 1–5 values come from the feeling (02 M5.1).
 
 ## 6. Derived per day
 
@@ -137,25 +138,20 @@ missing), `computed_at`. Recomputed when any input for that date changes.
 ## 7. Coaching records
 
 **adaptation** — `athlete_id`, `date`, `planned_workout_id`, `origin`
-('engine' | 'ai' | 'manual' | 'chat'), `action` ('keep' | 'shorten' |
+('engine' | 'manual' | 'bonus'), `action` ('keep' | 'shorten' |
 'reduce' | 'swap' | 'move' | 'recovery' | 'rest' | 'bonus' | 'drop' |
 'ride_mode'), `before_json`, `after_json`, `reason_codes_json`, `applied_at`,
 `undone_at`, `undo_of`.
 
-**ai_proposal** — `adaptation_id` (null if rejected), `context`
-('brief' | 'chat'), `raw_json`, `verdict` ('accepted' | 'rejected'),
-`rejection_reasons_json`, `model`.
-
 **daily_brief** — `athlete_id`, `date`, `facts_json`, `text_pl`,
-`slots_source_json` (per slot: 'ai' | 'template'), `model`,
-`prompt_version`, `validator_passed`, `with_check_in` (bool),
-`generated_at`, `pushed_at`, `opened_at`.
-
-**chat_message** — `athlete_id`, `role` ('user' | 'coach'), `content`,
-`adaptation_id`, `note_id`.
+`slots_source_json` ('{}' — templates only), `with_check_in` (bool),
+`generated_at`, `opened_at`. (`model`, `prompt_version`,
+`validator_passed`, `pushed_at` are legacy columns.)
 
 **chat_note** — `athlete_id`, `kind` ('injury' | 'illness' | 'travel' |
-'other'), `text`, `start_date`, `end_date`, `source_message_id`, `deleted_at`.
+'other'), `text`, `start_date`, `end_date`, `deleted_at`. Created by the
+„Coś boli” / „Wyjazd” buttons, the pain part of the check-in and onboarding
+(the table name is historical).
 
 **ftp_suggestion** — `athlete_id`, `current_ftp_w`, `suggested_ftp_w`,
 `basis` ('eftp' | 'ramp_test' | '20min_test'), `evidence_json`, `status`
@@ -167,21 +163,23 @@ missing), `computed_at`. Recomputed when any input for that date changes.
 
 ## 8. System tables
 
-**knowledge_chunk** — `source` ('method_notes' | 'book'), `doc_path`,
-`heading`, `text`, `embedding` (vector), `content_hash`. Book chunks live
-only in the local DB (never exported to git).
+**job_run** — `job` ('night' = the daily catch-up job), `started_at`,
+`finished_at`, `status`, `error_code` (no health data).
 
-**job_run** — `job` ('night' | 'day_sync' | 'push' | 'calendar_write' |
-'brief' | 'backup'), `started_at`, `finished_at`, `status`, `error_code`,
-`details_json` (no health data).
+**meta** — `key`, `value`: schema version, `last_night_job` (date),
+`last_day_sync` (ms timestamp).
 
 **setting** — `account_id`, `key`, `value_json` (05_settings.md).
 
 ## 9. Retention, backup, export
 
-- Keep **everything forever**, including FIT files (R8-22). The expected
-  size is small (tens of MB per year + FIT files).
-- Nightly SQLite backup: 14 daily + 8 weekly copies (03 §8).
-- **Export** (R8-03): ZIP with one JSON file per table + all FIT files +
-  Method Notes version. **Delete account** removes DB rows and files after a
-  typed confirmation; backups older than the deletion are removed too.
+- Keep **all ride and wellness rows** (R8-22); a year of data is a few MB.
+- **Persistence:** the whole database is exported (`db.export()`) to
+  IndexedDB 300 ms after each change and at once when the app is hidden.
+- **Export** (R8-03): one JSON file `{ app: "everyday", version: 1, tables: {…} }`
+  with every user table; the intervals.icu key is blanked.
+- **Import** replaces all data with the file (the current key is kept).
+- **Delete everything** wipes all user tables on this phone after a
+  confirmation. Data in intervals.icu is not touched.
+- **Migrations:** v1 = the original schema; v2 adds `check_in.exhausted`
+  and `check_in.feeling` (D-044).

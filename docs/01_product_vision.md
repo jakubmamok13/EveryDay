@@ -1,12 +1,13 @@
 # 01 — Product Vision
 
-Status: **SPEC v1** — interview rounds 0–9 complete
+Status: **SPEC v1.1** — interview rounds 0–9 complete; phone-only since D-043
 Name: **EveryDay** (R8-01)
 
 ## 1. One-line pitch
 
-A free, **personal** web app (one user: the author, D-002) that acts as a
-personal **cycling coach**. It builds a
+A free, **personal** web app (one user per phone, D-002) that acts as a
+personal **cycling coach**. It runs **entirely on the phone** (D-043): no
+server, no PC, no AI model, €0 running cost. It builds a
 **Training Plan** from your **Weekly Availability** and **Goal**, then adapts
 it each day to your **Readiness** and progress. Every morning it gives a short
 **Daily Brief**: what to focus on today and what to do to be ready for the
@@ -27,6 +28,12 @@ next sessions.
 - Should feel like **the best coach**, but **brief**: a short description of
   which part of training to focus on and what to do each day.
 
+Round 10 (after v1 was built): keeping a PC on all day makes no sense →
+**phone only, free**, **no AI, buttons instead of text** (e.g. „Totalne
+wyczerpanie”, „Czuję się gorzej”, „Choroba”, „W pełni sił”), reminder via an
+**iPhone Shortcut**, and **no personal data in the public repo**
+(D-043 – D-046).
+
 ## 3. Core concepts (see glossary.md for canonical definitions)
 
 | Concept | Meaning in this app |
@@ -44,43 +51,41 @@ next sessions.
 
 ## 4. Who it's for — DECIDED (D-002)
 
-**One user: the author.** A personal coaching tool. The data model stays
-per-Athlete so it could be opened to friends later, but v1 makes no
-compromises for other users.
+**One athlete per phone.** A personal coaching tool: each person installs
+the app on their own phone and their data stays there. The data model stays
+per-Athlete.
 
-### Author's setup (round 5)
+Personal details (weight, FTP, schedule, devices) are **not** kept in this
+repository (D-046). They are entered in onboarding and stored only on the phone.
 
-| Item | Value |
+### Reference setup (what v1 is tuned for)
+
+| Item | Example |
 |---|---|
-| Training days | **Mon, Wed, Sat, Sun** (+ sometimes an extra day → Bonus Day) (D-027) |
-| Duration | ~**1 h** Mon/Wed; **up to 4 h** at the weekend |
-| Watch | **Garmin Fenix 8** (Body Battery, HRV Status, sleep, Training Readiness) |
-| HR | **Chest HR strap** |
-| Indoor | **Wahoo KICKR CORE** smart trainer + **MyWhoosh** |
-| Bike computer | **Wahoo ELEMNT BOLT v2** (outdoor; BOLT + Fenix both record → BOLT is Master Copy, D-029) |
-| Outdoor power meter | **None yet, planned** → outdoor = HR-guided until then (D-023) |
-| Indoor recording | **MyWhoosh and Fenix both record** → keep MyWhoosh copy (D-024) |
-| PC | **AMD Radeon RX 7800 XT 16 GB**, **32 GB RAM**, **Windows** (D-030) |
-| Phone | **iPhone** (seen 2026-10-02); app must work on iOS and Android (D-025). iPhone push needs Home Screen install |
-| FTP | **270 W** (source: probably MyWhoosh / indoor — confirm) |
-| Body | **86 kg**, **174 cm** → **3.14 W/kg** |
-| Goal | Primary **Raise FTP** (continuous) + Secondary **long rides of 200 km+ / 7 h+** (D-028, D-033) |
-| intervals.icu | **No account yet** → Phase 0 (D-032) |
+| Training days | 3–4 days a week, ~1 h on weekdays, longer at the weekend (+ an optional Bonus Day, D-027) |
+| Watch | A **Garmin** watch with HRV, sleep and Body Battery |
+| HR | Chest HR strap (optional) |
+| Indoor | A smart trainer with **MyWhoosh** (ERG) |
+| Bike computer | A **Wahoo** bike computer outdoors (Master Copy, D-029); the watch is the fallback |
+| Outdoor power meter | Optional → without one, outdoor rides are HR-guided (D-023) |
+| Phone | **iPhone** or Android (D-025); installed from the browser to the Home Screen |
+| Goal | Primary **Raise FTP** + Secondary **long rides** (D-028, D-033) |
+| Data hub | **intervals.icu** (free account, D-004) |
 
-### Author's Power Zones at FTP 270 W (Coggan, for reference)
+### Example Power Zones (Coggan) at FTP 250 W
 
 | Zone | % FTP | Watts |
 |---|---|---|
-| Z1 Active Recovery | < 55% | < 149 |
-| Z2 Endurance | 56–75% | 151–203 |
-| Z3 Tempo | 76–90% | 205–243 |
-| *Sweet Spot* | 88–94% | 238–254 |
-| Z4 Lactate Threshold | 91–105% | 246–284 |
-| Z5 VO2max | 106–120% | 286–324 |
-| Z6 Anaerobic Capacity | 121–150% | 327–405 |
-| Z7 Neuromuscular | > 150% | > 405 |
+| Z1 Active Recovery | < 55% | < 138 |
+| Z2 Endurance | 56–75% | 140–188 |
+| Z3 Tempo | 76–90% | 190–225 |
+| *Sweet Spot* | 88–94% | 220–235 |
+| Z4 Lactate Threshold | 91–105% | 228–263 |
+| Z5 VO2max | 106–120% | 265–300 |
+| Z6 Anaerobic Capacity | 121–150% | 303–375 |
+| Z7 Neuromuscular | > 150% | > 375 |
 
-HR zones for outdoor rides use **LTHR** from the Fenix 8 / intervals.icu (R8-24).
+HR zones for outdoor rides use **LTHR** from the watch / intervals.icu (R8-24).
 
 ## 5. What makes it different (hypotheses to confirm)
 
@@ -89,16 +94,19 @@ HR zones for outdoor rides use **LTHR** from the Fenix 8 / intervals.icu (R8-24)
   analytics tool, not a coach).
 - **Daily adaptation from body signals**, not only from completed workouts.
 - **Brevity**: one screen, a few sentences, no dashboards required.
-- **Privacy**: AI runs locally on the user's PC, so health data is never
-  sent to a third-party AI provider (D-003).
-- **Grounded in a method**: the Coach AI answers from a training book or
-  method (D-006), not from generic internet knowledge.
+- **Privacy**: everything runs on the phone (D-043). Health data goes only
+  between the phone and the user's own intervals.icu account; no AI provider,
+  no server of ours.
+- **Grounded in a method**: rules and short Method Notes based on the
+  Allen & Coggan approach (D-010, D-022), not generic internet advice.
+- **No typing**: one-tap check-in and buttons instead of a chat (D-044).
 
 ## 6. Non-goals (v1)
 
 - Not a social network (no feed, kudos, leaderboards).
 - Not a ride-recording app (MyWhoosh, BOLT and Fenix record; we read results).
 - Not a medical device; no medical, diet or weight-loss advice (R8-15).
+- No AI model and no free-text chat (D-044).
 - No strength sessions (R8-09), no Zwift, no own trainer control (D-009).
 - Cycling only (no run / swim / triathlon).
 
@@ -106,18 +114,17 @@ HR zones for outdoor rides use **LTHR** from the Fenix 8 / intervals.icu (R8-24)
 
 - ~~Q-VIS-01~~ → EveryDay (R8-01).
 - ~~Q-VIS-02~~ → D-002 (only me).
-- ~~Q-VIS-03~~ "Free" is moot for a personal tool. Target: €0 running cost.
-- ~~Q-VIS-04~~ → D-003 (AI on user's PC).
+- ~~Q-VIS-03~~ Target: €0 running cost → met by D-043 (static hosting, phone-only).
+- ~~Q-VIS-04~~ → D-003 (AI on user's PC), later superseded by D-043/D-044 (no AI, phone only).
 - ~~Q-VIS-05~~ → D-005 (all four Goal types).
-- ~~Q-VIS-06~~ Moot: the app is tuned to the author's equipment.
+- ~~Q-VIS-06~~ Moot: the app is tuned to the reference setup above.
 - ~~Q-VIS-07~~ → D-013: Polish.
-- ~~Q-VIS-08~~ → D-007: phone browser + PC browser (+ Garmin, + pushed message).
-  Native app: not planned.
+- ~~Q-VIS-08~~ → D-007, now D-043: the phone (installed web app). Native app: not planned.
 - **Q-VIS-09** (optional) Competitors you use or know, and what you like or hate about them.
 - ~~Q-VIS-10~~ → D-006: the "book" is the Coach AI's knowledge source.
 - ~~Q-VIS-11~~ → D-010: Allen & Coggan, "Training and Racing with a Power Meter".
 - ~~Q-VIS-12~~ Book not found yet → D-022 (start with our own Method Notes).
-- ~~Q-VIS-13~~ → D-027 (Mon, Wed, Sat, Sun).
-- ~~Q-VIS-14~~ → profile above + D-028.
-- ~~Q-VIS-15~~ → R8-24: LTHR / max HR from Fenix 8 auto-detection or intervals.icu.
+- ~~Q-VIS-13~~ → D-027 (set in onboarding).
+- ~~Q-VIS-14~~ → onboarding profile + D-028.
+- ~~Q-VIS-15~~ → R8-24: LTHR / max HR from the watch's auto-detection or intervals.icu.
 - ~~Q-VIS-16~~ → D-033: 200 km+ / 7 h+.

@@ -6,8 +6,8 @@ Terms marked are not confirmed yet.
 
 ## People & account
 
-- **Athlete** — the registered user being coached. (DB: `athlete`; UI: "you")
-- **Account** — login identity + settings; one Account has one Athlete.
+- **Athlete** — the person being coached; one per phone. (DB: `athlete`; UI: "you")
+- **Account** — the local owner of the settings; created on first open, no login (D-043).
 
 ## Goals & planning
 
@@ -45,11 +45,12 @@ Terms marked are not confirmed yet.
 - **Activity** — a completed ride imported from a Source (or uploaded).
 - **Wellness** — daily non-ride data: sleep, HRV, resting HR, Body Battery,
   stress, weight, plus the Morning Check-in.
-- **Morning Check-in** — the Athlete's ~10-second subjective daily input
-  (sleep quality, legs, motivation, sickness).
+- **Morning Check-in** — the Athlete's one-tap subjective daily input: a
+  Feeling (stored as sleep quality, legs, motivation, sick, exhausted), an
+  optional pain body part and the Ride Mode (D-044).
 - **Compliance** — how well a completed Activity matched its Planned Workout (%).
-- **Ride Rating** — RPE 1–10 + too easy / just right / too hard, given after
-  a ride (R8-20).
+- **Ride Rating** — too easy / just right / too hard (RPE derived 4 / 6 / 8),
+  given after a ride (R8-20, D-044).
 - **Fitness Snapshot** — dated record of FTP, LTHR, max HR and weight; the
   values valid on a ride's date are used for that ride.
 - **Delivery Status** — whether a Planned Workout was written to
@@ -89,33 +90,40 @@ Terms marked are not confirmed yet.
 - **Daily Brief** — the short daily coaching message (today's focus +
   off-bike action + tomorrow preview).
 - **Plan Engine** — the rule-based component that generates and adapts the
-  Training Plan and validates Coach AI proposals (D-011).
-- **Coach AI** — the local language model component (Qwen 3.8 at start) that
-  writes the Daily Brief, answers questions, and may **propose** Adaptations
-  inside the Safe Envelope (D-011).
-- **Safe Envelope** — the limits within which the Coach AI may change a
-  Planned Workout: ±20% duration, same-category swap, ±1 day, easier only;
-  never two hard days in a row (R8-12).
-- **Knowledge Base** — the local, searchable index the Coach AI retrieves
-  from: Method Notes first, then the Allen & Coggan book if found (the book
-  part never leaves the PC). Called "the book" in conversation.
+  Training Plan and checks every change against the Safe Envelope (D-011).
+- **Core** — the former server code (`packages/core`) that runs in the
+  phone's browser: database, sync, morning flow, actions, catch-up (D-043).
+- **Catch-up** — the daily job and sync that run when the app is opened or
+  comes back to the screen, instead of on a schedule (D-043).
+- **Safe Envelope** — the limits for any change to a Planned Workout:
+  ±20% duration (the Athlete's own requests may shorten more), same-category
+  swap, ±1 day, easier only; never two hard days in a row (R8-12).
+- **Knowledge Base** — the Method Notes bundled with the app; searched by
+  keywords for „Dlaczego ten trening?” and readable in Trener › Baza wiedzy.
 - **Method Notes** — our own written summary of the Coggan method (zones,
-  Performance Manager, ramp rates, workout types). It is the first content of
-  the Knowledge Base, and it is committed to git (D-022).
-- **Coach Chat** — free-text conversation with the Coach AI (D-019).
-- **Chat Note** — a fact from the chat (injury, illness, travel, other) with
-  an end date; affects Readiness and planning; visible and deletable (R8-19).
-- **Template Brief** — the brief built only from fixed templates; used for
-  any slot the AI fails to fill and in "no AI" mode.
-- **Validator** — checks AI output (format, length, numbers present in the
-  facts, Polish, no banned phrases) before it is shown.
-- **Notification** — the single daily web push that opens the Today screen (D-018).
+  Performance Manager, ramp rates, workout types), committed to git (D-022).
+- **Feeling** — the one-tap check-in answer: W pełni sił / Dobrze / Średnio /
+  Czuję się gorzej / Totalne wyczerpanie / Choroba; each maps to fixed
+  check-in values (D-044).
+- **Exhausted** — the „Totalne wyczerpanie” feeling: a Readiness override
+  like Sick → Red, rest (D-044).
+- **Quick Action** — a Trener button that changes today's plan (Mam mniej
+  czasu, Lżej dziś, Dziś odpoczynek, Przesuń na jutro, Coś boli, Wyjazd) (D-044).
+- **Chat Note** — a remembered fact (injury, illness, travel, other) with an
+  end date, created by buttons; affects Readiness and planning; visible and
+  deletable in „Pamiętam” (R8-19). The name is historical (there is no chat).
+- **Template Brief** — the brief built from fixed Polish templates; the only
+  kind since D-044.
+- **Reminder** — the daily iPhone Shortcuts notification „Czas na poranny
+  check-in” (D-045); replaces the web push of D-018.
+- **Coach AI / Coach Chat / Validator** — *retired* (D-044): the v1 local
+  language model, its chat and output checker.
 - **Performance Manager** — Coggan's model of Fitness / Fatigue / Form over
   time; our Load maths follows it (D-010).
 
 ## Riding
 
-- **Indoor** — a ride on the smart trainer (KICKR CORE) in MyWhoosh.
+- **Indoor** — a ride on the smart trainer in MyWhoosh.
 - **Outdoor** — a ride on the road or off-road.
 - **ERG mode** — the smart trainer holds the target power regardless of cadence.
 - **Ride Mode** — Indoor or Outdoor, chosen by the Athlete each day in the
@@ -123,10 +131,10 @@ Terms marked are not confirmed yet.
 - **Workout Variant** — one of the two versions of a Planned Workout: the
   **Indoor Variant** (power targets, ERG, MyWhoosh) or the **Outdoor Variant**
   (HR/RPE targets now, power once an outdoor power meter exists — D-023;
-  shown on the BOLT and/or Fenix 8). Only the chosen one is written to the calendar.
-- **Master Copy** — when the same ride arrives twice (e.g. MyWhoosh +
-  Fenix), the one copy that counts for Load. Indoors = MyWhoosh (D-024);
-  outdoors = BOLT v2, Fenix as fallback (D-029).
+  shown on the bike computer and/or the watch). Only the chosen one is written to the calendar.
+- **Master Copy** — when the same ride arrives twice (e.g. MyWhoosh + the
+  watch), the one copy that counts for Load. Indoors = MyWhoosh (D-024);
+  outdoors = the bike computer, the watch as fallback (D-029).
 
 ## Polish UI labels
 
@@ -135,10 +143,10 @@ Terms marked are not confirmed yet.
 | Today screen | Dziś |
 | Week screen | Tydzień |
 | Progress screen | Postęp |
-| Coach Chat | Czat |
+| Quick actions screen | Trener |
 | Settings | Ustawienia |
 | Daily Brief | Odprawa |
-| Morning Check-in | Poranny check-in |
+| Morning Check-in | Jak się dziś czujesz? (one tap) |
 | Readiness | Gotowość (dobra / uważaj / regeneracja / uczę się) |
 | Fitness / Fatigue / Form | Kondycja / Zmęczenie / Forma |
 | Load | Obciążenie |
@@ -151,3 +159,8 @@ Terms marked are not confirmed yet.
 | Undo | Cofnij |
 | Power Zones | Strefy mocy |
 | Chat Note | Pamiętam |
+| Feeling buttons | W pełni sił · Dobrze · Średnio · Czuję się gorzej · Totalne wyczerpanie · Choroba |
+| Pain | Coś boli? — Kolano / Plecy / Biodro / Kark / Łydka / Achilles / Inne |
+| Travel | Wyjazd |
+| Reminder | Poranne przypomnienie |
+| Export / import | Eksportuj kopię / Wczytaj kopię |

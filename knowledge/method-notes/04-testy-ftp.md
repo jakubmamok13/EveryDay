@@ -17,4 +17,4 @@ proponuje nowe FTP. Strefy zmieniają się dopiero po Twojej akceptacji.
 
 ## Po zmianie FTP
 Wszystkie przyszłe treningi przeliczają się na nowe waty, a kalendarz w
-intervals.icu (MyWhoosh, BOLT, Fenix) dostaje nowe wersje.
+intervals.icu (MyWhoosh, licznik, zegarek) dostaje nowe wersje.

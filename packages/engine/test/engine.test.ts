@@ -28,7 +28,7 @@ import {
   toZwo,
   weeklyLoadCap,
 } from "../src";
-import { AUTHOR_AVAILABILITY, AUTHOR_GOALS, AUTHOR_PHYS } from "./fixtures";
+import { SAMPLE_AVAILABILITY, SAMPLE_GOALS, SAMPLE_PHYS } from "./fixtures";
 
 const MONDAY = "2026-10-05";
 
@@ -38,8 +38,8 @@ function plan(weeks: number, fitness = 45) {
     planStart: MONDAY,
     firstWeek: MONDAY,
     weeks,
-    goals: AUTHOR_GOALS,
-    availability: AUTHOR_AVAILABILITY,
+    goals: SAMPLE_GOALS,
+    availability: SAMPLE_AVAILABILITY,
     fitness,
     ladder: {},
     longestRecentMinutes: 150,
@@ -105,18 +105,18 @@ describe("workouts", () => {
     expect(x.match(/SteadyState/g)!.length).toBeGreaterThanOrEqual(6);
   });
   it("shows watts and HR zones for the athlete", () => {
-    const steps = displaySteps(scaleWorkout(findWorkout(LIBRARY, "ss-3x12")), AUTHOR_PHYS);
+    const steps = displaySteps(scaleWorkout(findWorkout(LIBRARY, "ss-3x12")), SAMPLE_PHYS);
     const work = steps.find((s) => s.label === "Sweet Spot")!;
-    expect(work.indoor).toBe("238–248 W");
+    expect(work.indoor).toBe("220–230 W");
     expect(work.outdoor).toMatch(/^Z4 HR \d+–\d+ ud\/min$/);
   });
 });
 
-describe("planner — author's week", () => {
-  it("assigns Mon/Wed quality, Sat long, Sun endurance", () => {
-    const roles = assignRoles(AUTHOR_AVAILABILITY, 2);
-    expect(roles.get(1)).toBe("quality");
-    expect(roles.get(3)).toBe("quality");
+describe("planner — sample week", () => {
+  it("assigns Tue/Thu quality, Sat long, Sun endurance", () => {
+    const roles = assignRoles(SAMPLE_AVAILABILITY, 2);
+    expect(roles.get(2)).toBe("quality");
+    expect(roles.get(4)).toBe("quality");
     expect(roles.get(6)).toBe("long");
     expect(roles.get(7)).toBe("endurance");
   });
@@ -126,7 +126,7 @@ describe("planner — author's week", () => {
     expect(w!.focus).toBe("sweet_spot");
     expect(w!.days.map((d) => d.role)).toEqual(["quality", "quality", "long", "endurance"]);
     for (const d of w!.days) {
-      const max = AUTHOR_AVAILABILITY.find((a) => a.weekday === new Date(d.date + "T00:00:00Z").getUTCDay() || (a.weekday === 7 && new Date(d.date + "T00:00:00Z").getUTCDay() === 0))!.maxMinutes;
+      const max = SAMPLE_AVAILABILITY.find((a) => a.weekday === new Date(d.date + "T00:00:00Z").getUTCDay() || (a.weekday === 7 && new Date(d.date + "T00:00:00Z").getUTCDay() === 0))!.maxMinutes;
       expect(d.workout.minutes, d.date).toBeLessThanOrEqual(max + 2);
     }
     expect(w!.days[0]!.workout.category).toBe("sweet_spot");
@@ -151,15 +151,15 @@ describe("planner — author's week", () => {
     const all = weeks.flatMap((w) => w.days);
     const hard = all.filter((d) => d.workout.intensity === "hard").map((d) => d.date);
     for (const d of hard) expect(hard.includes(addDays(d, 1)), d).toBe(false);
-    const recoveryWeds = weeks.filter((w) => w.kind === "recovery").map((w) => w.days.find((d) => d.date === addDays(w.weekStart, 2)));
-    for (const d of recoveryWeds) expect(d?.workout.slug).toBe("ramp-test");
+    const recoveryThus = weeks.filter((w) => w.kind === "recovery").map((w) => w.days.find((d) => d.date === addDays(w.weekStart, 3)));
+    for (const d of recoveryThus) expect(d?.workout.slug).toBe("ramp-test");
   });
 
   it("puts openers before an event and nothing on the event day", () => {
     const weeks = planWeeks({
       today: MONDAY, planStart: MONDAY, firstWeek: MONDAY, weeks: 1,
       goals: [{ role: "primary", type: "event", eventDate: "2026-10-11", eventName: "Gran Fondo" }],
-      availability: AUTHOR_AVAILABILITY, fitness: 50, ladder: {}, longestRecentMinutes: 180, library: LIBRARY,
+      availability: SAMPLE_AVAILABILITY, fitness: 50, ladder: {}, longestRecentMinutes: 180, library: LIBRARY,
     });
     const days = weeks[0]!.days;
     expect(days.find((d) => d.date === "2026-10-10")!.workout.slug).toBe("openers");
@@ -169,8 +169,8 @@ describe("planner — author's week", () => {
 
   it("includes a confirmed Long Ride Day and eases the next day", () => {
     const weeks = planWeeks({
-      today: MONDAY, planStart: MONDAY, firstWeek: MONDAY, weeks: 1, goals: AUTHOR_GOALS,
-      availability: AUTHOR_AVAILABILITY, fitness: 60, ladder: {}, longestRecentMinutes: 240, library: LIBRARY,
+      today: MONDAY, planStart: MONDAY, firstWeek: MONDAY, weeks: 1, goals: SAMPLE_GOALS,
+      availability: SAMPLE_AVAILABILITY, fitness: 60, ladder: {}, longestRecentMinutes: 240, library: LIBRARY,
       confirmedLongRides: [{ date: "2026-10-10", minutes: 330 }],
     });
     const sat = weeks[0]!.days.find((d) => d.date === "2026-10-10")!;
@@ -234,7 +234,7 @@ describe("readiness", () => {
 
 describe("adaptation and envelope", () => {
   const [week] = plan(1, 50);
-  const monday = week!.days[0]!;
+  const monday = week!.days[0]!; // first training day (Tuesday)
   const sunday = week!.days[3]!;
 
   it("keeps the plan on a green day", () => {
@@ -256,7 +256,7 @@ describe("adaptation and envelope", () => {
     expect(res.workout).toBeNull();
   });
 
-  const avail = [1, 3, 6, 7];
+  const avail = [2, 4, 6, 7];
   const ctx = (after: PlannedDay[]) => ({ before: monday, availableWeekdays: avail, weekAfter: after, weekPlannedLoad: week!.targetLoad, overrides: [] as Readiness["overrides"] });
 
   it("allows a shorter, easier version", () => {
@@ -276,21 +276,20 @@ describe("adaptation and envelope", () => {
     expect(res.reasons).toContain("move_too_far");
   });
 
-  it("drops a missed Monday Key Workout when no free day fits", () => {
-    const nextMonday: PlannedDay = { ...monday, date: addDays(MONDAY, 7) };
+  it("drops a missed Tuesday Key Workout when no free day fits", () => {
+    const nextTuesday: PlannedDay = { ...monday, date: addDays(monday.date, 7) };
     const to = moveMissedKey({
       missed: monday,
       laterThisWeek: week!.days.slice(1),
-      availableWeekdays: avail,
-      neighbours: [...week!.days, nextMonday],
+      availableWeekdays: [2, 4, 6],
+      neighbours: [...week!.days, nextTuesday],
       formPct: -0.1,
     });
     expect(to).toBeNull();
   });
-  it("moves a missed Wednesday Key Workout to a free day when it fits", () => {
-    const wed = week!.days[1]!;
-    const to = moveMissedKey({ missed: wed, laterThisWeek: [sunday], availableWeekdays: [3, 5, 7], neighbours: [wed, sunday], formPct: 0 });
-    expect(to).toBe(addDays(MONDAY, 4));
+  it("moves a missed Tuesday Key Workout to a free day when it fits", () => {
+    const to = moveMissedKey({ missed: monday, laterThisWeek: [sunday], availableWeekdays: [2, 4, 7], neighbours: [monday, sunday], formPct: 0 });
+    expect(to).toBe(addDays(MONDAY, 3));
   });
 });
 
@@ -309,11 +308,11 @@ describe("progress", () => {
     expect(compliance({ minutes: 60, load: 70 }, { minutes: 30, load: 35 })).toBe(50);
   });
   it("suggests FTP after two consistent estimates", () => {
-    expect(ftpSuggestion(270, [281, 283])).toBe(282);
-    expect(ftpSuggestion(270, [281, 272])).toBeNull();
+    expect(ftpSuggestion(250, [261, 263])).toBe(262);
+    expect(ftpSuggestion(250, [261, 252])).toBeNull();
   });
   it("proposes a Long Ride Day a week or more ahead on Saturday", () => {
-    const p = proposeLongRideDay({ today: MONDAY, lastLongRideDay: null, everyWeeks: 5, longestRideMinutes: 240, targetMinutes: 420, availability: AUTHOR_AVAILABILITY });
+    const p = proposeLongRideDay({ today: MONDAY, lastLongRideDay: null, everyWeeks: 5, longestRideMinutes: 240, targetMinutes: 420, availability: SAMPLE_AVAILABILITY });
     expect(p).toEqual({ date: "2026-10-17", minutes: 300 });
   });
   it("fuels rides over 90 min", () => {
@@ -343,20 +342,20 @@ describe("brief", () => {
     const [week] = plan(1, 50);
     const today = week!.days[0]!;
     const facts = buildBriefFacts({
-      date: MONDAY,
+      date: today.date,
       readiness: readiness({ inputs: [{ key: "hrv", rating: "ok" }, { key: "check_in", rating: "ok" }] }),
       withCheckIn: true,
       today,
       rideMode: "indoor",
-      physiology: AUTHOR_PHYS,
+      physiology: SAMPLE_PHYS,
       upcoming: week!.days,
     });
     const { text } = assembleBrief(facts);
     expect(text).toContain("Dziś: Sweet Spot");
     expect(text).toContain("W domu (MyWhoosh)");
     expect(text).toContain("Gotowość: 🟢 dobra — HRV w normie, nogi świeże");
-    expect(text).toMatch(/Skup się: Równe 24\d W w blokach/);
-    expect(text).toMatch(/Jutro: Wolne\. Środa: Sweet Spot \d×\d+ min\./);
+    expect(text).toMatch(/Skup się: Równe 2[23]\d W w blokach/);
+    expect(text).toMatch(/Jutro: Wolne\. Czwartek: Sweet Spot \d×\d+ min\./);
     expect(facts.numbers).toContain(String(today.workout.minutes));
     expect(facts.numbers).toContain(facts.workout!.target.replace(" W", ""));
   });
@@ -367,7 +366,7 @@ describe("brief", () => {
     const res = adapt({ date: MONDAY, readiness: r, planned: today, recentlySick: false, laterThisWeek: [], library: LIBRARY });
     const facts = buildBriefFacts({
       date: MONDAY, readiness: r, withCheckIn: false, today: { ...today, workout: res.workout! }, before: today,
-      adaptation: res, rideMode: "indoor", physiology: AUTHOR_PHYS, upcoming: week!.days,
+      adaptation: res, rideMode: "indoor", physiology: SAMPLE_PHYS, upcoming: week!.days,
     });
     const { text } = assembleBrief(facts);
     expect(text).toContain("Zmiana:");

@@ -13,7 +13,7 @@ terms and test the APIs ourselves.
 | S03 | Zwift data reachable | Med | Research: indirect only |
 | S04 | MyWhoosh data reachable; workout import format | Med | Research: **direct intervals.icu integration** both ways |
 | S05 | intervals.icu usable as a data hub for a third-party app | **High** | Research: promising; test with the author's account |
-| S06 | Qwen 3.8 27B on the author's **AMD RX 7800 XT 16 GB** writes clear **Polish** briefs and chats fast enough | **High** | Research: ~15–25 tok/s expected; test on the PC |
+| S06 | ~~Qwen 3.8 27B on the author's PC writes clear Polish briefs~~ | — | **Closed** — no AI (D-044) |
 | S07 | FIT parsing in browser / server | Low | Unverified (Garmin FIT SDK has JS) |
 | S08 | Smart-trainer control via Web Bluetooth (FTMS / ERG) | — | Deferred: out of scope v1 (D-009) |
 | S09 | Readiness thresholds (02 M5.2) predict worse rides | Med | Designed; calibrate after the Learning Period with real data |
@@ -21,19 +21,20 @@ terms and test the APIs ourselves.
 | S11 | Apple Health / Health Connect unreachable from web | Low | Believed true |
 | S12 | GDPR: health data = special category (Art. 9) | Low | Mostly moot for a single-user tool; revisit if opened up |
 | S13 | MyWhoosh ↔ intervals.icu: workouts arrive correctly (power targets, cadence, ramps); rides return with full data | Med | Research: exists; test with the author's account |
-| S14 | Planned workouts written via the intervals.icu API reach Garmin Connect and MyWhoosh automatically | Med | **Delivery confirmed** (2026-10-02): a workout added by hand to the intervals.icu calendar reached the devices (author: "it works"). Still to check: the same via the API (Phase 1, on the PC) |
-| S15 | Phone access via private tunnel + Telegram/email push from the PC | Low | Decided D-012; setup to verify |
-| S16 | Provenance / license / quality of the community "uncensored" Qwen 3.8 build — **chosen model (D-026)** | **High** | Unverified |
-| S17 | Book → local knowledge index: format of the author's copy (PDF/e-book), Polish answers from an English book | Low | Deferred: book not found yet; Method Notes first (D-022) |
-| S18 | A same-morning Indoor/Outdoor switch reaches MyWhoosh and the Fenix 8 in time | **High** | Unverified |
-| S19 | Duplicate rides (Fenix + MyWhoosh both recording) double the Load | Med | Research: known problem; rule in 07 |
-| S20 | Web push to the phone from a PWA served by the PC over the Tailscale tunnel (HTTPS certs, iOS Home Screen rule) — **iOS and Android** (D-025) | Med | Unverified |
-| S21 | intervals.icu → Wahoo cloud → ELEMNT **BOLT v2**: planned workouts with HR targets arrive and display correctly | Med | Unverified |
-| S22 | Ollama for **Windows** runs Qwen 3.8 27B on the **RX 7800 XT** (ROCm/HIP), or LM Studio Vulkan as fallback; measure tokens/s | **High** | Unverified |
-| S23 | One HR strap feeds both BOLT v2 and Fenix 8 at the same time (ANT+ vs Bluetooth) | Low | Unverified |
-| S24 | Windows Task Scheduler autostart (S4U) runs `npm start` before login and restarts it | Med | Script written; verify on the PC |
-| S25 | LM Studio fallback (OpenAI-compatible API) | Low | Deferred: app speaks Ollama API; templates work without AI |
-| S26 | intervals.icu fields used by the code: `icu_weighted_avg_watts`, `icu_training_load`, wellness `hrv` / `restingHR` / `sleepSecs` / custom `BodyBatteryMax`, eFTP in `sportSettings`, FIT download path, best 1-min power for the ramp test | **High** | Mapped defensively (raw JSON kept); confirm on the first real sync |
+| S14 | Planned workouts written via the intervals.icu API reach Garmin Connect and MyWhoosh automatically | Med | **Delivery confirmed** (2026-10-02): a workout added by hand to the intervals.icu calendar reached the devices (author: "it works"). Still to check: the same via the API (from the phone app) |
+| S15 | ~~Phone access via private tunnel~~ | — | **Closed** — phone-only app (D-043) |
+| S16 | ~~Provenance of the community "uncensored" Qwen 3.8 build~~ | — | **Closed** — no AI (D-044) |
+| S17 | ~~Book → local knowledge index~~ | — | **Closed** — not used; Method Notes only (D-044) |
+| S18 | A same-morning Indoor/Outdoor switch reaches MyWhoosh and the watch in time | **High** | Unverified |
+| S19 | Duplicate rides (watch + MyWhoosh both recording) double the Load | Med | Research: known problem; rule in 07 |
+| S20 | ~~Web push from the PC over Tailscale~~ | — | **Closed** — reminder via iPhone Shortcut (D-045) |
+| S21 | intervals.icu → Wahoo cloud → bike computer: planned workouts with HR targets arrive and display correctly | Med | Unverified |
+| S22 | ~~Ollama for Windows on the author's GPU~~ | — | **Closed** — no AI (D-044) |
+| S23 | One HR strap feeds both the bike computer and the watch at the same time (ANT+ vs Bluetooth) | Low | Unverified |
+| S24 | ~~Windows Task Scheduler autostart~~ | — | **Closed** — no PC (D-043) |
+| S25 | ~~LM Studio fallback~~ | — | **Closed** — no AI (D-044) |
+| S26 | intervals.icu fields used by the code: `icu_weighted_avg_watts`, `icu_training_load`, wellness `hrv` / `restingHR` / `sleepSecs` / custom `BodyBatteryMax`, eFTP in `sportSettings`, best 1-min power for the ramp test | **High** | Mapped defensively (raw JSON kept); confirm on the first real sync |
+| S27 | The installed PWA (GitHub Pages origin) can call the intervals.icu API: CORS preflight with the `Authorization` header on GET/POST/PUT/DELETE `/api/v1/` | **High** | Research: intervals.icu allows cross-origin `/api/v1/` requests; confirm on the phone (D-043) |
 
 ## S01 — Strava API
 
@@ -109,7 +110,7 @@ Research findings:
   in the wellness API; history depth on first import; rate limits; writing
   planned workouts and their delivery to Garmin and Zwift.
 
-## S06 — Local LLM on the author's PC (D-003)
+## S06 — Local LLM on the author's PC (D-003) — closed (D-044)
 
 - Options: WebLLM / transformers.js on WebGPU with a small model (1–4B
   params, 1–3 GB download), or Chrome's built-in Gemini Nano Prompt API.
@@ -120,29 +121,11 @@ Research findings:
   bigger models (7–14B on an 8–16 GB GPU), but the PC must be on when the
   brief is generated.
 
-## S06 notes — model candidates (to test)
+## S06 notes — closed (D-044)
 
-- **First: Qwen 3.8 27B, uncensored variant** (user choice, D-013). Research
-  2026-10-01: released Aug 14 2026, Apache-2.0, in Ollama since v0.32.12.
-  Default tag q4_K_M is an ~18 GB download, recommended for 24 GB+ VRAM, with
-  a 256K context (Ollama's default context setting truncates long inputs,
-  so set `num_ctx` explicitly). On 8–16 GB VRAM it partly runs on the CPU:
-  measure speed.
-  Sources: [Ollama announcement](https://x.com/ollama/status/2088314436088168491),
-  [Qwen (Wikipedia)](https://en.wikipedia.org/wiki/Qwen),
-  [Ollama library tag](https://ollama.com/library/qwen3.8:27b-mlx).
-- Fallbacks: **Bielik** (Polish-native), official Qwen 3.8, smaller models.
-- **Author's hardware (D-017): AMD RX 7800 XT 16 GB + 32 GB RAM.** Research:
-  27B models at Q4 (~17 GB) run at ~15–25 tok/s with slight offload; ~13 GB
-  4-bit quants fit fully at ~19 tok/s. ROCm works unofficially on the
-  7800 XT (`HSA_OVERRIDE_GFX_VERSION=11.0.0` on Linux); Vulkan is an alternative.
-  Sources: [RX 7800 XT local LLM guide](https://godinim.github.io/2026/local-llm-guide-AMD-RX-7800-XT),
-  [RX 7800 XT llama.cpp benchmarks](https://sergiiob.dev/posts/rx7800-xt-llama-cpp-benchmarks-moe-context/),
-  [llama.cpp ROCm discussion](https://github.com/ggml-org/llama.cpp/discussions/15021).
-- Clarity (D-021) must come from prompt + template + validator, not from
-  the "uncensored" variant.
-- Test: same input facts → brief; score accuracy (no invented numbers),
-  brevity and tone. Also test RAG retrieval quality over the chosen book.
+The v1 PC version planned a local Qwen 3.8 model via Ollama. Round 10
+removed the AI entirely (D-044), so this research is no longer needed. The
+author's hardware details were removed from the repo (D-046).
 
 ## S08 — Web Bluetooth trainer control
 
@@ -160,7 +143,7 @@ Research findings:
 
 - MyWhoosh receives intervals.icu workouts for the next 7 days. How quickly
   does a change made at 07:00 for today appear in MyWhoosh? Same for Garmin
-  Connect → Fenix 8 (the watch must sync).
+  Connect → the watch (it must sync).
 - Fallback ideas: write **both variants** to the calendar for that day and
   label them clearly, or choose the variant the evening before.
 
@@ -171,7 +154,7 @@ Research findings:
 - Rule: one entry path per ride type; filter Garmin "VirtualRide" if the Fenix also records indoors.
 - Source: [intervals.icu forum — duplicates from Garmin and MyWhoosh](https://forum.intervals.icu/t/duplicate-workouts-from-garmin-and-mywhoosh/125370).
 
-## S20 — Web push through a private tunnel
+## S20 — Web push through a private tunnel — closed (D-045)
 
 - Service workers + Push API need HTTPS → Tailscale HTTPS certificates
   (or Tailscale Serve). The PC sends to the browser's push service

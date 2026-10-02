@@ -6,9 +6,9 @@ akcent: Sweet Spot, potem Próg, potem VO2max — i znów od początku, już prz
 wyższym FTP. Z tygodnia na tydzień treningi kluczowe są o stopień trudniejsze.
 
 ## Tydzień EveryDay (nasza reguła)
-- Poniedziałek i środa (około 1 h): treningi kluczowe — jakość, zwykle w domu.
-- Sobota (do 4 h): długa jazda, kluczowa dla celu 200 km.
-- Niedziela: spokojna wytrzymałość, czyli drugi dzień weekendowej objętości.
+- Krótkie dni w tygodniu (około 1 h): treningi kluczowe — jakość, zwykle w domu.
+- Najdłuższy dzień (zwykle sobota): długa jazda, kluczowa dla celu długich tras.
+- Kolejny długi dzień: spokojna wytrzymałość, czyli druga porcja objętości.
 - Nigdy dwa mocne dni z rzędu — mięśnie i układ nerwowy potrzebują przerwy,
   żeby kolejny mocny trening miał sens.
 

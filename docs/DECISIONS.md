@@ -17,7 +17,7 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   model per-Athlete anyway so opening up later is possible without a rewrite.
 - **Source:** User (round 1).
 
-## D-003 · 2026-10-01 · Coach AI runs on the user's PC; app provides full technical detail ("book")
+## D-003 · 2026-10-01 · Coach AI runs on the user's PC; app provides full technical detail ("book") — *AI part superseded by D-044*
 - **Decision:** The AI runs **locally on the user's PC** (no cloud AI API).
   Next to the short Daily Brief, the app also provides **full technical
   training detail ("book")**. Exact meaning is being clarified: Q-VIS-10.
@@ -101,7 +101,7 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
 - **Open:** exact envelope (Q-ADP-04).
 - **Source:** User (round 3).
 
-## D-012 · 2026-10-01 · Deployment: everything on the author's PC (always on)
+## D-012 · 2026-10-01 · ~~Deployment: everything on the author's PC (always on)~~ — *superseded by D-043*
 - **Decision:** Deployment shape **2**. App, database, sync, Plan Engine and
   Coach AI all run on the author's PC, which is on 24/7. The phone reaches the
   app through a **private tunnel** (e.g. Tailscale, no public exposure).
@@ -114,7 +114,7 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   speed depends on the GPU.
 - **Source:** User (round 3).
 
-## D-013 · 2026-10-01 · Language Polish; start with Qwen 3.8 "uncensored" — *confirmed by D-026*
+## D-013 · 2026-10-01 · Language Polish; start with Qwen 3.8 "uncensored" — *Polish stays; model part superseded by D-044*
 - **Decision:** UI and coach messages in **Polish**. The first model is
   **Qwen 3.8 (27B), an uncensored community variant**, run via Ollama.
   The model is a swappable setting. Later candidates to benchmark: Bielik
@@ -149,18 +149,14 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   Numbers come from the Plan Engine only.
 - **Source:** User (round 4).
 
-## D-017 · 2026-10-02 · AI hardware: AMD Radeon RX 7800 XT (16 GB) + 32 GB RAM (supersedes D-008)
-- **Fact:** The author's GPU is an **AMD Radeon RX 7800 XT, 16 GB VRAM**
-  (not NVIDIA, as assumed in D-008). The PC has **32 GB RAM**. OS: Q-ARC-10.
-- **Decision:** Native local runtime: **Ollama** (ROCm or Vulkan backend), with
-  **LM Studio / llama.cpp (Vulkan)** as fallback. No browser WebGPU.
-- **Expectation (research, unverified on this PC):** a 27B model at ~4-bit
-  (~13–17 GB) runs at roughly 15–25 tokens/s on an RX 7800 XT. That is
-  usable for chat too. ROCm on Linux may need `HSA_OVERRIDE_GFX_VERSION=11.0.0`.
-  Spike S06.
+## D-017 · 2026-10-02 · ~~AI hardware: the author's AMD GPU (supersedes D-008)~~ — *superseded by D-043/D-044*
+- **Fact:** The author's PC has an AMD GPU (not NVIDIA, as assumed in D-008).
+  Exact hardware details removed from the public repo (D-046).
+- **Decision (historical):** native local runtime **Ollama**, with LM Studio
+  as fallback. No browser WebGPU.
 - **Source:** User (round 5) + research.
 
-## D-018 · 2026-10-02 · One notification channel: web push from the app (supersedes D-007 push part)
+## D-018 · 2026-10-02 · ~~One notification channel: web push from the app~~ — *superseded by D-045*
 - **Decision:** No Telegram, no email. The app sends **one browser push
   notification** ("alert from web") to the phone. Tapping it opens the
   **Today** screen with the Morning Check-in and the Daily Brief.
@@ -171,7 +167,7 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   app is added to the Home Screen. Spike S20; phone type needed (Q-UX-04).
 - **Source:** User (round 5).
 
-## D-019 · 2026-10-02 · Coach Chat is in scope
+## D-019 · 2026-10-02 · ~~Coach Chat is in scope~~ — *superseded by D-044 (buttons instead of chat)*
 - **Decision:** The Athlete can chat with the coach ("I only have 45 minutes
   today", "why this workout?"). Changes requested in chat go through the
   Safe Envelope (D-011) and are logged as Adaptations.
@@ -182,8 +178,8 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
 - **Decision:** The Athlete picks **Indoor / Outdoor each day** (part of the
   Morning Check-in, pre-filled with yesterday's guess). Each Planned
   Workout has **two variants**:
-  - **Indoor:** power targets (ERG) for MyWhoosh on the Wahoo KICKR CORE.
-  - **Outdoor:** HR (and RPE) targets for the Fenix 8, since there is no
+  - **Indoor:** power targets (ERG) for MyWhoosh on the smart trainer.
+  - **Outdoor:** HR (and RPE) targets for the watch, since there is no
     outdoor power meter (to confirm, Q-INT-08).
   After the choice, the app writes the chosen variant to intervals.icu.
 - **Risk:** the morning change must reach MyWhoosh / Garmin in time (spike S18).
@@ -208,20 +204,19 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   book is added to the local index later, if found.
 - **Source:** User (round 5: "have to find it") + Claude proposal.
 
-## D-023 · 2026-10-02 · Outdoor: HR now, power later; Wahoo BOLT on the bike
-- **Fact:** Outdoors the author has the **Fenix 8 + HR strap** and a
-  **Wahoo ELEMNT BOLT** bike computer. There is **no power meter yet**, and
-  one is planned.
+## D-023 · 2026-10-02 · Outdoor: HR now, power later; Wahoo bike computer
+- **Fact:** Outdoors the author has a **Garmin watch + HR strap** and a
+  **Wahoo** bike computer. There is **no power meter yet**, and one is planned.
 - **Decision:** The Outdoor Variant uses **HR (+ RPE) targets** and HR-based
   Load. When outdoor rides start arriving **with power data**, the app offers
   to switch the Outdoor Variant to **power targets** (setting
   `outdoor_power_meter = yes`) and to re-check FTP outdoors vs indoors.
 - **Open:** which device records outdoor rides and shows the workout:
-  BOLT, Fenix or both (Q-INT-10). Both recording creates duplicates (S19).
+  bike computer, watch or both (Q-INT-10). Both recording creates duplicates (S19).
 - **Source:** User (round 6).
 
-## D-024 · 2026-10-02 · Indoor rides: keep MyWhoosh's copy, ignore the Fenix copy
-- **Fact:** Indoors **both MyWhoosh and the Fenix 8 record** the ride.
+## D-024 · 2026-10-02 · Indoor rides: keep MyWhoosh's copy, ignore the watch copy
+- **Fact:** Indoors **both MyWhoosh and the Garmin watch record** the ride.
 - **Decision:** The **MyWhoosh** copy is the master (it has trainer power +
   HR). In intervals.icu, Garmin "VirtualRide" activities are filtered out.
   The app also runs its own **duplicate guard** (same day, overlapping time,
@@ -234,7 +229,7 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   iOS for web push). The onboarding shows that step.
 - **Source:** User (round 6: "multifunctional iOS and Android").
 
-## D-026 · 2026-10-02 · Model confirmed: uncensored Qwen 3.8 (27B)
+## D-026 · 2026-10-02 · ~~Model confirmed: uncensored Qwen 3.8 (27B)~~ — *superseded by D-044*
 - **Decision:** Start with the **uncensored Qwen 3.8 27B** via Ollama (user
   choice after the clarity explanation). The clarity rules (D-021) still
   apply. The official Qwen 3.8 is kept as the configured **fallback** model.
@@ -243,11 +238,12 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   decisions regardless of the model.
 - **Source:** User (round 6).
 
-## D-027 · 2026-10-02 · Weekly Availability of the author + Bonus Day
-- **Fact:** Training days **Monday, Wednesday, Saturday, Sunday**; weekdays
-  ~**1 h**; weekend rides up to **4 h**; **sometimes an extra day**.
-- **Decision:** Weekly Availability = Mon 1 h · Wed 1 h · Sat ≤ 4 h · Sun ≤ 4 h
-  (Sunday max to confirm), i.e. ~4–10 h/week. A **Bonus Day** button
+## D-027 · 2026-10-02 · Weekly Availability set in onboarding + Bonus Day
+- **Fact:** The author trains on **four fixed days**: about **1 h** on
+  weekdays and **several hours** at the weekend, **sometimes an extra day**.
+  The exact days are personal and not kept in the repo (D-046).
+- **Decision:** Weekly Availability (days, max minutes, indoor/outdoor) is
+  entered in onboarding and editable in Settings. A **Bonus Day** button
   ("Mam dziś czas") lets the Athlete add an unplanned session. The engine then
   offers an optional workout that fits current Form and **never compromises
   the next Key Workout** (default: easy Endurance or Recovery).
@@ -255,35 +251,32 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
 
 ## D-028 · 2026-10-02 · Goal: raise FTP continuously + get ready for long rides; editable any time
 - **Decision:** Goals have a **Primary** and an optional **Secondary** goal.
-  Author: Primary = **Raise FTP** (no end date, rolling blocks), Secondary =
+  Default: Primary = **Raise FTP** (no end date, rolling blocks), Secondary =
   **Endurance / long rides**.
 - **Decision:** The Goal is set in **onboarding** (new account) and can be
   **changed any time** in settings for the existing account. A change
   regenerates the plan **from today**; history and Fitness are kept.
 - **Source:** User (round 7: "I want in a new account to set this again, or change it in the old one").
 
-## D-029 · 2026-10-02 · Outdoor: BOLT v2 and Fenix 8 both record; BOLT is the master copy
-- **Fact:** Outdoors **both the Wahoo ELEMNT BOLT v2 and the Fenix 8** record
-  and should show the workout.
+## D-029 · 2026-10-02 · Outdoor: bike computer and watch both record; the bike computer is the master copy
+- **Fact:** Outdoors **both the Wahoo bike computer and the Garmin watch**
+  record and should show the workout.
 - **Decision:** The Outdoor Variant is delivered to **both** devices
-  (intervals.icu → Wahoo and → Garmin). For Load, the **BOLT copy is the
-  Master Copy** (bike computer; a future power meter will pair to it). The
-  Fenix copy is used only if no BOLT copy exists that day. The duplicate
+  (intervals.icu → Wahoo and → Garmin). For Load, the **bike computer's copy
+  is the Master Copy** (a future power meter will pair to it). The watch copy
+  is used only if no bike computer copy exists that day. The duplicate
   guard (D-024) applies.
 - **Note:** the HR strap must be paired to both devices (ANT+ allows that;
   Bluetooth often allows one connection only). Spike S23.
 - **Source:** User (round 7) + Claude rule.
 
-## D-030 · 2026-10-02 · PC runs Windows
-- **Fact:** The PC runs **Windows**.
-- **Decision:** Coach AI runtime: **Ollama for Windows** (AMD ROCm/HIP) first,
-  **LM Studio (Vulkan)** as fallback (spike S22). The app runs as an
-  **auto-start background service** that survives reboots and Windows
-  Update restarts. Windows sleep is disabled. Tailscale for Windows provides
-  the tunnel.
+## D-030 · 2026-10-02 · ~~PC runs Windows~~ — *superseded by D-043*
+- **Fact:** The PC ran Windows.
+- **Decision (historical):** Ollama for Windows, an auto-start background
+  service, Tailscale for the tunnel.
 - **Source:** User (round 7).
 
-## D-031 · 2026-10-02 · Notification every day, rest days included
+## D-031 · 2026-10-02 · Reminder every day, rest days included — *delivery by D-045*
 - **Decision:** One notification **every day**. Training day: check-in →
   brief → workout. Rest day: check-in → recovery tip → Bonus Day offer.
   Time: Q-BRF-07.
@@ -305,7 +298,7 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   every ride over 90 min.
 - **Source:** User (round 8).
 
-## D-034 · 2026-10-02 · Notification time is a per-day setting
+## D-034 · 2026-10-02 · ~~Notification time is a per-day setting~~ — *superseded by D-045*
 - **Decision:** The Athlete sets the notification time **per day of the
   week** (default 07:00).
 - **Source:** User (round 8).
@@ -322,7 +315,7 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
 ## D-036 · 2026-10-02 · FTP: auto-detect + a test at the end of each block
 - **Decision:** The app watches best efforts (estimated FTP) and **suggests**
   a new FTP when it changes. A **short test at the end of each 4-week block**
-  confirms it (default: indoor ramp test on the KICKR in MyWhoosh). Zones
+  confirms it (default: indoor ramp test on the smart trainer in MyWhoosh). Zones
   update only after the Athlete accepts.
 - **Source:** User (round 8).
 
@@ -333,8 +326,8 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
 | # | Topic | Decision |
 |---|---|---|
 | R8-01 | Name | **EveryDay** |
-| R8-02 | Login | Email + password, "remember this device"; onboarding runs for a new account |
-| R8-03 | Data | Export all data + delete account in Settings |
+| R8-02 | Login | ~~Email + password~~ → no login: the data lives on the phone (D-043); onboarding runs on first open |
+| R8-03 | Data | Export / import all data (JSON) + delete everything in Settings |
 | R8-04 | Onboarding | ≤ 10 questions (~3 min), pre-filled from intervals.icu |
 | R8-05 | First test | No test in week 1; first test at the end of block 1 |
 | R8-06 | Horizon | Rolling 4-week blocks; with an Event, periodize to its date |
@@ -345,31 +338,31 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
 | R8-11 | Missed workout | Key Workout → next free day this week if Form allows, else dropped; others dropped |
 | R8-12 | Safe Envelope | ±20% duration, same-type swap, ±1 day, easier only; never 2 hard days in a row |
 | R8-13 | Readiness | Our own score; Garmin's Training Readiness shown next to it and used as one input |
-| R8-14 | FIT upload | Yes, manual upload as fallback |
+| R8-14 | FIT upload | ~~Yes~~ → not in the phone app; upload FIT files in intervals.icu |
 | R8-15 | Nutrition | Fueling + hydration for rides > 90 min; no diet / weight-loss advice |
-| R8-16 | No check-in | Brief waits; 2 h after the notification it uses Garmin data only and says so |
+| R8-16 | No check-in | Brief waits for the check-in; „Pomiń” builds it from watch data only and says so |
 | R8-17 | Outdoor | HR ranges; long rides = guidance rides with fueling reminders |
 | R8-18 | Analytics | Minimal: Fitness/Form, FTP + W/kg, long-ride progress, weekly compliance |
-| R8-19 | Chat memory | Important facts saved as Chat Notes with an end date; visible + deletable |
-| R8-20 | Ride rating | RPE 1–10 + too easy / just right / too hard |
-| R8-21 | Offline | Today's workout viewable offline (PWA cache) |
+| R8-19 | Chat memory | Pain and travel buttons save Chat Notes with an end date; visible + deletable („Pamiętam”) |
+| R8-20 | Ride rating | too easy / just right / too hard (buttons; RPE derived, D-044) |
+| R8-21 | Offline | The whole app works offline (data on the phone); sync when online |
 | R8-22 | Raw data | Keep all ride data forever |
 | R8-23 | Look | Mobile-first; dark/light follows the phone |
-| R8-24 | LTHR | From Fenix 8 auto-detection or intervals.icu estimate; no extra test |
+| R8-24 | LTHR | From the watch's auto-detection or intervals.icu estimate; no extra test |
 
 - **Source:** User (round 9).
 
-## D-038 · 2026-10-02 · API spikes run on the PC, not from the cloud session
+## D-038 · 2026-10-02 · API spikes run on the device, not from the cloud session — *the device is now the phone (D-043)*
 - **Fact:** The Claude cloud environment's network policy blocks
   `intervals.icu` (still blocked after a settings change, also in a fresh
   session). The manual delivery test (calendar → devices) **worked**.
 - **Decision:** The remaining API checks (S05 read fields, S14 write via
-  API) run in **Phase 1 on the author's PC**, where the app runs anyway.
+  API) run **on the author's device** (now the phone), where the app runs.
   Phase 1 sync code is written against the documented API and tested with
   recorded responses (09 Testing approach) until then.
 - **Source:** Claude proposal; author chose the manual-test route (2026-10-02).
 
-## D-039 · 2026-10-02 · Build-time stack choices (no native add-ons)
+## D-039 · 2026-10-02 · ~~Build-time stack choices (no native add-ons)~~ — *superseded by D-043 (sql.js in the browser)*
 - **Decision:** To keep the Windows install to "install Node, run one command":
   - Database: Node's built-in **`node:sqlite`** (no native module to compile).
   - Password hashing: Node's built-in **scrypt** instead of argon2.
@@ -398,13 +391,13 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   indicator; structured actions are validated before anything changes.
 - **Ladder progression** from ride ratings applies to the next session of that
   category within 14 days; FTP changes also need updating in intervals.icu
-  (the app reminds you; automatic FTP write-back is a Phase 1 check on the PC).
+  (the app reminds you; automatic FTP write-back is not done).
 - **Source:** Claude, during the build (user asked for full auto build).
 
 ## D-042 · 2026-10-02 · v1 built; design details fixed during the build
 - **Build:** all v1 modules (Phases 1–6 of 09) are implemented and tested in
   demo mode (62 automated tests + screenshots of every screen, light and
-  dark). What still needs the author's PC is listed in 09 § "Build status".
+  dark). What still needs a real intervals.icu account is listed in 09 § "Build status".
 - **Zone colors** (06 §4): validated with the dataviz palette validator.
   Seven separate hues fail colorblind and normal-vision separation, so zones
   use **one blue ramp in 5 steps** (Z1, Z2, Z3, Z4, Z5+), light and dark
@@ -418,3 +411,79 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   fallback (D-030) would need an extra OpenAI-compatible client — deferred
   (S25); without Ollama the app runs on templates.
 - **Source:** Claude, during the build.
+
+## D-043 · 2026-10-02 · Phone only, free: the whole app runs on the phone
+- **Context:** After v1 was built the author said keeping a PC on all the
+  time to load data makes little sense, and asked for a **free, mobile-only**
+  setup.
+- **Decision:** EveryDay becomes a **static PWA** hosted free on **GitHub
+  Pages**. All logic runs **in the phone's browser**:
+  - the Plan Engine, sync, readiness and brief code (former server) moved to
+    `packages/core` and runs in the browser;
+  - the database is **SQLite compiled to WebAssembly (sql.js)**, saved to
+    **IndexedDB** after every change (300 ms debounce, and at once when the
+    app is hidden);
+  - **intervals.icu** stays the cloud hub: the phone calls its API directly
+    (CORS is allowed for `/api/v1/`) with the API key, which is stored **only
+    on the phone**;
+  - the night job and day sync run **when the app opens or comes back to the
+    screen** ("catch-up"), not on a schedule; intervals.icu still delivers
+    the workouts to MyWhoosh, Wahoo and Garmin without the app running;
+  - backups are a manual **JSON export / import** in Settings (the key is
+    not exported);
+  - **demo mode** runs in the browser with simulated data under a separate key.
+- **Supersedes:** D-012, D-017, D-030, D-039 and the PC parts of D-003,
+  D-018, D-038, D-042 (Tailscale, Windows autostart, Fastify server, login).
+- **Trade-offs:** no login and no multi-device sync (one phone holds the
+  data; export/import moves it). iPhone: Safari and the Home Screen app have
+  **separate storage**, so onboarding should happen in the Home Screen app.
+  Home Screen web apps are exempt from Safari's 7-day storage eviction.
+- **Cost:** €0 (GitHub Pages + free intervals.icu).
+- **Source:** User (round 10: "How to make it costless on mobile to work only on mobile?").
+
+## D-044 · 2026-10-02 · No AI; buttons instead of text
+- **Decision:** No language model at all and **no free-text chat**. Everything
+  is a tap:
+  - **Morning check-in = one tap** on a feeling: „W pełni sił”, „Dobrze”,
+    „Średnio”, „Czuję się gorzej”, „Totalne wyczerpanie”, „Choroba”, plus
+    optional „Coś boli?” body-part buttons and W domu / Na zewnątrz. Each
+    feeling maps to fixed check-in answers (`FEELINGS` in `packages/core`):
+    5/5/5, 4/4/4, 3/3/3, sleep 3 + legs 2 + motivation 2 (Yellow),
+    **exhausted** (Red → rest, Key Workout handled like a sick day), **sick**.
+  - **Trener** tab (replaces Czat): Mam mniej czasu (30–90 min), Lżej dziś,
+    Dziś odpoczynek, Przesuń na jutro, Coś boli (body part → injury note for
+    7 days + easier today), Wyjazd (3/7/14 days → travel note + skip those
+    days, each restorable in Tydzień), Dlaczego ten trening? (purpose + the
+    matching Method Note sections), Baza wiedzy (read the notes), Pamiętam
+    (active notes, deletable).
+  - **Ride rating:** three buttons (too easy / just right / too hard); RPE is
+    derived (4 / 6 / 8).
+  - The **Daily Brief** uses the fixed Polish templates (already the
+    no-AI fallback in v1, D-021 format unchanged).
+- **Unchanged:** every change still passes the Safe Envelope and is undoable.
+- **Supersedes:** D-019, D-026, the AI parts of D-003, D-011, D-013, D-021
+  (writing style), R8-19/R8-20 as noted in D-037.
+- **Source:** User (round 10: "No AI: but no text just buttons like – totalnie
+  wyczerpany, czuje się gorzej, chory, w pełni sił").
+
+## D-045 · 2026-10-02 · Morning reminder via an iPhone Shortcut
+- **Decision:** Without a server there is no web push. The reminder is an
+  **iPhone Shortcuts automation**: Automatyzacja → Pora dnia (e.g. 07:00) →
+  Uruchom natychmiast → Pokaż powiadomienie „Czas na poranny check-in”. The
+  Athlete then taps the **EveryDay** icon. (A Shortcut cannot open a Home
+  Screen web app by URL — it would open Safari, which has separate storage.)
+  Android: a clock alarm. The guide is in onboarding and Settings; the
+  chosen time is stored as a setting.
+- **Supersedes:** D-018, D-034.
+- **Source:** User (round 10: "iPhone Shortcut").
+
+## D-046 · 2026-10-02 · No personal data in the public repository
+- **Decision:** The repo stays **public** (free GitHub Pages). The author's
+  weight, height, FTP, training days and device models were replaced in docs,
+  code and tests by a generic **sample athlete** (FTP 250 W, 75 kg,
+  Tue/Thu 1 h, Sat 3 h, Sun 2 h; generic device names). Real values are
+  entered only in the app on the phone.
+- **Note:** older commits in git history still contain the earlier values.
+  Removing them needs a history rewrite and force-push; not done unless the
+  author asks.
+- **Source:** User (round 10: "Remove personal data").

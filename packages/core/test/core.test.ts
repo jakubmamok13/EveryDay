@@ -171,7 +171,7 @@ describe("own profile (not demo)", () => {
 
 describe("intervals.icu mapping (defensive, confirmed in S05)", () => {
   it("maps sources and indoor rides", () => {
-    expect(mapSource({ source: "GARMIN_CONNECT", device_name: "fenix 8" })).toBe("fenix");
+    expect(mapSource({ source: "GARMIN_CONNECT", device_name: "Garmin watch" })).toBe("fenix");
     expect(mapSource({ source: "WAHOO", device_name: "ELEMNT BOLT" })).toBe("bolt");
     expect(mapSource({ source: "OAUTH_CLIENT", device_name: "MyWhoosh" })).toBe("mywhoosh");
     const a = mapActivity({ id: "i1", type: "VirtualRide", start_date_local: "2026-10-05T18:00:00", moving_time: 3600, icu_weighted_avg_watts: 240, icu_training_load: 70, source: "MYWHOOSH" });
