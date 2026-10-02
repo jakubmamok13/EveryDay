@@ -27,8 +27,10 @@ daily loop works, so the app is useful even if the AI spike disappoints.
 | Step | Status |
 |---|---|
 | 1. intervals.icu account | ✔ done (API key created) |
-| 2–5. Link Garmin / MyWhoosh / Wahoo + VirtualRide filter | ? to confirm |
+| 2–4. Link Garmin / MyWhoosh / Wahoo | ✔ done (2026-10-02) |
+| 5. VirtualRide filter | ? to confirm |
 | 6–7. FTP / weight / history import | ? to confirm |
+| S14 test workout | Author approved one "TEST EveryDay" workout (20 min easy), deleted after the check |
 | 8. API key | ✔ done. Shared in chat → **regenerate it after Phase 0**; the app stores its own copy encrypted (03 §7). Never committed. |
 | 9. Tailscale | ✔ phone · ✖ PC (no access to the PC right now) |
 | 9. Ollama on the PC | ✖ waiting for PC access |
