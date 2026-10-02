@@ -22,6 +22,21 @@ daily loop works, so the app is useful even if the AI spike disappoints.
    install **Tailscale** on the PC and the phone.
 10. Look for the Coggan & Allen book (optional; Method Notes come first).
 
+### 0a progress (2026-10-02)
+
+| Step | Status |
+|---|---|
+| 1. intervals.icu account | ✔ done (API key created) |
+| 2–5. Link Garmin / MyWhoosh / Wahoo + VirtualRide filter | ? to confirm |
+| 6–7. FTP / weight / history import | ? to confirm |
+| 8. API key | ✔ done. Shared in chat → **regenerate it after Phase 0**; the app stores its own copy encrypted (03 §7). Never committed. |
+| 9. Tailscale | ✔ phone · ✖ PC (no access to the PC right now) |
+| 9. Ollama on the PC | ✖ waiting for PC access |
+
+Blocked from the Claude cloud session: `intervals.icu` is not in the
+session environment's allowed network domains, so S05 / S14 cannot run until
+it is added (a setting of the Claude environment, not of the app).
+
 ### 0b. Spikes on the real setup (Claude, with the author's help)
 
 | Spike | Question | Exit |

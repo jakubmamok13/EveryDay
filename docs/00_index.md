@@ -37,3 +37,7 @@ Last updated: 2026-10-02
 **Phase 0** (09_v1_build_plan.md): the author sets up intervals.icu (+ Garmin,
 MyWhoosh, Wahoo), Ollama and Tailscale; then the spikes run on the real setup.
 No application code before Phase 0 results are written back into these docs.
+
+Progress: intervals.icu account + API key ✔ · Tailscale on phone ✔ · PC
+steps waiting for PC access · API spikes waiting for network access from the
+Claude session (09 §0a).
