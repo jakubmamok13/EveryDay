@@ -61,7 +61,7 @@ compromises for other users.
 | Outdoor power meter | **None yet, planned** → outdoor = HR-guided until then (D-023) |
 | Indoor recording | **MyWhoosh and Fenix both record** → keep MyWhoosh copy (D-024) |
 | PC | **AMD Radeon RX 7800 XT 16 GB**, **32 GB RAM**, **Windows** (D-030) |
-| Phone | **Must work on iOS and Android** (D-025) |
+| Phone | **iPhone** (seen 2026-10-02); app must work on iOS and Android (D-025). iPhone push needs Home Screen install |
 | FTP | **270 W** (source: probably MyWhoosh / indoor — confirm) |
 | Body | **86 kg**, **174 cm** → **3.14 W/kg** |
 | Goal | Primary **Raise FTP** (continuous) + Secondary **long rides of 200 km+ / 7 h+** (D-028, D-033) |
