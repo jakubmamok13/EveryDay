@@ -3,6 +3,10 @@
 Status: **SKELETON**
 
 Topics to define:
+- **Windows host (D-030):** auto-start after reboot / Windows Update; sleep
+  disabled; a health check that alerts (via the daily notification) if
+  sync or the AI was down overnight; the brief falls back to a rule-based
+  template if Ollama is not responding.
 - Sync failures (expired tokens, API limits, Source outages) and how the user is told.
 - Missing data days (no wearable worn): Readiness falls back to check-in + load.
 - Plan Engine safety rails: max weekly load ramp, illness rule, "see a doctor" triggers.

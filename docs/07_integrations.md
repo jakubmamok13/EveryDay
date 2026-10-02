@@ -51,11 +51,11 @@ for a new, small, free app**. This shapes the whole product, so it comes first.
                                         │   Training Readiness)
  MyWhoosh (indoor) ─────────────────────┼──► intervals.icu ──API (read)──► EveryDay
                                         │
- Wahoo ELEMNT BOLT ─► Wahoo cloud ──────┤  (outdoor rides, if BOLT records — Q-INT-10)
+ Wahoo ELEMNT BOLT v2 ─► Wahoo cloud ───┤  (outdoor rides — Master Copy, D-029)
                                         │
  OUT (planned workouts)                 │
  EveryDay ──API (write calendar)──► intervals.icu ─┬─► Garmin Connect ─► Fenix 8 (outdoor, HR)
-                                                   ├─► Wahoo ─► ELEMNT BOLT (outdoor, HR)  [S21]
+                                                   ├─► Wahoo ─► ELEMNT BOLT v2 (outdoor, HR)  [S21]
                                                    └─► MyWhoosh ─► KICKR CORE (indoor, ERG power)
 ```
 
@@ -63,8 +63,9 @@ Zwift is out of scope (D-009).
 
 **Duplicate rule (S19, D-024):** each ride must count **once**. Indoors both
 MyWhoosh and the Fenix record, so filter Garmin "VirtualRide" in
-intervals.icu and keep the MyWhoosh copy (it has power). Outdoors: one
-recorder (Q-INT-10). The app has its own duplicate guard as a safety net.
+intervals.icu and keep the MyWhoosh copy (it has power). Outdoors both the
+BOLT v2 and the Fenix record: the **BOLT copy is master**, with Fenix as
+fallback (D-029). The app has its own duplicate guard as a safety net.
 
 **Indoor vs outdoor variant (D-020):** the variant chosen in the Morning
 Check-in is the one written to the calendar for that day.
@@ -82,8 +83,7 @@ stubs in the API.
 - ~~Q-INT-04~~ → Two-way, via the intervals.icu calendar (D-009).
 - ~~Q-INT-05~~ Moot for a personal tool (D-002).
 - **Q-INT-06** Keep manual FIT upload as a fallback in v1, or skip it?
-- **Q-INT-07** Do you already use intervals.icu, with Garmin and MyWhoosh linked to it?
+- ~~Q-INT-07~~ No account yet → Phase 0 setup (D-032).
 - ~~Q-INT-08~~ → D-023 (HR now, power meter later).
 - ~~Q-INT-09~~ → D-024 (both record indoors → keep MyWhoosh copy).
-- **Q-INT-10** Outdoors, which device records the ride and shows the
-  workout: Wahoo BOLT, Fenix 8, or both? Which BOLT model (v2 / v3)?
+- ~~Q-INT-10~~ → D-029: both record and show; BOLT v2 = Master Copy.

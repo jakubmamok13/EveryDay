@@ -34,6 +34,17 @@ Why: small local models are unreliable at arithmetic and long-horizon
 planning, but good at short, friendly explanations of facts they are given.
 This also limits the damage of a wrong AI output.
 
+## Stack proposal (D-035, to confirm in spikes)
+
+| Part | Proposal | Why |
+|---|---|---|
+| Language | TypeScript everywhere | One language; Claude maintains it |
+| Server | Node.js LTS (as a Windows service) | Runs well on Windows; easy auto-start |
+| Front-end | React + Vite, installable PWA | Works on iOS + Android + PC; push support |
+| Database | SQLite (one file) | No DB server; backup = copy one file |
+| AI | Ollama HTTP API on localhost | Swappable model (D-026) |
+| Tunnel | Tailscale (HTTPS certificates) | Private access from the phone; needed for push (D-018) |
+
 ## Building blocks (to decide)
 
 - Frontend: installable PWA (framework TBD), HTTPS inside the tunnel (D-018).
@@ -45,22 +56,22 @@ This also limits the damage of a wrong AI output.
 
 ## Open questions
 
-- **Q-ARC-01** Any preferred stack or language you know / want to learn?
-- **Q-ARC-02** Hosting budget per month you accept (0 € / ≤10 € / ≤50 €)?
-- **Q-ARC-03** Do you build it yourself (with Claude), or with other people?
+- ~~Q-ARC-01~~ → D-035: TypeScript end to end; Claude builds it.
+- ~~Q-ARC-02~~ €0 (D-012).
+- ~~Q-ARC-03~~ Claude builds it (D-035).
 - **Q-ARC-04** Offline use needed (e.g. view today's workout without internet)?
 - ~~Q-ARC-05~~ → D-012 (option 2: all on PC + tunnel).
 - ~~Q-ARC-06~~ → D-017: AMD RX 7800 XT 16 GB, 32 GB RAM.
 - ~~Q-ARC-07~~ → D-011 (rules decide, AI may adjust within limits).
 - ~~Q-ARC-08~~ → PC on 24/7 (D-012).
 - ~~Q-ARC-09~~ → D-017.
-- **Q-ARC-10** PC operating system: Windows or Linux? (Affects the AMD runtime: ROCm vs Vulkan.)
+- ~~Q-ARC-10~~ → D-030: Windows (Ollama for Windows first, LM Studio/Vulkan fallback; auto-start service).
 - ~~Q-ARC-11~~ → D-026 (uncensored Qwen 3.8; official as fallback).
 
 ## Runtime overview (D-012)
 
 ```
-                         Author's PC (24/7)
+                    Author's PC (Windows, 24/7)
  ┌────────────────────────────────────────────────────────────────┐
  │  Web app (UI + API) ── DB (local file / embedded DB)            │
  │       │                                                        │

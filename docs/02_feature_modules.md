@@ -21,7 +21,8 @@ Open questions:
 
 ## M2. Onboarding & Assessment
 
-Known: asks **hours per week** and **Goal**.
+Known: asks **hours per week** and **Goal**. The Goal can be set again for a
+**new account** or changed later for the existing one (D-028).
 
 Proposal — the onboarding questions (to confirm and extend):
 1. Goal (type + optional event date + optional target, e.g. "FTP 280 W").
@@ -47,7 +48,21 @@ Open questions: see 07_integrations.md.
 
 ## M4. Plan Engine (plan generation)
 
-Known: build a plan from hours/week + Goal.
+Known: build a plan from hours/week + Goal. Goal = Primary + optional
+Secondary, editable any time; a change regenerates the plan from today (D-028).
+
+Proposal for the author's case (Raise FTP + long rides, Mon/Wed 1 h, Sat/Sun ≤ 4 h).
+*Our rule, not from the book — to review:*
+- **Rolling 4-week blocks**: 3 load weeks + 1 Recovery Week; FTP re-check
+  at the end of each block.
+- **Mon / Wed (1 h, indoor likely):** quality sessions. The block's focus
+  rotates: Sweet Spot → Threshold → VO2max.
+- **Saturday (≤ 4 h):** the **long ride**, Endurance (Z2) with some Tempo.
+  Duration grows across the block. Target: **200 km+ / 7 h+** (D-033), reached
+  through occasional Long Ride Days + back-to-back weekends + fueling practice.
+- **FTP** is auto-estimated; a ramp test at the end of each block confirms it (D-036).
+- **Sunday (≤ 4 h):** medium Endurance, or a second quality session if Form allows.
+- **Bonus Day** (D-027): optional easy session; never hurts the next Key Workout.
 
 Proposal:
 - Periodized plan: Phases (Base → Build → Specialty/Peak → Taper) with
@@ -109,7 +124,7 @@ Open questions:
 - ~~Q-BRF-01~~ → D-007: phone, PC browser, Garmin (workout only),
   email / Telegram push.
 - ~~Q-BRF-05~~ → D-018 (one web push notification; time TBD, Q-BRF-07).
-- **Q-BRF-07** What time should the notification arrive (per weekday)?
+- ~~Q-BRF-07~~ → D-034: per-day setting (default 07:00); every day (D-031).
 - **Q-BRF-06** Morning flow: check-in first, then brief? What happens if
   there is no check-in by a cut-off time?
 - ~~Q-BRF-02~~ → D-016 (friendly buddy).

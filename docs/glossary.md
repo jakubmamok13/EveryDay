@@ -12,6 +12,15 @@ Terms marked *(proposed)* are not confirmed yet.
 ## Goals & planning
 
 - **Goal** — what the Athlete trains for: type + optional target + optional date.
+- **Primary Goal / Secondary Goal** — a Goal has one Primary and an optional
+  Secondary that shapes part of the week (author: Raise FTP + long rides, D-028).
+- **Bonus Day** — an unplanned extra training day the Athlete adds
+  ("Mam dziś czas"); the engine offers an optional session that never
+  compromises the next Key Workout (D-027).
+- **Long Ride Day** — an occasional planned ride longer than the normal
+  weekend window (5–7 h), confirmed by the Athlete ahead of time (D-033). *(proposed)*
+- **eFTP** — estimated FTP computed from recent best efforts; becomes the
+  new FTP only after the Athlete accepts it (D-036).
 - **Event** — a dated Goal (race, gran fondo, tour). Priority A / B / C. *(proposed)*
 - **Weekly Availability** — hours per week, available days, max minutes per
   day, indoor/outdoor per day.
@@ -98,4 +107,5 @@ Terms marked *(proposed)* are not confirmed yet.
   (HR/RPE targets now, power once an outdoor power meter exists — D-023;
   shown on the BOLT and/or Fenix 8). Only the chosen one is written to the calendar.
 - **Master Copy** — when the same ride arrives twice (e.g. MyWhoosh +
-  Fenix), the one copy that counts for Load. Indoors = MyWhoosh (D-024).
+  Fenix), the one copy that counts for Load. Indoors = MyWhoosh (D-024);
+  outdoors = BOLT v2, Fenix as fallback (D-029).

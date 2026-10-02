@@ -1,6 +1,6 @@
 # 01 — Product Vision
 
-Status: **DRAFT — rounds 1–6 answered**
+Status: **DRAFT — rounds 1–7 answered**
 Working name: **EveryDay** (repo name; final product name = Q-VIS-01)
 
 ## 1. One-line pitch
@@ -52,17 +52,35 @@ compromises for other users.
 
 | Item | Value |
 |---|---|
-| Training days | **Monday, Wednesday, Saturday** + one more (Q-VIS-13) |
-| Duration | ~**1 h** on weekdays; **longer at the weekend** (max TBD) |
+| Training days | **Mon, Wed, Sat, Sun** (+ sometimes an extra day → Bonus Day) (D-027) |
+| Duration | ~**1 h** Mon/Wed; **up to 4 h** at the weekend |
 | Watch | **Garmin Fenix 8** (Body Battery, HRV Status, sleep, Training Readiness) |
 | HR | **Chest HR strap** |
 | Indoor | **Wahoo KICKR CORE** smart trainer + **MyWhoosh** |
-| Bike computer | **Wahoo ELEMNT BOLT** (outdoor) |
+| Bike computer | **Wahoo ELEMNT BOLT v2** (outdoor; BOLT + Fenix both record → BOLT is Master Copy, D-029) |
 | Outdoor power meter | **None yet, planned** → outdoor = HR-guided until then (D-023) |
 | Indoor recording | **MyWhoosh and Fenix both record** → keep MyWhoosh copy (D-024) |
-| PC | **AMD Radeon RX 7800 XT 16 GB**, **32 GB RAM**, OS TBD |
+| PC | **AMD Radeon RX 7800 XT 16 GB**, **32 GB RAM**, **Windows** (D-030) |
 | Phone | **Must work on iOS and Android** (D-025) |
-| FTP / weight / Goal | TBD (Q-VIS-14) |
+| FTP | **270 W** (source: probably MyWhoosh / indoor — confirm) |
+| Body | **86 kg**, **174 cm** → **3.14 W/kg** |
+| Goal | Primary **Raise FTP** (continuous) + Secondary **long rides of 200 km+ / 7 h+** (D-028, D-033) |
+| intervals.icu | **No account yet** → Phase 0 (D-032) |
+
+### Author's Power Zones at FTP 270 W (Coggan, for reference)
+
+| Zone | % FTP | Watts |
+|---|---|---|
+| Z1 Active Recovery | < 55% | < 149 |
+| Z2 Endurance | 56–75% | 151–203 |
+| Z3 Tempo | 76–90% | 205–243 |
+| *Sweet Spot* | 88–94% | 238–254 |
+| Z4 Lactate Threshold | 91–105% | 246–284 |
+| Z5 VO2max | 106–120% | 286–324 |
+| Z6 Anaerobic Capacity | 121–150% | 327–405 |
+| Z7 Neuromuscular | > 150% | > 405 |
+
+HR zones for outdoor rides need **LTHR** (Q-VIS-15).
 
 ## 5. What makes it different (hypotheses to confirm)
 
@@ -99,5 +117,9 @@ compromises for other users.
 - ~~Q-VIS-10~~ → D-006: the "book" is the Coach AI's knowledge source.
 - ~~Q-VIS-11~~ → D-010: Allen & Coggan, "Training and Racing with a Power Meter".
 - ~~Q-VIS-12~~ Book not found yet → D-022 (start with our own Method Notes).
-- **Q-VIS-13** The 4th training day? (round 5 listed Monday twice)
-- **Q-VIS-14** Current FTP, weight, and Goal (type + event/date if any).
+- ~~Q-VIS-13~~ → D-027 (Mon, Wed, Sat, Sun).
+- ~~Q-VIS-14~~ → profile above + D-028.
+- **Q-VIS-15** LTHR / max HR for outdoor HR zones? Proposal: take them from
+  the Fenix 8 (it detects lactate threshold with the chest strap) or
+  intervals.icu estimates.
+- ~~Q-VIS-16~~ → D-033: 200 km+ / 7 h+.

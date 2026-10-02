@@ -28,7 +28,9 @@ terms and test the APIs ourselves.
 | S18 | A same-morning Indoor/Outdoor switch reaches MyWhoosh and the Fenix 8 in time | **High** | Unverified |
 | S19 | Duplicate rides (Fenix + MyWhoosh both recording) double the Load | Med | Research: known problem; rule in 07 |
 | S20 | Web push to the phone from a PWA served by the PC over the Tailscale tunnel (HTTPS certs, iOS Home Screen rule) — **iOS and Android** (D-025) | Med | Unverified |
-| S21 | intervals.icu → Wahoo cloud → ELEMNT BOLT: planned workouts with HR targets arrive and display correctly | Med | Unverified (BOLT model TBD) |
+| S21 | intervals.icu → Wahoo cloud → ELEMNT **BOLT v2**: planned workouts with HR targets arrive and display correctly | Med | Unverified |
+| S22 | Ollama for **Windows** runs Qwen 3.8 27B on the **RX 7800 XT** (ROCm/HIP), or LM Studio Vulkan as fallback; measure tokens/s | **High** | Unverified |
+| S23 | One HR strap feeds both BOLT v2 and Fenix 8 at the same time (ANT+ vs Bluetooth) | Low | Unverified |
 
 ## S01 — Strava API
 

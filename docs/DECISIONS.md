@@ -40,7 +40,7 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   kept as a fallback (Q-INT-06).
 - **Source:** User (round 1), based on research in spikes S01–S05.
 
-## D-005 · 2026-10-01 · v1 Goal types
+## D-005 · 2026-10-01 · v1 Goal types — *extended by D-028 (primary + secondary)*
 - **Decision:** v1 supports all four Goal types: **Event on a date**,
   **Raise FTP**, **Endurance / long rides**, **General fitness & health**.
 - **Source:** User (round 1).
@@ -242,3 +242,86 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   license (S16). The Plan Engine's Safe Envelope (D-011) protects training
   decisions regardless of the model.
 - **Source:** User (round 6).
+
+## D-027 · 2026-10-02 · Weekly Availability of the author + Bonus Day
+- **Fact:** Training days **Monday, Wednesday, Saturday, Sunday**; weekdays
+  ~**1 h**; weekend rides up to **4 h**; **sometimes an extra day**.
+- **Decision:** Weekly Availability = Mon 1 h · Wed 1 h · Sat ≤ 4 h · Sun ≤ 4 h
+  (Sunday max to confirm), i.e. ~4–10 h/week. A **Bonus Day** button
+  ("Mam dziś czas") lets the Athlete add an unplanned session. The engine then
+  offers an optional workout that fits current Form and **never compromises
+  the next Key Workout** (default: easy Endurance or Recovery).
+- **Source:** User (round 7) + Claude proposal (Bonus Day).
+
+## D-028 · 2026-10-02 · Goal: raise FTP continuously + get ready for long rides; editable any time
+- **Decision:** Goals have a **Primary** and an optional **Secondary** goal.
+  Author: Primary = **Raise FTP** (no end date, rolling blocks), Secondary =
+  **Endurance / long rides**.
+- **Decision:** The Goal is set in **onboarding** (new account) and can be
+  **changed any time** in settings for the existing account. A change
+  regenerates the plan **from today**; history and Fitness are kept.
+- **Source:** User (round 7: "I want in a new account to set this again, or change it in the old one").
+
+## D-029 · 2026-10-02 · Outdoor: BOLT v2 and Fenix 8 both record; BOLT is the master copy
+- **Fact:** Outdoors **both the Wahoo ELEMNT BOLT v2 and the Fenix 8** record
+  and should show the workout.
+- **Decision:** The Outdoor Variant is delivered to **both** devices
+  (intervals.icu → Wahoo and → Garmin). For Load, the **BOLT copy is the
+  Master Copy** (bike computer; a future power meter will pair to it). The
+  Fenix copy is used only if no BOLT copy exists that day. The duplicate
+  guard (D-024) applies.
+- **Note:** the HR strap must be paired to both devices (ANT+ allows that;
+  Bluetooth often allows one connection only). Spike S23.
+- **Source:** User (round 7) + Claude rule.
+
+## D-030 · 2026-10-02 · PC runs Windows
+- **Fact:** The PC runs **Windows**.
+- **Decision:** Coach AI runtime: **Ollama for Windows** (AMD ROCm/HIP) first,
+  **LM Studio (Vulkan)** as fallback (spike S22). The app runs as an
+  **auto-start background service** that survives reboots and Windows
+  Update restarts. Windows sleep is disabled. Tailscale for Windows provides
+  the tunnel.
+- **Source:** User (round 7).
+
+## D-031 · 2026-10-02 · Notification every day, rest days included
+- **Decision:** One notification **every day**. Training day: check-in →
+  brief → workout. Rest day: check-in → recovery tip → Bonus Day offer.
+  Time: Q-BRF-07.
+- **Source:** User (round 7).
+
+## D-032 · 2026-10-02 · intervals.icu setup is Phase 0
+- **Fact:** The author has **no intervals.icu account yet**.
+- **Decision:** Creating and wiring the intervals.icu account is **Phase 0**
+  of the build plan (checklist in 09_v1_build_plan.md), before any code. The
+  data-dependent spikes (S05, S13, S14, S18, S21) run on that real account.
+- **Source:** User (round 7).
+
+## D-033 · 2026-10-02 · Long-ride target: 200 km+ / 7 h+
+- **Decision:** The Secondary Goal targets rides of **200 km+ / 7 h+**.
+- **Conflict:** the normal weekend window is **≤ 4 h** (D-027). Proposal
+  (default D-R8-08, awaiting OK): occasional **Long Ride Days** (e.g. one
+  5–7 h ride every 4–6 weeks, confirmed by the Athlete a week ahead) plus
+  **back-to-back weekends** (Sat 4 h + Sun 2–3 h) and **fueling practice** on
+  every ride over 90 min.
+- **Source:** User (round 8).
+
+## D-034 · 2026-10-02 · Notification time is a per-day setting
+- **Decision:** The Athlete sets the notification time **per day of the
+  week** (default 07:00).
+- **Source:** User (round 8).
+
+## D-035 · 2026-10-02 · Claude builds it in TypeScript
+- **Decision:** The author does not code. Claude builds and maintains the app
+  in **TypeScript end to end** (PWA front-end, server, Plan Engine, sync).
+  Exact framework choices go in 03_technical_architecture.md (proposal:
+  Node.js LTS server, React + Vite PWA, SQLite single-file DB).
+- **Consequence:** code and docs must stay readable for a non-programmer
+  owner: plain-language README, one-command start, simple backups.
+- **Source:** User (round 8).
+
+## D-036 · 2026-10-02 · FTP: auto-detect + a test at the end of each block
+- **Decision:** The app watches best efforts (estimated FTP) and **suggests**
+  a new FTP when it changes. A **short test at the end of each 4-week block**
+  confirms it (default: indoor ramp test on the KICKR in MyWhoosh). Zones
+  update only after the Athlete accepts.
+- **Source:** User (round 8).
