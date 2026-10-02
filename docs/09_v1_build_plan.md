@@ -1,6 +1,6 @@
 # 09 — v1 Build Plan
 
-Status: **SPEC v1**. Each phase ends with something **usable** and an exit
+Status: **v1 BUILT (2026-10-02)** — see "Build status" at the end. Each phase ends with something **usable** and an exit
 test the author can check on the phone. The AI comes after the rule-based
 daily loop works, so the app is useful even if the AI spike disappoints.
 
@@ -135,3 +135,31 @@ multi-user · English UI.
   texts when the model or prompt changes.
 - **Integration:** a recorded intervals.icu sandbox (saved API responses) so
   tests run without the real account.
+
+---
+
+## Build status (2026-10-02)
+
+The author asked for a full automatic build ("go full auto coding"). Everything
+that does not need the author's PC is built, tested and pushed.
+
+| Phase | Built | Verified here (demo mode) | Still to verify on the PC |
+|---|---|---|---|
+| 1 Foundation | ✔ server, SQLite, login, sync, duplicates, Fitness/Form, status, backups | ✔ tests + running server | real intervals.icu fields (S05/S26), Windows autostart (S24), Tailscale HTTPS (S20) |
+| 2 Plan Engine & delivery | ✔ 40-workout library, onboarding, planner, calendar writes, Week moves | ✔ 12-week simulation, calendar writes to the fake intervals.icu | API write reaches MyWhoosh / BOLT / Fenix (S14, S21), same-morning switch (S18) |
+| 3 Daily loop | ✔ check-in, readiness, adaptation + undo, push, template brief, ratings, bonus day | ✔ end-to-end tests, screenshots | web push on iPhone via Tailscale (S20) |
+| 4 Coach AI | ✔ Ollama client, Polish prompts, validator, Method Notes, knowledge search | ✔ with a fake model (valid / invalid / outage) | real Qwen 3.8 on the RX 7800 XT: speed and Polish quality (S06, S16, S22) |
+| 5 Coach Chat | ✔ chat, actions via Safe Envelope, Chat Notes; rule-based fallback | ✔ tests | AI chat quality |
+| 6 Progress, FTP, long rides, data | ✔ charts, eFTP + ramp-test suggestions, Long Ride Days, fueling, export, delete | ✔ tests, screenshots | eFTP / best-minute fields (S26) |
+
+Known gaps (not blocking first use):
+- FTP accepted in the app must also be changed in intervals.icu / MyWhoosh by hand (the app reminds you).
+- LM Studio fallback not implemented (S25).
+- Exact intervals.icu field names are mapped defensively; the first real sync confirms them (S26).
+
+### Next step for the author
+
+1. On the PC: install Node.js, run the steps in `README.md` (install, `npm start`, onboarding with the API key).
+2. Run `scripts/install-windows.ps1` and `tailscale serve --bg 8787`; open the app on the iPhone and turn notifications on.
+3. Pull the models in Ollama.
+4. Tell Claude the results; the spikes above are then closed in these docs.

@@ -15,8 +15,8 @@ Last updated: 2026-10-02
 | [08 Errors, logging, feedback](08_error_logging_feedback.md) | **Spec v1** | "Brief always arrives"; safety rails |
 | [09 v1 build plan](09_v1_build_plan.md) | **Spec v1** | Phase 0 setup + spikes, Phases 1–6 |
 | [Glossary](glossary.md) | **Spec v1** | Canonical terms + Polish UI labels |
-| [Spikes](spikes.md) | Active | 23 spikes; S05, S06, S14, S16, S18, S22 high risk |
-| [Decisions](DECISIONS.md) | Active | D-001 … D-038 (D-008 superseded) |
+| [Spikes](spikes.md) | Active | 26 spikes; S05, S06, S14, S16, S18, S22, S26 high risk |
+| [Decisions](DECISIONS.md) | Active | D-001 … D-042 (D-008 superseded) |
 
 ## Interview progress
 
@@ -31,6 +31,13 @@ Last updated: 2026-10-02
 - Round 8 — long-ride target, notification time, coding, FTP updates: **done** → D-033 … D-036.
 - Round 9 — 24 proposed defaults: **approved** → D-037.
 - All docs written to **Spec v1** (2026-10-02).
+
+## Build status
+
+**v1 is built** (2026-10-02): code in `packages/`, `apps/`, `library/`,
+`knowledge/`; 62 automated tests; demo mode with simulated intervals.icu.
+How to install: [`README.md`](../README.md). What is verified and what still
+needs the PC: [09 § Build status](09_v1_build_plan.md#build-status-2026-10-02).
 
 ## Next step
 

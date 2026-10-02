@@ -34,7 +34,7 @@ import {
   type PlannedRow,
 } from "../repo";
 import { writeBrief } from "./coach";
-import { applyChange, insertWorkout, moveWorkout, setRideMode, undo, writeCalendar } from "./plan";
+import { applyChange, insertWorkout, moveWorkout, relocateKey, setRideMode, undo, writeCalendar } from "./plan";
 
 export function computeReadinessFor(app: App, athleteId: number, date: ISODate, withCheckIn: boolean): Readiness {
   const learning = app.db.get("SELECT learning_until FROM athlete WHERE id = ?", athleteId)?.learning_until ?? null;
@@ -66,7 +66,7 @@ function rideModeFor(app: App, athleteId: number, date: ISODate): RideMode {
 /** Morning decision: readiness → adaptation (auto, D-014) → brief. */
 export async function runMorning(app: App, athleteId: number, date: ISODate, withCheckIn: boolean): Promise<void> {
   // Re-running (e.g. a corrected check-in) starts from the original plan.
-  for (const a of app.db.all("SELECT id FROM adaptation WHERE athlete_id = ? AND date = ? AND origin = 'engine' AND undone_at IS NULL AND action NOT IN ('long_ride_day','progression')", athleteId, date)) {
+  for (const a of app.db.all("SELECT id FROM adaptation WHERE athlete_id = ? AND date = ? AND origin = 'engine' AND undone_at IS NULL AND action NOT IN ('long_ride_day','progression') ORDER BY id DESC", athleteId, date)) {
     undo(app, athleteId, a.id);
   }
   const readiness = computeReadinessFor(app, athleteId, date, withCheckIn);
@@ -175,9 +175,7 @@ function rescheduleKey(app: App, athleteId: number, date: ISODate, workout: Scal
     formPct: dailyState(app, athleteId, date)?.form_pct ?? null,
   });
   if (!to) return;
-  const there = plannedActiveOn(app, athleteId, to);
-  if (there) app.db.run("UPDATE planned_workout SET status = 'replaced', delivery_status = 'pending' WHERE id = ?", there.id);
-  insertWorkout(app, athleteId, to, row.role, true, workout, there?.ride_mode ?? row.ride_mode, "engine", ["missed"], `„${workout.name}” przeniesiony na ${WEEKDAY_PL_LONG[weekday(to)]}`);
+  relocateKey(app, athleteId, date, to, row.role, workout, row.ride_mode, `„${workout.name}” przeniesiony na ${WEEKDAY_PL_LONG[weekday(to)]}`);
 }
 
 export async function submitCheckIn(app: App, athleteId: number, c: Omit<CheckIn, "date"> & { bonusMinutes?: number }): Promise<void> {
@@ -268,7 +266,7 @@ export function todayView(app: App, athleteId: number) {
     demo: app.config.demo,
     checkIn: ci,
     defaultRideMode: rideModeFor(app, athleteId, date),
-    readiness: r && {
+    readiness: !r ? null : {
       state: r.state,
       effective: r.effective,
       score: r.score,
@@ -278,8 +276,8 @@ export function todayView(app: App, athleteId: number) {
       garmin,
       inputs: r.inputs,
     },
-    brief: brief && { lines: JSON.parse(brief.lines_json), withCheckIn: !!brief.with_check_in, generatedAt: brief.generated_at, sources: JSON.parse(brief.slots_source_json ?? "{}") },
-    workout: row && w && {
+    brief: !brief ? null : { lines: JSON.parse(brief.lines_json), withCheckIn: !!brief.with_check_in, generatedAt: brief.generated_at, sources: JSON.parse(brief.slots_source_json ?? "{}") },
+    workout: !row || !w ? null : {
       id: row.id,
       name: w.name,
       slug: w.slug,
@@ -298,7 +296,7 @@ export function todayView(app: App, athleteId: number) {
     },
     restDay: !row,
     skippedToday: !!skipped,
-    change: change && { id: change.id, text: change.text, origin: change.origin, action: change.action },
+    change: !change ? null : { id: change.id, text: change.text, origin: change.origin, action: change.action },
     unrated: unrated.map((u) => ({
       id: u.id,
       name: u.workout_json ? JSON.parse(u.workout_json).name : u.name ?? "Jazda",

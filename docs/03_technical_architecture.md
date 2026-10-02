@@ -53,7 +53,7 @@ returns **structured JSON**; the engine validates it and applies it.
 | LLM | **Ollama for Windows** (AMD ROCm/HIP); LM Studio (Vulkan) as fallback **[spike S22]** | Qwen 3.8 27B uncensored, ~4-bit |
 | Push | Web Push with VAPID keys | iOS 16.4+ (Home Screen PWA) + Android Chrome |
 | Tunnel + HTTPS | **Tailscale Serve** → `https://<pc>.<tailnet>.ts.net` → app on localhost (D-039) **[spike S20]** | No public port |
-| Windows service | Auto-start at boot (e.g. NSSM, node-windows or a startup task) **[spike]** | Restarts on crash and after Windows Update |
+| Windows service | Task Scheduler task "EveryDay" (S4U, at startup, restart on failure) via `scripts/install-windows.ps1` (D-042) **[verify on PC: S24]** | Restarts on crash and after Windows Update |
 
 ## 4. Repository layout (proposal)
 

@@ -227,6 +227,28 @@ export function insertWorkout(app: App, athleteId: number, date: ISODate, role: 
   });
 }
 
+/**
+ * Put a missed Key Workout on `to`, replacing what was there. Recorded under
+ * `adaptationDate`, so undoing that day's changes also restores `to` (D-014).
+ */
+export function relocateKey(app: App, athleteId: number, adaptationDate: ISODate, to: ISODate, role: PlannedDay["role"], workout: ScaledWorkout, rideMode: RideMode, text: string): number {
+  return app.db.tx(() => {
+    const there = plannedActiveOn(app, athleteId, to);
+    const before = there ? [snap(there)] : [];
+    if (there) touch(app, there.id, { status: "replaced" });
+    const now = nowIso();
+    const plan = activePlan(app, athleteId);
+    const id = app.db.run(
+      `INSERT INTO planned_workout (athlete_id, plan_id, date, workout_slug, role, is_key, origin, workout_json, ride_mode, created_at, updated_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+      athleteId, plan?.id ?? null, to, workout.slug, role, 1, "engine", JSON.stringify(workout), there?.ride_mode ?? rideMode, now, now,
+    ).id;
+    const adaptation = record(app, athleteId, adaptationDate, id, "engine", "move_key", before, [id], ["missed"], text);
+    writeCalendarSoon(app, athleteId, to);
+    return adaptation;
+  });
+}
+
 export function undo(app: App, athleteId: number, adaptationId: number): boolean {
   const a = app.db.get("SELECT * FROM adaptation WHERE id = ? AND athlete_id = ? AND undone_at IS NULL", adaptationId, athleteId);
   if (!a) return false;
@@ -291,10 +313,7 @@ export function handleMissed(app: App, athleteId: number): void {
     const missed = toPlannedDay(r);
     const to = moveMissedKey({ missed: { ...missed, date: addDays(today, -1) }, laterThisWeek: later, availableWeekdays, neighbours, formPct });
     if (!to || to < today) continue;
-    const there = plannedActiveOn(app, athleteId, to);
-    if (there) app.db.run("UPDATE planned_workout SET status = 'replaced', delivery_status = 'pending' WHERE id = ?", there.id);
-    insertWorkout(app, athleteId, to, r.role, true, missed.workout, there?.ride_mode ?? r.ride_mode, "engine", ["missed"],
-      `przeniesiony trening kluczowy „${missed.workout.name}”`);
+    relocateKey(app, athleteId, to, to, r.role, missed.workout, r.ride_mode, `przeniesiony trening kluczowy „${missed.workout.name}”`);
   }
 }
 

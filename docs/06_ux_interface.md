@@ -77,8 +77,9 @@ plan preview (next 4 weeks) → **Zaczynamy**.
 ## 4. Visual language
 
 - Calm, high-contrast, generous spacing; one accent color.
-- **Zone colors** (with labels): Z1 grey · Z2 blue · Z3 green · Z4 yellow ·
-  Z5 orange · Z6 red · Z7 purple.
+- **Zone colors** (with labels): one validated blue ramp, light → dark for
+  Z1, Z2, Z3, Z4, Z5+ (dark mode: dark → light). The zone number is always
+  written next to the color (D-042).
 - Readiness: green / amber / red + text.
 - Light and dark themes follow the phone (R8-23).
 - Numbers in tabular figures; watts always with "W", heart rate with "ud/min" (Polish for bpm).

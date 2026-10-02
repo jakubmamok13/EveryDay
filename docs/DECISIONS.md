@@ -400,3 +400,21 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   category within 14 days; FTP changes also need updating in intervals.icu
   (the app reminds you; automatic FTP write-back is a Phase 1 check on the PC).
 - **Source:** Claude, during the build (user asked for full auto build).
+
+## D-042 · 2026-10-02 · v1 built; design details fixed during the build
+- **Build:** all v1 modules (Phases 1–6 of 09) are implemented and tested in
+  demo mode (62 automated tests + screenshots of every screen, light and
+  dark). What still needs the author's PC is listed in 09 § "Build status".
+- **Zone colors** (06 §4): validated with the dataviz palette validator.
+  Seven separate hues fail colorblind and normal-vision separation, so zones
+  use **one blue ramp in 5 steps** (Z1, Z2, Z3, Z4, Z5+), light and dark
+  variants, with the exact zone always written next to it ("Z4").
+- **Charts:** Fitness (blue) / Fatigue (orange) pair validated; projection
+  drawn faded; one axis per chart; table view for every chart.
+- **Windows autostart:** a Task Scheduler task (S4U: runs before login, no
+  stored password, restarts on failure) installed by `scripts/install-windows.ps1`.
+- **Phone access:** `tailscale serve --bg 8787` (HTTPS inside the tailnet).
+- **AI runtime:** the app talks to the **Ollama API** only. LM Studio as a
+  fallback (D-030) would need an extra OpenAI-compatible client — deferred
+  (S25); without Ollama the app runs on templates.
+- **Source:** Claude, during the build.

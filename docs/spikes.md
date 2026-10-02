@@ -31,6 +31,9 @@ terms and test the APIs ourselves.
 | S21 | intervals.icu → Wahoo cloud → ELEMNT **BOLT v2**: planned workouts with HR targets arrive and display correctly | Med | Unverified |
 | S22 | Ollama for **Windows** runs Qwen 3.8 27B on the **RX 7800 XT** (ROCm/HIP), or LM Studio Vulkan as fallback; measure tokens/s | **High** | Unverified |
 | S23 | One HR strap feeds both BOLT v2 and Fenix 8 at the same time (ANT+ vs Bluetooth) | Low | Unverified |
+| S24 | Windows Task Scheduler autostart (S4U) runs `npm start` before login and restarts it | Med | Script written; verify on the PC |
+| S25 | LM Studio fallback (OpenAI-compatible API) | Low | Deferred: app speaks Ollama API; templates work without AI |
+| S26 | intervals.icu fields used by the code: `icu_weighted_avg_watts`, `icu_training_load`, wellness `hrv` / `restingHR` / `sleepSecs` / custom `BodyBatteryMax`, eFTP in `sportSettings`, FIT download path, best 1-min power for the ramp test | **High** | Mapped defensively (raw JSON kept); confirm on the first real sync |
 
 ## S01 — Strava API
 
