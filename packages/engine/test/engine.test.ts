@@ -27,6 +27,12 @@ import {
   toIntervalsText,
   toZwo,
   weeklyLoadCap,
+  explainSignals,
+  otherSportLoad,
+  rateOtherSport,
+  readinessRule,
+  sportGroup,
+  SPORT_WEIGHTS,
 } from "../src";
 import { SAMPLE_AVAILABILITY, SAMPLE_GOALS, SAMPLE_PHYS } from "./fixtures";
 
@@ -371,5 +377,47 @@ describe("brief", () => {
     const { text } = assembleBrief(facts);
     expect(text).toContain("Zmiana:");
     expect(text).toContain("sen 5,5 h (bez check-inu");
+  });
+});
+
+describe("other sports (D-047)", () => {
+  it("groups intervals.icu activity types", () => {
+    expect(sportGroup("VirtualRide")).toBe("ride");
+    expect(sportGroup("GravelRide")).toBe("ride");
+    expect(sportGroup("TrailRun")).toBe("run");
+    expect(sportGroup("WeightTraining")).toBe("strength");
+    expect(sportGroup("Swim")).toBe("swim");
+    expect(sportGroup("Hike")).toBe("walk");
+    expect(sportGroup("NordicSki")).toBe("whole_body");
+    expect(sportGroup("Yoga")).toBe("mobility");
+    expect(sportGroup("Tennis")).toBe("other");
+  });
+  it("takes intervals.icu Load first, never lets strength fall below its default", () => {
+    expect(otherSportLoad("run", 3600, 70)).toBe(70);
+    expect(otherSportLoad("run", 1800, null)).toBe(33);
+    expect(otherSportLoad("strength", 3600, 15)).toBe(45);
+    expect(otherSportLoad("swim", 3600, 0)).toBe(50);
+  });
+  it("adds full Load to Fatigue but only part of it to Fitness", () => {
+    const fit = new Map([["2026-10-01", 60 * SPORT_WEIGHTS.run.fitness]]);
+    const fat = new Map([["2026-10-01", 60]]);
+    const two = performanceSeries(fit, "2026-10-01", "2026-10-02", undefined, fat);
+    const ride = performanceSeries(fat, "2026-10-01", "2026-10-02");
+    expect(two[0]!.fatigue).toBeCloseTo(ride[0]!.fatigue);
+    expect(two[0]!.fitness).toBeLessThan(ride[0]!.fitness);
+  });
+  it("rates leg-heavy sessions of the last two days", () => {
+    expect(rateOtherSport(undefined, MONDAY)).toBeNull();
+    expect(rateOtherSport([], MONDAY)).toMatchObject({ rating: "ok", detail: "none" });
+    expect(rateOtherSport([{ date: addDays(MONDAY, -1), group: "run", load: 45 }], MONDAY)).toMatchObject({ rating: "caution", value: 45, detail: "run:1" });
+    expect(rateOtherSport([{ date: addDays(MONDAY, -1), group: "strength", load: 110 }], MONDAY)!.rating).toBe("bad");
+    expect(rateOtherSport([{ date: addDays(MONDAY, -2), group: "run", load: 50 }], MONDAY)!.rating).toBe("ok");
+    expect(rateOtherSport([{ date: addDays(MONDAY, -1), group: "swim", load: 90 }], MONDAY)).toMatchObject({ rating: "ok", detail: "none" });
+  });
+  it("explains every signal and the colour rule in Polish", () => {
+    const r = computeReadiness({ date: MONDAY, wellness: [], recentOther: [{ date: addDays(MONDAY, -1), group: "run", load: 45 }] });
+    const rows = explainSignals(r);
+    expect(rows.find((x) => x.key === "other_sport")).toMatchObject({ value: "bieg wczoraj, obc. 45", ratingWord: "uważaj" });
+    expect(readinessRule(r)).toContain("0× „źle”, 1× „uważaj” → zielony dzień");
   });
 });

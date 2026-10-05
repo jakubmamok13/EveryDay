@@ -35,7 +35,7 @@ function activePlan(app: App, athleteId: number): Row | undefined {
 }
 
 function longestRecentMinutes(app: App, athleteId: number, today: ISODate): number {
-  const r = app.db.get("SELECT MAX(moving_seconds) AS s FROM activity WHERE athlete_id = ? AND is_master = 1 AND date >= ?", athleteId, addDays(today, -42));
+  const r = app.db.get("SELECT MAX(moving_seconds) AS s FROM activity WHERE athlete_id = ? AND sport = 'ride' AND is_master = 1 AND date >= ?", athleteId, addDays(today, -42));
   return Math.round((r?.s ?? 0) / 60);
 }
 
@@ -340,7 +340,7 @@ export function maybeProposeLongRide(app: App, athleteId: number): void {
   if (!target) return;
   const today = app.today();
   const last = app.db.get("SELECT MAX(proposed_date) AS d FROM long_ride_proposal WHERE athlete_id = ? AND status IN ('confirmed','done')", athleteId)?.d ?? null;
-  const longest = Math.round((app.db.get("SELECT MAX(moving_seconds) AS s FROM activity WHERE athlete_id = ? AND is_master = 1 AND date >= ?", athleteId, addDays(today, -84))?.s ?? 0) / 60);
+  const longest = Math.round((app.db.get("SELECT MAX(moving_seconds) AS s FROM activity WHERE athlete_id = ? AND sport = 'ride' AND is_master = 1 AND date >= ?", athleteId, addDays(today, -84))?.s ?? 0) / 60);
   const p = proposeLongRideDay({ today, lastLongRideDay: last, everyWeeks: avail.longRideEveryWeeks, longestRideMinutes: longest, targetMinutes: target, availability: avail.days });
   if (p) app.db.run("INSERT INTO long_ride_proposal (athlete_id, proposed_date, minutes, created_at) VALUES (?,?,?,?)", athleteId, p.date, p.minutes, nowIso());
 }

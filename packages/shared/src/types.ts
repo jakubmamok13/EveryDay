@@ -146,7 +146,7 @@ export interface CheckIn {
 }
 
 export interface ReadinessInput {
-  key: "hrv" | "rhr" | "sleep" | "body_battery" | "garmin_readiness" | "form" | "check_in";
+  key: "hrv" | "rhr" | "sleep" | "body_battery" | "garmin_readiness" | "form" | "check_in" | "other_sport";
   rating: InputRating;
   value?: number | null;
   baseline?: number | null;

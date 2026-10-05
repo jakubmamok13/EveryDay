@@ -67,6 +67,14 @@ export class FakeIcuClient implements IcuClient {
       out.push(mk(`d${date}-fx`, 9, m + 2, false, "fenix", 0.68, false));
     }
     if (wd === 7 && r() > 0.25) out.push(mk(`d${date}-bolt`, 10, 75 + Math.round(r() * 3) * 15, false, "bolt", 0.65, false));
+    // Other sports (D-047): strength on Wednesday, an easy run on Friday.
+    const other = (id: string, type: string, name: string, minutes: number, load: number | null): IcuActivity => ({
+      id, startLocal: `${date}T19:00:00`, type, name, source: "fenix", indoor: false, movingSeconds: minutes * 60,
+      distanceM: type === "Run" ? minutes * 180 : null, elevationM: null, avgPower: null, weightedPower: null,
+      avgHr: type === "Run" ? 148 : 105, maxHr: type === "Run" ? 165 : 140, load, best1min: null, best20min: null, stub: false, raw: { demo: true },
+    });
+    if (wd === 3 && r() > 0.3) out.push(other(`d${date}-gym`, "WeightTraining", "Siłownia", 50, 18));
+    if (wd === 5 && r() > 0.4) out.push(other(`d${date}-run`, "Run", "Bieg", 35, 38));
     return out;
   }
 

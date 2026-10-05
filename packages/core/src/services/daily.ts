@@ -15,6 +15,7 @@ import {
   READINESS_WORD,
   scaleWorkout,
   type AdaptResult,
+  type SportGroup,
 } from "@everyday/engine";
 import type { App } from "../app";
 import { nowIso } from "../db";
@@ -33,6 +34,7 @@ import {
   type PlannedRow,
 } from "../repo";
 import { applyChange, insertWorkout, moveWorkout, relocateKey, setRideMode, undo, writeCalendar } from "./plan";
+import { countsOtherSports } from "./sync";
 
 export function computeReadinessFor(app: App, athleteId: number, date: ISODate, withCheckIn: boolean): Readiness {
   const learning = app.db.get("SELECT learning_until FROM athlete WHERE id = ?", athleteId)?.learning_until ?? null;
@@ -43,6 +45,14 @@ export function computeReadinessFor(app: App, athleteId: number, date: ISODate, 
     formPct: dailyState(app, athleteId, date)?.form_pct ?? null,
     learningUntil: learning,
     activeNotes: activeNotes(app, athleteId, date),
+    ...(countsOtherSports(app)
+      ? {
+          recentOther: app.db.all<{ date: ISODate; sport: SportGroup; load: number }>(
+            "SELECT date, sport, load FROM activity WHERE athlete_id = ? AND sport <> 'ride' AND is_master = 1 AND load IS NOT NULL AND date BETWEEN ? AND ?",
+            athleteId, addDays(date, -2), addDays(date, -1),
+          ).map((a) => ({ date: a.date, group: a.sport, load: a.load })),
+        }
+      : {}),
   });
   app.db.run(
     `INSERT INTO daily_state (athlete_id, date, readiness_score, readiness_state, readiness_json, computed_at) VALUES (?,?,?,?,?,?)
@@ -250,7 +260,7 @@ export function todayView(app: App, athleteId: number) {
   );
   const unrated = app.db.all(
     `SELECT a.id, a.name, a.date, a.moving_seconds, a.compliance_pct, p.workout_json FROM activity a LEFT JOIN planned_workout p ON p.id = a.planned_workout_id
-     WHERE a.athlete_id = ? AND a.is_master = 1 AND a.feel IS NULL AND a.date >= ? ORDER BY a.date DESC, a.start_at DESC LIMIT 1`,
+     WHERE a.athlete_id = ? AND a.sport = 'ride' AND a.is_master = 1 AND a.feel IS NULL AND a.date >= ? ORDER BY a.date DESC, a.start_at DESC LIMIT 1`,
     athleteId, addDays(date, -1),
   );
   const conn = app.db.get("SELECT status, last_sync_at, last_error FROM source_connection WHERE athlete_id = ? AND provider = 'intervals_icu'", athleteId);

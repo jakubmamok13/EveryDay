@@ -25,13 +25,16 @@ export interface DayPerformance {
 
 /**
  * Fitness / Fatigue / Form series (Performance Manager, exponentially weighted).
- * `loads` maps date → total Load of master activities that day.
+ * `loads` maps date → Load that builds Fitness. `fatigueLoads` (optional)
+ * maps date → Load that adds Fatigue; other sports count fully there but only
+ * partly in Fitness (D-047). Without it both use `loads`.
  */
 export function performanceSeries(
   loads: Map<ISODate, number>,
   from: ISODate,
   to: ISODate,
   start: { fitness: number; fatigue: number } = { fitness: 0, fatigue: 0 },
+  fatigueLoads?: Map<ISODate, number>,
 ): DayPerformance[] {
   const out: DayPerformance[] = [];
   let fitness = start.fitness;
@@ -39,8 +42,9 @@ export function performanceSeries(
   for (let d = from; d <= to; d = addDays(d, 1)) {
     const form = fitness - fatigue;
     const formPct = fitness >= 15 ? form / fitness : null;
-    const load = loads.get(d) ?? 0;
-    fitness += (load - fitness) * kFit;
+    const fitLoad = loads.get(d) ?? 0;
+    const load = fatigueLoads ? fatigueLoads.get(d) ?? 0 : fitLoad;
+    fitness += (fitLoad - fitness) * kFit;
     fatigue += (load - fatigue) * kFat;
     out.push({ date: d, load, fitness, fatigue, form, formPct });
   }

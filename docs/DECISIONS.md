@@ -487,3 +487,49 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   Removing them needs a history rewrite and force-push; not done unless the
   author asks.
 - **Source:** User (round 10: "Remove personal data").
+
+## D-047 · 2026-10-05 · Other sports count in the load: full in Fatigue, weighted in Fitness
+- **Context:** the author asked whether load counts only rides (it did) and
+  asked for a scientific basis for counting other sports.
+- **Research (2026-10-05):**
+  - Fatigue is systemic → all sessions count. HR-based load underestimates
+    strength work; session-RPE works across modes (Foster et al. 2001,
+    J Strength Cond Res 15:109).
+  - Fitness transfer is partial and sport-dependent: some VO2max transfer,
+    largest from running, minimal from swimming, never above sport-specific
+    training, specificity matters more in trained athletes (Tanaka 1994,
+    Sports Med 18:330); cycling ↔ running cross-transfer, none with swimming
+    (Millet et al. 2002, Int J Sports Med 23:55); short-term VO2max gains
+    similar for run vs cycle training (Menges et al. 2026, Front Sports Act
+    Living, meta-analysis of 7 RCTs).
+  - Running (eccentric) causes more muscle damage than cycling (Millet et al.
+    2009, Sports Med 39:179); running interferes with strength more than
+    cycling (Wilson et al. 2012, J Strength Cond Res 26:2293); heavy
+    resistance training lowers HRV and performance up to 48 h.
+  - Running and cycling LTHR differ, so the cycling LTHR is not used for other sports.
+- **Decision (our rule, tuned after the Learning Period):**
+  - All intervals.icu activities are synced. Rides build the plan (matching,
+    compliance, longest ride, eFTP); other sports only add load.
+  - Load: intervals.icu's Load first (sport-specific thresholds), else a
+    per-sport hourly default; strength never below 45/h.
+  - **Fatigue weight 1.0 for every sport. Fitness weight:** ride 1.0, run 0.6,
+    ski / row / elliptical 0.5, walk / hike 0.3, swim 0.2, strength / yoga 0,
+    other 0.3. Form = Fitness − Fatigue as before.
+  - New Readiness input **„Inne sporty (nogi)”**: run or strength Load ≥ 40
+    yesterday or ≥ 80 two days ago → caution; ≥ 100 yesterday → bad.
+  - Setting „Licz bieg, siłownię i inne sporty” (default on); off = rides only.
+  - Method Note „Inne sporty” explains it in Polish with these sources.
+- **Source:** User request (2026-10-05) + research by Claude.
+
+## D-048 · 2026-10-05 · „Dlaczego dziś to?” card on Today
+- **Decision:** a collapsible card on Today shows the whole decision chain:
+  1. Plan: block, focus, week of the block, role of the day, day limit,
+     workout purpose (or why today is a rest day);
+  2. every readiness signal with its value, the limits it is judged by and
+     its rating (ok / uważaj / źle / brak danych);
+  3. the colour rule with the counts and the score formula;
+  4. the decision (automatic or own change) and „Co by było, gdyby…” for
+     the three colours;
+  5. Fitness / Fatigue / Form and other sports of the last 7 days.
+- It uses the stored readiness of the morning, so it always matches the brief.
+- **Source:** User request (2026-10-05).

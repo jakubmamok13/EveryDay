@@ -35,6 +35,7 @@ terms and test the APIs ourselves.
 | S25 | ~~LM Studio fallback~~ | — | **Closed** — no AI (D-044) |
 | S26 | intervals.icu fields used by the code: `icu_weighted_avg_watts`, `icu_training_load`, wellness `hrv` / `restingHR` / `sleepSecs` / custom `BodyBatteryMax`, eFTP in `sportSettings`, best 1-min power for the ramp test | **High** | Mapped defensively (raw JSON kept); confirm on the first real sync |
 | S27 | The installed PWA (GitHub Pages origin) can call the intervals.icu API: CORS preflight with the `Authorization` header on GET/POST/PUT/DELETE `/api/v1/` | **High** | Research: intervals.icu allows cross-origin `/api/v1/` requests; confirm on the phone (D-043) |
+| S28 | Other-sport weights (D-047: run 0.6 / strength 0 in Fitness, full in Fatigue; leg-session thresholds 40 / 80 / 100) predict next-day bike readiness and ride quality | Med | Research-based starting values; calibrate after 6–8 weeks of the author's data |
 
 ## S01 — Strava API
 

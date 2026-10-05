@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, CHANGED, fmtDate, fmtMinutes } from "../api";
 import { Card, Sheet, useAction, useToast } from "../ui";
+import { sportIcon } from "../WhyCard";
 
 const FOCUS: Record<string, string> = {
   sweet_spot: "Sweet Spot", threshold: "Próg", vo2max: "VO2max", base: "Baza", build: "Budowanie", peak: "Szczyt formy", taper: "Taper",
@@ -88,7 +89,7 @@ export function Week() {
               ))}
               {d.rides.filter((r: any) => !r.duplicate).map((r: any) => (
                 <div key={r.id} className="small" style={{ padding: "2px 10px" }}>
-                  🚴 {r.name ?? "Jazda"} · {fmtMinutes(r.minutes)}{r.load ? ` · obc. ${Math.round(r.load)}` : ""}
+                  {sportIcon(r.sport)} {r.name ?? (r.sportLabel ?? "Jazda")} · {fmtMinutes(r.minutes)}{r.load ? ` · obc. ${Math.round(r.load)}` : ""}{r.sportLabel && r.sportLabel !== String(r.name ?? "").toLowerCase() ? <span className="muted"> · {r.sportLabel}</span> : null}
                 </div>
               ))}
               {d.rides.some((r: any) => r.duplicate) && <div className="small muted" style={{ padding: "0 10px" }}>+ duplikat z zegarka (nie liczy się)</div>}

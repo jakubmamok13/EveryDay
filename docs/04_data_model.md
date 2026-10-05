@@ -95,9 +95,12 @@ Sun 120 outdoor · other days unavailable.
 'unreachable'), `last_sync_at`, `last_error`.
 
 **activity** — `athlete_id`, `icu_activity_id`, `source_device` ('mywhoosh' |
-'bolt' | 'fenix' | 'upload'), `type` ('Ride' | 'VirtualRide'), `start_at`,
+'bolt' | 'fenix' | 'upload'), `type` ('Ride' | 'VirtualRide', or the
+intervals.icu type for other sports), `sport` ('ride' | 'run' | 'whole_body' |
+'walk' | 'swim' | 'strength' | 'mobility' | 'other', D-047), `start_at`,
 `moving_seconds`, `distance_m`, `elevation_m`, `avg_power_w`,
-`weighted_power_w`, `avg_hr`, `max_hr`, `load`, `load_basis` ('power' | 'hr'),
+`weighted_power_w`, `avg_hr`, `max_hr`, `load`, `load_basis` ('power' | 'hr' |
+'icu' | 'default'),
 `is_master` (bool), `duplicate_of` (activity id), `planned_workout_id`,
 `compliance_pct`, `rpe` (1–10), `feel` ('too_easy' | 'just_right' |
 'too_hard'), `fit_path`, `best_1min_w`, `best_20min_w`.
@@ -182,4 +185,4 @@ missing), `computed_at`. Recomputed when any input for that date changes.
 - **Delete everything** wipes all user tables on this phone after a
   confirmation. Data in intervals.icu is not touched.
 - **Migrations:** v1 = the original schema; v2 adds `check_in.exhausted`
-  and `check_in.feeling` (D-044).
+  and `check_in.feeling` (D-044); v3 adds `activity.sport` (D-047).

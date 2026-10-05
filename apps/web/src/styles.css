@@ -280,3 +280,21 @@ table.data th:first-child, table.data td:first-child { text-align: left; }
 @media (min-width: 900px) {
   .app { max-width: 720px; }
 }
+
+/* "Dlaczego dziś to?" (D-048) */
+.why-toggle { display: flex; width: 100%; justify-content: space-between; align-items: center; background: none; border: 0; padding: 0; min-height: 44px; font: inherit; font-size: 15px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+.why h4 { font-size: 14px; margin: 4px 0 2px; color: var(--ink); }
+.why p { margin: 4px 0; }
+.why section + section { border-top: 1px solid var(--line); padding-top: 6px; }
+.tiny { font-size: 12px; }
+ul.signals { list-style: none; padding: 0; margin: 0; }
+ul.signals li { padding: 6px 0; border-top: 1px solid var(--line); }
+ul.signals li:first-child { border-top: 0; }
+.sig-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 14px; }
+.sig-label { font-weight: 600; }
+.sig-value { margin-left: auto; font-variant-numeric: tabular-nums; text-align: right; }
+.rating { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.rating.ok { background: color-mix(in srgb, var(--good) 18%, transparent); color: var(--good-text); }
+.rating.caution { background: color-mix(in srgb, var(--warn) 28%, transparent); color: var(--ink); }
+.rating.bad { background: color-mix(in srgb, var(--bad) 18%, transparent); color: var(--bad-text); }
+.rating.missing { background: var(--surface-2); color: var(--muted); }

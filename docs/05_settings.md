@@ -41,6 +41,11 @@ Per weekday: available · max minutes · default Ride Mode.
 
 Plus: **Dni długiej jazdy** (Long Ride Days) on/off, every 4–6 weeks (R8-08).
 
+## Inne sporty (Other sports, D-047)
+
+- „Licz bieg, siłownię i inne sporty” — default **on**. Off = only rides count;
+  turning it on or off recalculates Fitness, Fatigue and Form at once.
+
 ## Poranne przypomnienie (Morning reminder, D-045)
 
 - Time buttons: 06:00 · 06:30 · 07:00 · 07:30 · 08:00 · 09:00 (default 07:00).

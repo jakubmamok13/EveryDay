@@ -1,11 +1,13 @@
 import { addDays, type ISODate } from "@everyday/shared";
-import { compliance, eftpFromBest20, findDuplicates, ftpFromRampTest, ftpSuggestion, performanceSeries, powerLoad } from "@everyday/engine";
+import { compliance, eftpFromBest20, findDuplicates, ftpFromRampTest, ftpSuggestion, otherSportLoad, performanceSeries, powerLoad, sportGroup, SPORT_WEIGHTS, type SportGroup } from "@everyday/engine";
 import type { App } from "../app";
 import { nowIso } from "../db";
 import type { IcuActivity } from "../icu";
 import { logJob, physiologyOn, type PlannedRow } from "../repo";
 
 function activityLoad(a: IcuActivity, ftp: number, lthr: number | null): { load: number | null; basis: string } {
+  const group = sportGroup(a.type);
+  if (group !== "ride") return { load: otherSportLoad(group, a.movingSeconds, a.load), basis: a.load ? "icu" : "default" };
   if (a.load !== null) return { load: a.load, basis: a.weightedPower ? "power" : "hr" };
   if (a.weightedPower) return { load: powerLoad(a.movingSeconds, a.weightedPower, ftp), basis: "power" };
   if (a.avgHr && lthr) return { load: (a.movingSeconds / 3600) * (a.avgHr / lthr) ** 2 * 100, basis: "hr" };
@@ -26,18 +28,19 @@ export async function syncAll(app: App, athleteId: number, days = 14): Promise<{
           const date = a.startLocal.slice(0, 10);
           const phys = physiologyOn(app, athleteId, date);
           const { load, basis } = activityLoad(a, phys.ftp, phys.lthr);
+          const ride = sportGroup(a.type) === "ride";
           app.db.run(
             `INSERT INTO activity (athlete_id, icu_id, source_device, type, name, date, start_at, moving_seconds, distance_m, elevation_m,
-               avg_power, weighted_power, avg_hr, max_hr, load, load_basis, best_1min, best_20min, raw_json, created_at)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+               avg_power, weighted_power, avg_hr, max_hr, load, load_basis, best_1min, best_20min, raw_json, created_at, sport)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
              ON CONFLICT(icu_id) DO UPDATE SET source_device = excluded.source_device, type = excluded.type, name = excluded.name,
                date = excluded.date, start_at = excluded.start_at, moving_seconds = excluded.moving_seconds, distance_m = excluded.distance_m,
                elevation_m = excluded.elevation_m, avg_power = excluded.avg_power, weighted_power = excluded.weighted_power,
                avg_hr = excluded.avg_hr, max_hr = excluded.max_hr, load = excluded.load, load_basis = excluded.load_basis,
-               best_1min = excluded.best_1min, best_20min = excluded.best_20min, raw_json = excluded.raw_json`,
-            athleteId, a.id, a.source, a.indoor ? "VirtualRide" : "Ride", a.name, date, a.startLocal, a.movingSeconds, a.distanceM,
-            a.elevationM, a.avgPower, a.weightedPower, a.avgHr, a.maxHr, load, basis, a.best1min, a.best20min,
-            JSON.stringify(a.raw), nowIso(),
+               best_1min = excluded.best_1min, best_20min = excluded.best_20min, raw_json = excluded.raw_json, sport = excluded.sport`,
+            athleteId, a.id, a.source, ride ? (a.indoor ? "VirtualRide" : "Ride") : a.type, a.name, date, a.startLocal, a.movingSeconds, a.distanceM,
+            a.elevationM, a.avgPower, a.weightedPower, a.avgHr, a.maxHr, load, basis, ride ? a.best1min : null, ride ? a.best20min : null,
+            JSON.stringify(a.raw), nowIso(), sportGroup(a.type),
           );
         }
         for (const w of well) {
@@ -73,7 +76,7 @@ export async function syncAll(app: App, athleteId: number, days = 14): Promise<{
 
 /** Master Copy rule (D-024, D-029): each ride counts once. */
 export function dedupe(app: App, athleteId: number, from: ISODate, to: ISODate): void {
-  const rows = app.db.all("SELECT * FROM activity WHERE athlete_id = ? AND date BETWEEN ? AND ?", athleteId, from, to);
+  const rows = app.db.all("SELECT * FROM activity WHERE athlete_id = ? AND sport = 'ride' AND date BETWEEN ? AND ?", athleteId, from, to);
   const dup = findDuplicates(
     rows.map((r) => ({
       id: r.icu_id,
@@ -94,7 +97,7 @@ export function dedupe(app: App, athleteId: number, from: ISODate, to: ISODate):
 
 function matchToPlan(app: App, athleteId: number, from: ISODate, to: ISODate): void {
   const acts = app.db.all(
-    "SELECT * FROM activity WHERE athlete_id = ? AND date BETWEEN ? AND ? AND is_master = 1 ORDER BY date, moving_seconds DESC",
+    "SELECT * FROM activity WHERE athlete_id = ? AND sport = 'ride' AND date BETWEEN ? AND ? AND is_master = 1 ORDER BY date, moving_seconds DESC",
     athleteId, from, to,
   );
   for (const a of acts) {
@@ -122,14 +125,31 @@ function matchToPlan(app: App, athleteId: number, from: ISODate, to: ISODate): v
   }
 }
 
-/** Load, Fitness, Fatigue, Form for every day from the first ride to today (D-010). */
+/** Whether other sports count in Fitness / Fatigue (D-047, default on). */
+export const countsOtherSports = (app: App): boolean => app.setting("otherSports", { enabled: true }).enabled;
+
+/**
+ * Load, Fitness, Fatigue, Form for every day from the first activity to today
+ * (D-010). Other sports: full Load in Fatigue, sport-weighted in Fitness (D-047).
+ */
 export function recomputePerformance(app: App, athleteId: number): void {
   const today = app.today();
-  const rows = app.db.all("SELECT date, SUM(load) AS load FROM activity WHERE athlete_id = ? AND is_master = 1 AND load IS NOT NULL GROUP BY date", athleteId);
-  const loads = new Map<ISODate, number>(rows.map((r) => [r.date, r.load]));
-  const first = rows.map((r) => r.date).sort()[0] ?? today;
+  const others = countsOtherSports(app);
+  const rows = app.db.all<{ date: ISODate; sport: SportGroup; load: number }>(
+    "SELECT date, sport, SUM(load) AS load FROM activity WHERE athlete_id = ? AND is_master = 1 AND load IS NOT NULL GROUP BY date, sport",
+    athleteId,
+  );
+  const fit = new Map<ISODate, number>();
+  const fat = new Map<ISODate, number>();
+  for (const r of rows) {
+    if (r.sport !== "ride" && !others) continue;
+    const w = SPORT_WEIGHTS[r.sport] ?? SPORT_WEIGHTS.other;
+    fit.set(r.date, (fit.get(r.date) ?? 0) + r.load * w.fitness);
+    fat.set(r.date, (fat.get(r.date) ?? 0) + r.load * w.fatigue);
+  }
+  const first = [...fat.keys()].sort()[0] ?? today;
   const from = first < addDays(today, -365) ? addDays(today, -365) : first;
-  const series = performanceSeries(loads, from, addDays(today, 1));
+  const series = performanceSeries(fit, from, addDays(today, 1), undefined, fat);
   const now = nowIso();
   app.db.tx(() => {
     for (const d of series) {
@@ -155,7 +175,7 @@ export async function checkFtp(app: App, athleteId: number): Promise<void> {
     estimate = null;
   }
   if (estimate === null) {
-    const best = app.db.get("SELECT MAX(best_20min) AS b FROM activity WHERE athlete_id = ? AND is_master = 1 AND date >= ?", athleteId, addDays(today, -42))?.b;
+    const best = app.db.get("SELECT MAX(best_20min) AS b FROM activity WHERE athlete_id = ? AND sport = 'ride' AND is_master = 1 AND date >= ?", athleteId, addDays(today, -42))?.b;
     estimate = best ? eftpFromBest20(best) : null;
   }
   if (estimate === null) return;

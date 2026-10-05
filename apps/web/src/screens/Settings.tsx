@@ -24,6 +24,7 @@ export function Settings() {
       <Profile s={s} reload={load} />
       <Goals s={s} reload={load} />
       <Availability s={s} reload={load} />
+      <OtherSports s={s} reload={load} />
       <Reminder s={s} reload={load} />
       <Connection s={s} reload={load} />
       <Data s={s} />
@@ -88,6 +89,20 @@ function Availability({ s, reload }: { s: any; reload: () => void }) {
         reload();
         return r;
       }, "Zapisano.")}>Zapisz</button>
+    </Card>
+  );
+}
+
+function OtherSports({ s, reload }: { s: any; reload: () => void }) {
+  const { busy, run } = useAction();
+  return (
+    <Card title="Inne sporty">
+      <label className="check">
+        <input type="checkbox" checked={!!s.otherSports} disabled={busy}
+          onChange={(e) => run(async () => { await api.put("/api/settings/other-sports", { enabled: e.target.checked }); reload(); }, "Przeliczono Kondycję i Zmęczenie.")} />
+        Licz bieg, siłownię i inne sporty
+      </label>
+      <p className="small muted">Każdy trening dodaje pełne obciążenie do Zmęczenia. Do Kondycji kolarskiej liczy się jego część: bieg 60%, narty / wiosła 50%, marsz 30%, pływanie 20%, siłownia i joga 0%. Bieg lub siłownia dzień wcześniej mogą też obniżyć gotowość. Szczegóły: Trener › Baza wiedzy › „Inne sporty”.</p>
     </Card>
   );
 }

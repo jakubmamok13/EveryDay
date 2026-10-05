@@ -124,6 +124,36 @@ describe("demo athlete: full morning loop with buttons", () => {
     expect(((await r2.handle("GET", "/api/today")) as any).workout.name).toBe((await call("GET", "/api/today")).workout.name);
   });
 
+  it("explains today: plan, every signal, the rule and the decision (D-048)", async () => {
+    await call("POST", "/api/checkin", { feeling: "good", rideMode: "indoor" });
+    const why = await call("GET", "/api/today/why");
+    expect(why.plan.lines[0]).toMatch(/^Blok 1: akcent Sweet Spot/);
+    expect(why.plan.lines.join(" ")).toContain("trening kluczowy");
+    expect(why.signals.find((x: any) => x.key === "check_in").value).toBe("Dobrze");
+    expect(why.signals.every((x: any) => x.label && x.ratingWord)).toBe(true);
+    expect(why.rule).toMatch(/→ (zielony|żółty|czerwony) dzień/);
+    expect(why.decision.whatIf).toHaveLength(3);
+    expect(why.load.counted).toBe(true);
+  });
+
+  it("counts other sports: full Load in Fatigue, part in Fitness, toggle in Settings (D-047)", async () => {
+    const others = app.db.all("SELECT sport, load FROM activity WHERE sport <> 'ride'");
+    expect(others.some((a: any) => a.sport === "strength")).toBe(true);
+    expect(others.some((a: any) => a.sport === "run")).toBe(true);
+    expect(others.find((a: any) => a.sport === "strength")!.load).toBeGreaterThanOrEqual(37); // 50 min × 45/h floor
+    const on = app.db.get("SELECT fitness, fatigue FROM daily_state WHERE date = '2026-10-06'")!;
+    await call("PUT", "/api/settings/other-sports", { enabled: false });
+    const off = app.db.get("SELECT fitness, fatigue FROM daily_state WHERE date = '2026-10-06'")!;
+    expect(off.fatigue).toBeLessThan(on.fatigue);
+    expect(on.fitness - off.fitness).toBeLessThan(on.fatigue - off.fatigue);
+    expect((await call("GET", "/api/settings")).otherSports).toBe(false);
+    expect((await call("GET", "/api/today/why")).load.counted).toBe(false);
+    await call("PUT", "/api/settings/other-sports", { enabled: true });
+    const week = await call("GET", "/api/week?start=2026-09-28");
+    const labels = week.days.flatMap((d: any) => d.rides.map((r: any) => r.sportLabel)).filter(Boolean);
+    expect(labels.length).toBeGreaterThan(0);
+  });
+
   it("errors are thrown with a status code", async () => {
     await expect(call("POST", "/api/checkin", { feeling: "meh" })).rejects.toMatchObject({ statusCode: 400 });
     await expect(call("GET", "/api/nope")).rejects.toMatchObject({ statusCode: 404 });

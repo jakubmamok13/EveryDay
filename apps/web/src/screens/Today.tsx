@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FEELINGS, PAIN_PARTS, type Feeling } from "@everyday/core";
 import { api, CHANGED, fmtDate, fmtMinutes, saveFile } from "../api";
 import { StepGraph, StepList } from "../StepGraph";
+import { WhyCard } from "../WhyCard";
 import { Card, Seg, Sheet, useAction } from "../ui";
 
 const MODES = [
@@ -84,6 +85,8 @@ export function Today({ goCoach }: { goCoach: () => void }) {
           ))}
         </Card>
       )}
+
+      {(t.brief || t.readiness) && <WhyCard />}
 
       {t.workout ? (
         <WorkoutCard w={t.workout} busy={busy} run={run} setT={setT} goCoach={goCoach} />

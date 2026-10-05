@@ -81,6 +81,10 @@ const MIGRATIONS: string[] = [
   ALTER TABLE check_in ADD COLUMN exhausted INTEGER NOT NULL DEFAULT 0;
   ALTER TABLE check_in ADD COLUMN feeling TEXT;
   `,
+  // v3 — other sports in the training load (D-047); existing rows are rides
+  `
+  ALTER TABLE activity ADD COLUMN sport TEXT NOT NULL DEFAULT 'ride';
+  `,
 ];
 
 export class Db {

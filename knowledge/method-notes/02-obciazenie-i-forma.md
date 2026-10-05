@@ -20,3 +20,7 @@ lżejszy (tydzień regeneracyjny), żeby organizm zdążył się zaadaptować.
 ## Forma na start
 Przed ważnym startem zmniejszamy objętość na 7–10 dni (taper), zostawiając
 krótkie mocne akcenty. Celem jest Forma około +15 do +25 w dniu startu.
+
+## Inne sporty
+Bieg, siłownia czy pływanie też męczą. Dodają pełne obciążenie do Zmęczenia,
+a do Kondycji kolarskiej tylko część (szczegóły w notatce „Inne sporty”).

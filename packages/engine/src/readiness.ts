@@ -1,3 +1,4 @@
+import { SPORT_WEIGHTS, type SportGroup } from "./sports";
 import { addDays, type ChatNote, type CheckIn, type ISODate, type InputRating, type Readiness, type ReadinessInput, type WellnessDay } from "@everyday/shared";
 
 // Readiness score (02 M5.2). Thresholds are *our rule*, calibrated after the Learning Period.
@@ -12,6 +13,11 @@ export interface ReadinessContext {
   /** Readiness shows "learning" until this date (exclusive). */
   learningUntil?: ISODate | null;
   activeNotes?: ChatNote[];
+  /**
+   * Non-cycling sessions of the previous 2 days (D-047). Undefined = the
+   * Athlete does not count other sports; the input is then left out.
+   */
+  recentOther?: { date: ISODate; group: SportGroup; load: number }[];
 }
 
 const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
@@ -97,6 +103,25 @@ export function rateCheckIn(c: CheckIn | null | undefined): ReadinessInput {
   return { key: "check_in", rating: low.length ? "caution" : "ok", ...(detail ? { detail } : {}) };
 }
 
+/**
+ * Leg-heavy sessions in other sports (running: eccentric muscle damage;
+ * strength: lower HRV and performance up to 48 h) hurt the next bike
+ * session more than their Load shows (Millet 2009; Wilson 2012). Our rule:
+ * caution after Load ≥ 40 yesterday or ≥ 80 two days ago; bad after ≥ 100
+ * yesterday. Other sports only add their Load to Fatigue.
+ */
+export function rateOtherSport(recent: ReadinessContext["recentOther"], date: ISODate): ReadinessInput | null {
+  if (!recent) return null;
+  const legs = recent.filter((s) => SPORT_WEIGHTS[s.group].legs);
+  const sum = (d: ISODate) => legs.filter((s) => s.date === d).reduce((a, s) => a + s.load, 0);
+  const y = sum(addDays(date, -1));
+  const y2 = sum(addDays(date, -2));
+  const main = legs.filter((s) => s.date >= addDays(date, -2)).sort((a, b) => b.load - a.load)[0];
+  if (!main) return { key: "other_sport", rating: "ok", detail: "none" };
+  const rating: InputRating = y >= 100 ? "bad" : y >= 40 || y2 >= 80 ? "caution" : "ok";
+  return { key: "other_sport", rating, value: Math.round(main.date === addDays(date, -1) ? y : y2), detail: `${main.group}:${main.date === addDays(date, -1) ? 1 : 2}` };
+}
+
 function noteActive(notes: ChatNote[] | undefined, kind: ChatNote["kind"], date: ISODate): boolean {
   return (notes ?? []).some((n) => n.kind === kind && n.startDate <= date && n.endDate >= date);
 }
@@ -113,6 +138,8 @@ export function computeReadiness(ctx: ReadinessContext): Readiness {
     rateForm(ctx.formPct),
     rateCheckIn(ctx.checkIn),
   ];
+  const other = rateOtherSport(ctx.recentOther, ctx.date);
+  if (other) inputs.push(other);
   const bads = inputs.filter((i) => i.rating === "bad").length;
   const cautions = inputs.filter((i) => i.rating === "caution").length;
   const score = Math.max(0, Math.min(100, 100 - 10 * cautions - 25 * bads));

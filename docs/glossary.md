@@ -112,6 +112,11 @@ Terms marked are not confirmed yet.
 - **Chat Note** — a remembered fact (injury, illness, travel, other) with an
   end date, created by buttons; affects Readiness and planning; visible and
   deletable in „Pamiętam” (R8-19). The name is historical (there is no chat).
+- **Other Sport** — a non-cycling activity (run, strength, swim, walk…). Full
+  Load in Fatigue, sport-weighted Load in Fitness; leg-heavy ones also rate in
+  Readiness (D-047).
+- **Why card** — „Dlaczego dziś to?” on Today: the decision chain behind today's
+  plan (D-048).
 - **Template Brief** — the brief built from fixed Polish templates; the only
   kind since D-044.
 - **Reminder** — the daily iPhone Shortcuts notification „Czas na poranny
@@ -159,6 +164,8 @@ Terms marked are not confirmed yet.
 | Undo | Cofnij |
 | Power Zones | Strefy mocy |
 | Chat Note | Pamiętam |
+| Why card | Dlaczego dziś to? |
+| Other sports | Inne sporty |
 | Feeling buttons | W pełni sił · Dobrze · Średnio · Czuję się gorzej · Totalne wyczerpanie · Choroba |
 | Pain | Coś boli? — Kolano / Plecy / Biodro / Kark / Łydka / Achilles / Inne |
 | Travel | Wyjazd |

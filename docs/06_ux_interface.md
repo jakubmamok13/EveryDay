@@ -33,6 +33,8 @@ States, top to bottom:
    „Samopoczucie: … · zmień”.
 4. **Odprawa** (Daily Brief), in the fixed format (02 M6.1), with the
    **Zmiana** line + **Cofnij** when the plan was adapted.
+4a. **„Dlaczego dziś to?”** (collapsed): plan → signals with values and
+   limits → rule → decision + „Co by było, gdyby…” → load (D-048).
 5. **Workout card**: name, minutes, Load, step graph colored by zone,
    step list with W (indoor) or ud/min + RPE (outdoor), delivery status
    ("MyWhoosh ✔", "licznik / zegarek ✔").
@@ -48,6 +50,7 @@ the next open with a connection.
 
 - 7-day list (swipe for next / previous week): planned vs done, Key
   Workouts marked ★, Recovery Week label, block focus.
+- Other sports show with their icon (🏃 🏋️ 🏊 🥾 …) and Load (D-047).
 - Tap a planned workout → move (±1–2 days), „Zamień” (same-category list),
   „Pomiń” (R8-07). Tap a skipped future workout → „Przywróć trening”.
   A warning appears if two hard days end up in a row.

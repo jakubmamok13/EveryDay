@@ -1,5 +1,5 @@
 import { addDays, mondayOf, type ISODate, type RideMode, type ScaledWorkout } from "@everyday/shared";
-import { performanceSeries, powerZoneTable, toZwo } from "@everyday/engine";
+import { performanceSeries, powerZoneTable, SPORT_WEIGHTS, toZwo, type SportGroup } from "@everyday/engine";
 import type { App } from "./app";
 import { nowIso } from "./db";
 import { addSnapshot, availability, goals, physiologyOn, plannedActiveOn, plannedBetween, VISIBLE, type PlannedRow } from "./repo";
@@ -9,7 +9,8 @@ import { addBonus, rateRide, refreshBrief, runMorning, submitCheckIn, todayView 
 import { exportJson, importJson, wipe, type ExportFile } from "./services/data";
 import { completeOnboarding, connectIcu, saveAvailability, saveGoals, seedDemo, type OnboardingInput } from "./services/onboarding";
 import { alternatives, applyChange, confirmLongRide, ensurePlan, moveWorkout, regenerate, undo, writeCalendar } from "./services/plan";
-import { syncAll } from "./services/sync";
+import { countsOtherSports, recomputePerformance, syncAll } from "./services/sync";
+import { whyView } from "./services/why";
 
 // The same "API" the PWA used to call over HTTP, now an in-process router
 // (D-043): the UI calls handle("POST", "/api/checkin", body) on the phone.
@@ -103,6 +104,8 @@ export function createRouter(app: App): Router {
     app.db.run("UPDATE daily_brief SET opened_at = COALESCE(opened_at, ?) WHERE athlete_id = ? AND date = ? AND opened_at IS NULL", nowIso(), id, today());
     return todayView(app, id);
   });
+
+  on("GET", "/api/today/why", () => whyView(app, athlete()));
 
   on("POST", "/api/checkin", async ({ body }) => {
     const id = athlete();
@@ -209,7 +212,7 @@ export function createRouter(app: App): Router {
     const end = addDays(start, 6);
     const rows = plannedBetween(app, id, start, end, VISIBLE);
     const week = app.db.get("SELECT pw.* FROM plan_week pw JOIN training_plan tp ON tp.id = pw.plan_id WHERE tp.athlete_id = ? AND tp.status = 'active' AND pw.week_start = ?", id, start);
-    const acts = app.db.all("SELECT id, date, name, moving_seconds, load, is_master, duplicate_of, planned_workout_id, compliance_pct, source_device FROM activity WHERE athlete_id = ? AND date BETWEEN ? AND ? ORDER BY start_at", id, start, end);
+    const acts = app.db.all("SELECT id, date, name, moving_seconds, load, is_master, duplicate_of, planned_workout_id, compliance_pct, source_device, sport FROM activity WHERE athlete_id = ? AND date BETWEEN ? AND ? ORDER BY start_at", id, start, end);
     return {
       start,
       today: today(),
@@ -224,7 +227,7 @@ export function createRouter(app: App): Router {
             const w = JSON.parse(r.workout_json) as ScaledWorkout;
             return { id: r.id, name: w.name, minutes: w.minutes, load: w.load, category: w.category, intensity: w.intensity, isKey: !!r.is_key, role: r.role, status: r.status, rideMode: r.ride_mode, deliveryStatus: r.delivery_status };
           }),
-          rides: acts.filter((a) => a.date === date).map((a) => ({ id: a.id, name: a.name, minutes: Math.round(a.moving_seconds / 60), load: a.load, duplicate: !a.is_master, compliance: a.compliance_pct, source: a.source_device })),
+          rides: acts.filter((a) => a.date === date).map((a) => ({ id: a.id, name: a.name, minutes: Math.round(a.moving_seconds / 60), load: a.load, duplicate: !a.is_master, compliance: a.compliance_pct, source: a.source_device, sport: a.sport, sportLabel: a.sport === "ride" ? null : SPORT_WEIGHTS[a.sport as SportGroup]?.label ?? "inny sport" })),
         };
       }),
       longRide: app.db.get("SELECT id, proposed_date, minutes FROM long_ride_proposal WHERE athlete_id = ? AND status = 'proposed'", id) ?? null,
@@ -315,14 +318,14 @@ export function createRouter(app: App): Router {
     for (const r of planned) loads.set(r.date, (loads.get(r.date) ?? 0) + JSON.parse(r.workout_json).load);
     const projection = last ? performanceSeries(loads, addDays(t, 1), addDays(t, 28), { fitness: last.fitness, fatigue: last.fatigue }) : [];
     const snaps = app.db.all("SELECT effective_from AS date, ftp_w AS ftp, weight_kg AS weight, source FROM fitness_snapshot WHERE athlete_id = ? ORDER BY effective_from, id", id);
-    const longest = app.db.get("SELECT date, moving_seconds, distance_m FROM activity WHERE athlete_id = ? AND is_master = 1 ORDER BY moving_seconds DESC LIMIT 1", id);
+    const longest = app.db.get("SELECT date, moving_seconds, distance_m FROM activity WHERE athlete_id = ? AND sport = 'ride' AND is_master = 1 ORDER BY moving_seconds DESC LIMIT 1", id);
     const target = goals(app, id).find((g) => g.type === "endurance");
     const weeks = Array.from({ length: 12 }, (_, i) => {
       const start = addDays(mondayOf(t), -7 * (11 - i));
       const end = addDays(start, 6);
       const rows = app.db.all(`SELECT status, workout_json FROM planned_workout WHERE athlete_id = ? AND date BETWEEN ? AND ? AND date < ? AND status IN ('completed','partial','missed','skipped','planned')`, id, start, end, t);
       const doneCount = rows.filter((r) => r.status === "completed" || r.status === "partial").length;
-      const load = app.db.get("SELECT SUM(load) AS l FROM activity WHERE athlete_id = ? AND is_master = 1 AND date BETWEEN ? AND ?", id, start, end)?.l ?? 0;
+      const load = app.db.get("SELECT SUM(load) AS l FROM activity WHERE athlete_id = ? AND sport = 'ride' AND is_master = 1 AND date BETWEEN ? AND ?", id, start, end)?.l ?? 0;
       const plannedLoad = rows.reduce((s, r) => s + JSON.parse(r.workout_json).load, 0);
       return { start, planned: rows.length, done: doneCount, load: Math.round(load), plannedLoad: Math.round(plannedLoad) };
     });
@@ -357,6 +360,7 @@ export function createRouter(app: App): Router {
       equipment: app.db.all("SELECT kind, model, role FROM equipment WHERE athlete_id = ? AND active = 1", id),
       connection: conn ? { athleteId: conn.external_athlete_id, status: conn.status, lastSyncAt: conn.last_sync_at, error: conn.last_error, hasKey: !!conn.has_key } : null,
       reminder: app.setting("reminder", { time: "07:00" }),
+      otherSports: countsOtherSports(app),
       demo: app.config.demo,
     };
   });
@@ -407,6 +411,14 @@ export function createRouter(app: App): Router {
     const time = String(body?.time ?? "");
     if (!/^\d{2}:\d{2}$/.test(time)) bad("invalid time");
     app.setSetting("reminder", { time });
+    return { ok: true };
+  });
+
+  on("PUT", "/api/settings/other-sports", async ({ body }) => {
+    const id = athlete();
+    app.setSetting("otherSports", { enabled: !!body?.enabled });
+    recomputePerformance(app, id);
+    await refreshBrief(app, id, today());
     return { ok: true };
   });
 

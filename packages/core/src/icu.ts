@@ -166,7 +166,8 @@ export class RealIcuClient implements IcuClient {
 
   async activities(oldest: ISODate, newest: ISODate): Promise<IcuActivity[]> {
     const list = await this.req("GET", `/athlete/${this.athleteId}/activities?oldest=${oldest}&newest=${newest}`);
-    return (list ?? []).filter((a: any) => /ride/i.test(String(a?.type ?? ""))).map(mapActivity);
+    // All sports (D-047): rides build the plan; other sports count in the load.
+    return (list ?? []).map(mapActivity);
   }
 
   async wellness(oldest: ISODate, newest: ISODate): Promise<IcuWellness[]> {

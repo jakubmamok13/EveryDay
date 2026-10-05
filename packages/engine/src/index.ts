@@ -8,3 +8,4 @@ export * from "./progress";
 export * from "./rides";
 export * from "./texts";
 export * from "./brief";
+export * from "./sports";

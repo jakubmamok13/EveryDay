@@ -59,12 +59,18 @@ and the Home Screen app keep **separate data** (D-043).
 **Purpose:** get rides and wellness from intervals.icu and send planned
 workouts back (D-004, D-009). Details: 07_integrations.md.
 
-- **In:** activities (MyWhoosh indoor, bike computer + watch outdoor), wellness
+- **In:** activities (MyWhoosh indoor, bike computer + watch outdoor, and all
+  other sports, D-047), wellness
   (HRV, resting HR, sleep, Body Battery min/max, Garmin Training Readiness,
   weight). The phone calls the intervals.icu API directly (D-043).
 - **Out:** the chosen Workout Variant for each Planned Workout, written to
   the intervals.icu calendar. intervals.icu then pushes it to MyWhoosh,
   Garmin and Wahoo.
+- **Other sports (D-047):** runs, strength, swims etc. are stored with a
+  sport group. They never match the plan; they add Load: **full weight in
+  Fatigue, sport-weighted in Fitness** (run 0.6, ski/row 0.5, walk 0.3,
+  swim 0.2, strength/yoga 0). Load = intervals.icu Load, else a per-sport
+  hourly default (strength ≥ 45/h). Setting: Ustawienia › Inne sporty.
 - **Master Copy rule** (D-024, D-029): every ride counts once.
   Indoors = MyWhoosh copy. Outdoors = bike computer copy, with the watch copy
   as fallback. Duplicate guard: same day + overlapping time + duration within
@@ -187,6 +193,7 @@ Each input is rated **ok / caution / bad**:
 | Garmin Training Readiness | < 50 | < 25 |
 | Form (% of Fitness) | < −30% | < −45% |
 | Check-in (from the feeling button) | one answer ≤ 2 | legs = 1, or two or more answers ≤ 2 (D-041) |
+| Other sports — run / strength (D-047) | Load ≥ 40 yesterday or ≥ 80 two days ago | Load ≥ 100 yesterday |
 
 - **Score** = 100 − 10 × (cautions) − 25 × (bads), limited to 0–100.
 - **State:** Green = no bad and ≤ 1 caution · Yellow = 1 bad or ≥ 2
@@ -277,6 +284,13 @@ Skup się: równe 225 W w blokach, kadencja 90+, bez przyspieszania na końcu.
 Poza rowerem: kolacja z porcją węglowodanów i sen przed 23:00.
 Jutro: wolne. Czwartek: progowe 2×15 min.
 ```
+
+### 6.1a „Dlaczego dziś to?” (D-048)
+
+A collapsible card under the brief: 1 Plan (block, week, role, limit,
+purpose or rest-day reason) · 2 every signal with value, limits and rating ·
+3 colour rule + score formula · 4 decision + „Co by było, gdyby…” · 5 Fitness /
+Fatigue / Form and other sports of the last 7 days.
 
 ### 6.2 Rules
 
