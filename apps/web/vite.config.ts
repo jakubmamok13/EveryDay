@@ -5,5 +5,6 @@ import { defineConfig } from "vite";
 export default defineConfig({
   base: "./",
   plugins: [react()],
-  build: { outDir: "dist", emptyOutDir: true },
+  // One offline chunk (~140 kB gzip) on purpose: the whole app must work without a network.
+  build: { outDir: "dist", emptyOutDir: true, chunkSizeWarningLimit: 800 },
 });

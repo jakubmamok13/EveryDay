@@ -298,3 +298,32 @@ ul.signals li:first-child { border-top: 0; }
 .rating.caution { background: color-mix(in srgb, var(--warn) 28%, transparent); color: var(--ink); }
 .rating.bad { background: color-mix(in srgb, var(--bad) 18%, transparent); color: var(--bad-text); }
 .rating.missing { background: var(--surface-2); color: var(--muted); }
+
+/* research features (D-049 …) */
+.offer { border-color: color-mix(in srgb, var(--good) 45%, var(--ring)); }
+.reasons { margin: 0 0 10px; padding-left: 18px; color: var(--ink-2); }
+.reasons li { margin: 2px 0; }
+.btn.option { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
+.opt-name { font-weight: 600; }
+.opt-impact { font-size: 12px; color: var(--muted); font-weight: 400; }
+.tomorrow.yellow { border-color: color-mix(in srgb, var(--warn) 60%, var(--ring)); }
+.tomorrow.red { border-color: color-mix(in srgb, var(--bad) 55%, var(--ring)); }
+.tag.challenge.easy { background: color-mix(in srgb, var(--good) 15%, transparent); }
+.tag.challenge.achievable { background: var(--accent-soft); }
+.tag.challenge.stretch { background: color-mix(in srgb, var(--warn) 25%, transparent); }
+.tag.challenge.breakthrough { background: color-mix(in srgb, var(--bad) 18%, transparent); }
+.efforts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+.efforts button:last-child { grid-column: span 2; }
+.small-meter { margin: 10px 0 6px; height: 8px; }
+.stagnation { background: var(--surface-2); border-radius: 12px; padding: 4px 12px 10px; margin-top: 8px; }
+.bar { height: 8px; border-radius: 4px; background: var(--accent-soft); position: relative; overflow: hidden; }
+.bar > i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 4px; }
+.lvl-row { display: grid; grid-template-columns: 110px 1fr 46px; gap: 8px; align-items: center; padding: 4px 0; font-size: 14px; }
+.lvl-row.wide { grid-template-columns: 140px 1fr 46px; }
+.rider-type { font-size: 22px; font-weight: 700; line-height: 1.2; }
+.lvl-row .n { text-align: right; font-variant-numeric: tabular-nums; }
+.forecast { padding: 6px 0; border-top: 1px solid var(--line); }
+.forecast:first-of-type { border-top: 0; }
+.event-chip { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--accent-soft); color: var(--ink); margin: 2px 0; }
+.day-edit { display: grid; grid-template-columns: 64px 1fr; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--line); }
+.day-edit:first-child { border-top: 0; }

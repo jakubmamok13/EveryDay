@@ -10,12 +10,13 @@ import {
   type PlannedDay,
   type PlannedWeek,
   type ScaledWorkout,
+  type SeasonEvent,
   type WeekKind,
   type WorkoutCategory,
   type WorkoutDef,
 } from "@everyday/shared";
 import { fitnessAfterWeek, weeklyLoadCap } from "./load";
-import { scaleWorkout, totalMinutes } from "./workouts";
+import { reduceWorkout, scaleWorkout, totalMinutes } from "./workouts";
 
 export type Ladder = Partial<Record<WorkoutCategory, number>>;
 
@@ -37,6 +38,16 @@ export interface PlanInput {
   testInRecoveryWeek?: boolean;
   /** Max planned Fitness rise per week (our rule: 5). */
   rampPerWeek?: number;
+  /** C1: one-off availability for a given week (Monday → days). */
+  weekOverrides?: Record<ISODate, AvailabilityDay[]>;
+  /** C2: season events with priority A / B / C. */
+  events?: SeasonEvent[];
+  /** C4: first days after a break of ≥ 7 days. */
+  returnFromBreak?: { from: ISODate; volumeFactor: number; easyDays: number } | null;
+  /** C5: Monday of a one-week VO2max block (Rønnestad), then 3 weeks with 1 HIT session. */
+  hitBlock?: ISODate | null;
+  /** B3: aerobic weakness from the power profile → second quality slot. */
+  weaknessCategory?: WorkoutCategory | null;
 }
 
 type Role = "quality" | "long" | "endurance";
@@ -181,9 +192,6 @@ export function longRideMinutes(longestRecent: number, weekInBlock: number, maxM
 export function planWeeks(input: PlanInput): PlannedWeek[] {
   const ramp = input.rampPerWeek ?? 5;
   const qCount = qualityDayCount(input.goals);
-  const roles = assignRoles(input.availability, qCount);
-  const avail = new Map(input.availability.map((d) => [d.weekday, d]));
-  const ev = eventGoal(input.goals);
   const weeks: PlannedWeek[] = [];
   let fitness = input.fitness;
   let lastLoadWeek = 0;
@@ -191,9 +199,19 @@ export function planWeeks(input: PlanInput): PlannedWeek[] {
   for (let i = 0; i < input.weeks; i++) {
     const weekStart = addDays(mondayOf(input.firstWeek), i * 7);
     const { blockIndex, weekInBlock } = weekPosition(input.planStart, weekStart);
+    const weekAvail = input.weekOverrides?.[weekStart] ?? input.availability;
+    const roles = assignRoles(weekAvail, qCount);
+    const avail = new Map(weekAvail.map((d) => [d.weekday, d]));
     const focus = blockFocus(input.goals, blockIndex, weekStart);
     const kind = weekKind(input.goals, focus, weekInBlock);
-    const cats = qualityCategories(focus, blockIndex);
+    let cats = qualityCategories(focus, blockIndex);
+    // B3: train the aerobic weakness in the second quality slot (raise-FTP blocks).
+    const weak = input.weaknessCategory;
+    if (weak && kind === "load" && primaryGoal(input.goals).type === "raise_ftp" && !cats.includes(weak)) cats = [cats[0]!, weak];
+    // C5: HIT block week = VO2max on every quality-capable day; the 3 weeks after keep 1 HIT session.
+    const hitWeek = !!input.hitBlock && weekStart === input.hitBlock;
+    const afterHit = !!input.hitBlock && weekStart > input.hitBlock && weekStart <= addDays(input.hitBlock, 21);
+    if (afterHit && kind === "load") cats = ["vo2max"];
     const days: PlannedDay[] = [];
     let qualityIndex = 0;
     let firstQualitySlug: string | undefined;
@@ -205,13 +223,22 @@ export function planWeeks(input: PlanInput): PlannedWeek[] {
       if (!role || !day) continue;
       const max = day.maxMinutes;
 
-      if (ev?.eventDate === date) continue; // event day: the race is the workout
-      if (ev?.eventDate && addDays(date, 1) === ev.eventDate) {
-        days.push({ date, isKey: false, role: "quality", workout: scaleWorkout(findWorkout(input.library, "openers")) });
+
+      if (hitWeek && max >= 45 && role !== "long") {
+        const level = Math.max(1, (input.ladder.vo2max ?? 1));
+        const def = pickWorkout(input.library, "vo2max", Math.max(level, 3), max, qualityIndex % 2 ? firstQualitySlug : undefined) ?? findWorkout(input.library, "vo2-5x3");
+        if (!firstQualitySlug) firstQualitySlug = def.slug;
+        qualityIndex++;
+        days.push({ date, isKey: true, role: "quality", workout: scaleWorkout(def) });
         continue;
       }
 
       if (role === "quality") {
+        if (afterHit && kind === "load" && qualityIndex >= 1) {
+          qualityIndex++;
+          days.push({ date, isKey: false, role: "endurance", workout: endurance(input.library, Math.min(max, 75)) });
+          continue;
+        }
         const cat = cats[qualityIndex % cats.length]!;
         const second = qualityIndex > 0 && cats[0] === cat;
         qualityIndex++;
@@ -267,9 +294,12 @@ export function planWeeks(input: PlanInput): PlannedWeek[] {
     }
     days.sort((a, b) => (a.date < b.date ? -1 : 1));
 
+    applyEvents(days, allEvents(input), input.library);
+    if (input.returnFromBreak) applyReturn(days, input.returnFromBreak, input.library);
+
     // Ramp cap (our rule): shorten flexible endurance first, then the long ride.
     let total = days.reduce((s, d) => s + d.workout.load, 0);
-    if (kind === "load") {
+    if (kind === "load" && !hitWeek) {
       const cap = Math.max(weeklyLoadCap(fitness, ramp), 150);
       while (total > cap) {
         const flex = days
@@ -299,6 +329,94 @@ export function planWeeks(input: PlanInput): PlannedWeek[] {
   }
   void lastLoadWeek;
   return weeks;
+}
+
+// ---------- C2: season events (A / B / C) ----------
+
+/** The primary Event goal counts as an A event. */
+export function allEvents(input: Pick<PlanInput, "events" | "goals">): SeasonEvent[] {
+  const out = [...(input.events ?? [])];
+  const ev = eventGoal(input.goals);
+  if (ev?.eventDate && !out.some((e) => e.date === ev.eventDate)) out.push({ date: ev.eventDate, name: ev.eventName ?? "Start", priority: "A" });
+  return out;
+}
+
+/** Days before (taper) and after (recovery) an event that the plan protects. */
+export const EVENT_WINDOW: Record<SeasonEvent["priority"], { before: number; after: number }> = {
+  A: { before: 14, after: 5 },
+  B: { before: 4, after: 2 },
+  C: { before: 1, after: 1 },
+};
+
+/** True when `date` is an event day or inside an event's taper/recovery window. */
+export function inEventWindow(date: ISODate, events: SeasonEvent[]): boolean {
+  return events.some((e) => {
+    const w = EVENT_WINDOW[e.priority];
+    const before = daysBetween(date, e.date);
+    const after = daysBetween(e.date, date);
+    return (before >= 0 && before <= w.before) || (after >= 0 && after <= w.after);
+  });
+}
+
+function easyDay(d: PlannedDay, library: WorkoutDef[], minutes: number): PlannedDay {
+  return { date: d.date, isKey: false, role: minutes <= 45 ? "recovery" : "endurance", workout: endurance(library, Math.max(30, Math.min(minutes, round15(d.workout.minutes)))) };
+}
+
+/**
+ * Taper and recovery around events (our rule). A: 2-week taper, volume
+ * −25% then −50%, intensity kept (Bosquet et al. 2007: 2 weeks, volume
+ * −41–60%, intensity and frequency unchanged), openers the day before,
+ * 5 easy days after. B: 4 lighter days, openers, 2 easy days after.
+ * C: openers or easy the day before, 1 easy day after. Event day: no workout.
+ */
+export function applyEvents(days: PlannedDay[], events: SeasonEvent[], library: WorkoutDef[]): void {
+  for (let i = days.length - 1; i >= 0; i--) {
+    const d = days[i]!;
+    if (events.some((e) => e.date === d.date)) {
+      days.splice(i, 1);
+      continue;
+    }
+    for (const e of [...events].sort((a, b) => "ABC".indexOf(a.priority) - "ABC".indexOf(b.priority))) {
+      const before = daysBetween(d.date, e.date);
+      const after = daysBetween(e.date, d.date);
+      const hard = d.workout.intensity === "hard";
+      if (before === 1) {
+        days[i] = { date: d.date, isKey: false, role: "quality", workout: scaleWorkout(findWorkout(library, "openers")) };
+        break;
+      }
+      if (e.priority === "A" && before >= 2 && before <= 14) {
+        const factor = before <= 7 ? 0.5 : 0.75;
+        if (hard) days[i] = { ...d, workout: before <= 7 ? scaleWorkout(pickWorkout(library, "vo2max", 1, d.workout.minutes) ?? findWorkout(library, "vo2-5x2")) : reduceWorkout(d.workout) };
+        else days[i] = { ...d, isKey: false, workout: endurance(library, Math.max(45, round15(d.workout.minutes * factor))) };
+        break;
+      }
+      if (e.priority === "B" && before >= 2 && before <= 4) {
+        days[i] = hard ? { ...d, workout: scaleWorkout(pickWorkout(library, "vo2max", 1, d.workout.minutes) ?? findWorkout(library, "vo2-5x2")) } : easyDay(d, library, 60);
+        break;
+      }
+      if (after >= 1 && after <= EVENT_WINDOW[e.priority].after) {
+        days[i] = easyDay(d, library, after === 1 ? 45 : 60);
+        break;
+      }
+    }
+  }
+}
+
+// ---------- C4: return after a break ----------
+
+export function applyReturn(days: PlannedDay[], r: { from: ISODate; volumeFactor: number; easyDays: number }, library: WorkoutDef[]): void {
+  for (let i = 0; i < days.length; i++) {
+    const d = days[i]!;
+    const n = daysBetween(r.from, d.date);
+    if (n < 0 || n > 6) continue;
+    if (n < r.easyDays && d.workout.intensity !== "easy") {
+      days[i] = easyDay(d, library, 60);
+      continue;
+    }
+    if (d.workout.intensity === "easy" || d.role === "long") {
+      days[i] = { ...d, isKey: d.role === "long" ? false : d.isKey, workout: endurance(library, Math.max(30, round15(d.workout.minutes * r.volumeFactor))) };
+    }
+  }
 }
 
 /** Hard means a session that needs fresh legs (quality, tests). */

@@ -533,3 +533,230 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   5. Fitness / Fatigue / Form and other sports of the last 7 days.
 - It uses the stored readiness of the morning, so it always matches the brief.
 - **Source:** User request (2026-10-05).
+
+## D-049 · 2026-10-06 · Training features chosen from the app research (docs/10)
+- **Decision:** the author chose A1, A4, B1, B2, B3, B5, B6, C1, C2, C3, C4,
+  C5, D1, D2, D3 from [10 Feature research](10_feature_research.md) and asked
+  for "the objectively best solution, backed by research" wherever a detail
+  was open. A2, A3, A5 and B4 are not built. D-050 … D-065 record each choice.
+- **Source:** User (2026-10-06: „A(1,4), B(1,2,3,5,6), C(1,2,3,4,5), D(1,2,3)”).
+
+## D-050 · 2026-10-06 · A1 Green light for an extra ride on a rest day
+- **Decision:** on a rest day Today shows „Zielone światło: możesz dziś
+  dorzucić jazdę” with up to 3 options. Each option shows its effect on the
+  next key workout („Forma w Czw: −5% → −14%”). One tap adds the ride and
+  sends it to the devices; „Nie dziś” hides the card for that day.
+- **Rule (our rule; all must hold):**
+  1. no planned ride today; no trip, pain or illness note;
+  2. readiness green; feeling „W pełni sił” or „Dobrze” (no check-in →
+     recovery or Z2 only);
+  3. Form ≥ −10% (≥ −20% for Z1/Z2 only);
+  4. the week stays inside the weekly load cap (ramp rule);
+  5. at least 1 free day left in the week; at most 2 extra rides a week;
+  6. key workout tomorrow → only Z1/Z2 up to 75 min; tempo only with ≥ 3
+     days to the next key day and „W pełni sił”; nothing moderate < 48 h
+     before a hard day;
+  7. simulated Form on the next key day stays ≥ −25% (the caution line is −30%).
+- **Research:** autonomic recovery is complete within minutes to hours
+  after rides below the first threshold, slower after threshold or interval
+  work (Seiler et al. 2007, Med Sci Sports Exerc 39:1366). Full
+  parasympathetic recovery takes about 24 h after easy work, 24–48 h after
+  threshold work and ≥ 48 h after high-intensity work (Stanley et al. 2013,
+  Sports Med 43:1259). Monotony without easy days raises illness and
+  overreaching risk (Foster 1998, Med Sci Sports Exerc 30:1164).
+- **Source:** User request (2026-10-06) + research by Claude.
+
+## D-051 · 2026-10-06 · A4 Warning for tomorrow
+- **Decision:** when tomorrow is a key or hard workout and the projected
+  morning Form after today's load is below −30%, Today shows a yellow card;
+  below −45% the card is red. Buttons: „Lżej jutro” (the same change as
+  Trener › „Lżej”), „Przesuń na …” (if the day after is free) and „Zostaw plan”.
+- **Basis:** intervals.icu Form zones as % of Fitness: below −30% is
+  „High risk”. We add −45% as our red line. The forecast uses load only,
+  because next night's HRV is unknown.
+- **Source:** User choice; TrainerRoad Red Light Green Light (product idea).
+
+## D-052 · 2026-10-06 · B1 Visible progression levels
+- **Decision:** Postęp shows the ladder level for Sweet Spot, Próg, VO2max,
+  Tempo, Beztlenowe and Długa jazda (level / highest level in the library).
+  Today's workout gets a chip comparing the workout level with the athlete's
+  level:
+  - below → „łatwy dla Ciebie”;
+  - equal → „osiągalny”;
+  - +1 → „ambitny”;
+  - +2 or more → „bardzo ambitny”.
+- **Source:** User choice; TrainerRoad Progression Levels and Workout Levels.
+
+## D-053 · 2026-10-06 · B2 Five-step ride rating
+- **Decision:** after a ride: „Ukończone interwały: Całość / Częściowo /
+  Nie” and „Jak ciężko było?”: Łatwo / Umiarkowanie / Ciężko / Bardzo
+  ciężko / Na maksa.
+  - Score for the ladder: +1 / +0.5 / 0 / −0.5 / −1. „Częściowo” adds
+    −0.5. „Nie” always scores −1.
+  - Ladder +1 when the last two rated rides of a category sum ≥ 1.5 and
+    compliance ≥ 90%.
+  - Ladder −1 when the last ride scores ≤ −1, the last two sum ≤ −1, or
+    compliance < 80%.
+  - RPE stored: 3 / 5 / 7 / 8 / 10 (CR-10 scale).
+  - The old 3-button rating still works (`feel`).
+- **Research:** session-RPE is a valid load measure across intensities
+  (Foster et al. 2001, J Strength Cond Res 15:109).
+- **Supersedes:** the 3-step rating in M11 for new ratings.
+
+## D-054 · 2026-10-06 · B3 Power profile from daily rides
+- **Decision:** best 5 s, 1 min, 5 min and 20 min power of the last 12
+  weeks. The app computes these itself from the 1 Hz power stream of each
+  ride with power (D-063), so no test is needed.
+  - W/kg is placed on Coggan's power profile table (0 = untrained,
+    100 = world class) for men or women (setting in Profil).
+  - Rider type: sprinter, puncher, time trialist / climber, or all-rounder.
+  - The weakest of the four is shown.
+- **Plan effect (raise-FTP goal only):** a weak VO2max (5 min) or threshold
+  (FTP) replaces the second quality workout of load weeks with that
+  category. Sprint and 1-min power are shown but never steer the plan.
+- **Research:** Allen & Coggan, *Training and Racing with a Power Meter*,
+  power profile table. The women's bottom values are approximate (the table
+  is less complete there).
+- **Source:** User choice; Wahoo 4DP, Xert, Garmin Cycling Ability.
+
+## D-055 · 2026-10-06 · B5 Durability
+- **Decision:** for rides ≥ 2 h with power, the best 5-min and 20-min power
+  **after 20 kJ/kg of work** is compared with the fresh best of 12 weeks.
+  - Shown: „utrzymujesz X% mocy 20-min”, capped at 100%.
+  - Bands: ≥ 95% very good, 90–95% good, 85–90% fair, < 85% to work on.
+- **Research:** durability is the time of onset and size of the drop in
+  physiological profile during prolonged exercise (Maunder et al. 2021,
+  Sports Med 51:1619). Better riders lose ~4% of 20-min power after
+  50 kJ/kg; weaker riders lose more (review 2025, Eur J Appl Physiol).
+- **Limit:** a value is only as good as the late efforts. Without a hard
+  effort late in a long ride, the result underestimates durability.
+
+## D-056 · 2026-10-06 · B6 FTP confidence
+- **Decision:** Postęp shows the eFTP estimate with a confidence level. It
+  counts hard efforts in 42 days: best 20 min ≥ 90% of FTP or best 5 min
+  ≥ 106% of FTP.
+  - Confidence: ≥ 3 efforts high, 1–2 medium, 0 low.
+  - Low confidence and the last test > 42 days ago → advice to do the ramp
+    test in the next recovery week.
+  - High confidence → „Test nie jest potrzebny”.
+- **Source:** User choice; TrainerRoad AI FTP Detection, intervals.icu eFTP.
+
+## D-057 · 2026-10-06 · C1 „Ten tydzień jest inny…”
+- **Decision:** in Tydzień, one week can have its own availability (days
+  on/off, minutes 30 min – 4 h). It is stored in `week_override`, and the
+  plan from today is rebuilt for that week only. „Przywróć zwykły tydzień”
+  removes it. The normal availability never changes.
+- Plan roles (long day, quality days) are computed per week from that
+  week's availability.
+- **Source:** User choice; JOIN (most praised feature).
+
+## D-058 · 2026-10-06 · C2 Season events A / B / C
+- **Decision:** Ustawienia › Sezon: date, name, priority, „w upale”. The
+  primary Event goal counts as an A event.
+  - **A:** 2-week taper. Volume ×0.75 in week −2 and ×0.5 in week −1.
+    Intensity kept (hard days stay hard but shorter). Openers the day
+    before. 5 easy days after.
+  - **B:** 4 lighter days before, openers the day before, 2 easy days after.
+  - **C:** openers or an easy ride the day before, 1 easy day after.
+  - Event day: no workout.
+- A Long Ride Day is never proposed in these windows. One that is already
+  proposed or confirmed is withdrawn when an event is added.
+- **Research:** best taper is ~2 weeks with volume cut by 41–60%, and
+  intensity and frequency kept (Bosquet et al. 2007, Med Sci Sports Exerc
+  39:1358, meta-analysis of 27 studies).
+
+## D-059 · 2026-10-06 · C3 Form forecast for important days
+- **Decision:** for events and confirmed Long Ride Days in the next 8 weeks,
+  Postęp shows projected Fitness and Form (in % of Fitness) on the day,
+  using the planned load.
+  - Targets: A +5 … +20%, B −5 … +15%, C −15 … +10%, Long Ride Day
+    −10 … +15%.
+  - Verdict: „w docelowym zakresie”, „trochę poniżej celu”, „zmęczony”
+    (more than 15 points below the target), „bardzo świeży”.
+- **Research:** intervals.icu Form zones as % of Fitness: Fresh +5 … +20%
+  (race ready), Transition above +20% (fitness fades). We use % rather
+  than Coggan's absolute TSB +15 … +25, because absolute values suit only
+  riders with high Fitness. This matches the other Form thresholds in the
+  app (−30%, −45%).
+
+## D-060 · 2026-10-06 · C4 Return after a break
+- **Decision:** after ≥ 7 days without a ride (checked once per break, not
+  during an active trip or illness note), the plan is rebuilt from today:
+
+  | Days off | Ladder | FTP suggestion | First week volume | Easy days first |
+  |---|---|---|---|---|
+  | 7–13 | −1 | — | 70% | 2 |
+  | 14–27 | −2 | ×0.97 | 60% | 3 |
+  | ≥ 28 | −3 | ×0.94 | 50% | 3 |
+
+  The FTP change is only a suggestion; the author accepts it.
+- **Research:** VO2max falls ~7% in the first 12–21 days without training
+  (Coyle et al. 1984, J Appl Physiol 57:1857). Detraining review: Mujika &
+  Padilla 2000, Sports Med 30:79 and 30:145.
+
+## D-061 · 2026-10-06 · C5 Interval block (optional)
+- **Decision:** Trener › „Blok interwałowy” starts on the next Monday.
+  - Week 1: VO2max on every available day ≥ 45 min, except the long day.
+    No ramp cap that week.
+  - The next 3 weeks: 1 VO2max session plus endurance.
+  - Available only for the „Podnieść FTP” goal, with ≥ 3 days of ≥ 45 min
+    a week, and not within 5 weeks (block + 3 weeks) before an A event.
+  - It can be cancelled before it starts.
+  - Offered automatically when D3 finds stagnation.
+- **Research:** block periodization of HIT in trained cyclists (5 sessions
+  in week 1, then 1 a week) gave larger VO2max and power gains than the same
+  sessions spread evenly (Rønnestad et al. 2014, Scand J Med Sci Sports 24:34).
+
+## D-062 · 2026-10-06 · D1 Carbohydrate per day, D2 heat acclimation
+- **D1 decision:** Today shows the day's carbohydrate need:
+  - mało 3–5 g/kg; średnio 5–7; dużo 6–10; bardzo dużo 8–12;
+  - grams from the weight in Profil;
+  - tomorrow's long or hard ride raises today's level by one step at most.
+  - No diet or weight-loss advice (R8-15).
+- **D1 research:** Thomas, Erdman & Burke 2016, ACSM / AND / DC joint
+  position, Med Sci Sports Exerc 48:543.
+- **D2 decision:** for an event marked „w upale”, Today shows a heat card
+  from 14 to 2 days before:
+  - ride in the heat (no fan or warmer clothes), easy 45–60 min, more drink;
+  - training days in the window are counted against about 10;
+  - optional hot bath after an easy ride (≤ 40 °C, ≤ 40 min).
+  - From 3 days before: no extra heat.
+- **D2 research:** most heat adaptations come in 7–14 days (Périard et al.
+  2015, Scand J Med Sci Sports 25 Suppl 1:20; Racinais et al. 2015
+  consensus, Br J Sports Med 49:1164). Post-exercise hot-water immersion
+  at 40 °C for up to 40 min induces heat acclimation (Zurawlew et al. 2016,
+  Scand J Med Sci Sports 26:745).
+
+## D-063 · 2026-10-06 · Power data: own computation from streams
+- **Context:** B3 and B5 need best powers, and B5 needs power **after** a
+  given amount of work. A power curve gives only the bests, not their timing.
+- **Decision:** the phone downloads the watts stream of each ride with power
+  (`GET /api/v1/activity/{id}/streams.json?types=watts`) and computes the
+  bests and durability itself.
+  - Up to 12 rides per run, newest first, last 12 weeks.
+  - The result is cached in `activity.peaks_json`; `streams_done` marks a
+    ride as done.
+  - The parser accepts several response shapes. The real shape is checked
+    in spike S29.
+- **Source:** Claude (research choice).
+
+## D-064 · 2026-10-06 · D3 Weekly summary and stagnation
+- **Decision:** Monday to Wednesday, Today shows last week:
+  - rides done of planned (or the ride count when nothing was planned) and
+    other sports;
+  - Load vs plan and the Fitness change;
+  - levels that went up and FTP.
+  - „OK” hides it until next week.
+- **Stagnation (our rule):** 6 weeks with no level up, FTP within ±1.5% and
+  Fitness not rising (≤ +2). The card then offers the interval block
+  (D-061), or a lighter week when a block is not possible. Ladder levels
+  are saved every Monday (12 weeks kept).
+- **Source:** User choice; TrainingPeaks / TrainerRoad weekly summaries.
+
+## D-065 · 2026-10-06 · Bug fix: catch-up lock
+- **Problem found in testing:** when catch-up had nothing to do, its promise
+  finished before it was stored as „running”. The finished promise then
+  stayed stored, and every later catch-up returned it, so syncing stopped
+  until the app was restarted.
+- **Fix:** a per-app lock (`WeakMap`) that is cleared only by the same
+  promise, plus a regression test („none” first, later „sync”).

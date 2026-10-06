@@ -22,6 +22,19 @@ Terms marked are not confirmed yet.
 - **eFTP** — estimated FTP computed from recent best efforts; becomes the
   new FTP only after the Athlete accepts it (D-036).
 - **Event** — a dated Goal (race, gran fondo, tour). Priority A / B / C.
+- **Season Event** — an Event on the season list (Ustawienia › Sezon). A =
+  full taper and 5 easy days after; B = mini-taper; C = one easy day
+  either side (D-058). The primary Event goal counts as A.
+- **Taper** — the lighter days before an Event: volume down, intensity kept.
+- **Green light** — the proactive offer of an extra ride on a rest day
+  when Readiness, Form and the weekly cap allow it (D-050).
+- **Tomorrow warning** — a card when tomorrow is hard and projected Form
+  is below −30% / −45% (D-051).
+- **Week Override** — one week with its own availability (D-057).
+- **Interval Block** — one week of VO2max sessions on most days, then 3
+  weeks with one (D-061).
+- **Return after a break** — the gentler restart after ≥ 7 days without
+  riding (D-060).
 - **Weekly Availability** — hours per week, available days, max minutes per
   day, indoor/outdoor per day.
 - **Training Plan** — the full schedule from today to the Goal date (or a
@@ -69,6 +82,15 @@ Terms marked are not confirmed yet.
   Capacity, Z7 Neuromuscular (D-010). Polish labels: Z1 Regeneracja, Z2
   Wytrzymałość, Z3 Tempo, Z4 Próg, Z5 VO2max, Z6 Beztlenowa, Z7 Sprint.
 - **RPE** — rating of perceived exertion, 1–10.
+- **Progression Level** — the Athlete's step on the ladder of one workout
+  category (Sweet Spot, Próg, VO2max, Tempo, Beztlenowe, Długa jazda);
+  the **challenge** of a workout compares its level with it (D-052).
+- **Power Profile** — best 5 s / 1 / 5 / 20 min W/kg placed on Coggan's
+  table; gives the **rider type** and the weakest point (D-054).
+- **Durability** — % of fresh 5 / 20-min power still available after
+  20 kJ/kg of work (D-055).
+- **FTP confidence** — high / medium / low, from the number of hard
+  efforts in 42 days (D-056).
 - **Load** — the training stress of one Activity (TSS-equivalent).
 - **Fitness** — long-term load average (≈ CTL, 42-day).
 - **Fatigue** — short-term load average (≈ ATL, 7-day).
@@ -160,7 +182,20 @@ Terms marked are not confirmed yet.
 | Ride Mode | Gdzie dziś jedziesz? — W domu / Na zewnątrz |
 | Bonus Day | Mam dziś czas |
 | Long Ride Day | Dzień długiej jazdy |
-| Ride Rating | Jak było? — za łatwo / w sam raz / za ciężko |
+| Ride Rating | Jak było? — Ukończone interwały: Całość / Częściowo / Nie; Łatwo / Umiarkowanie / Ciężko / Bardzo ciężko / Na maksa |
+| Green light | Zielone światło: możesz dziś dorzucić jazdę |
+| Tomorrow warning | Jutro: uważaj / Jutro: raczej odpoczynek |
+| Week Override | Ten tydzień jest inny… |
+| Season Event | Sezon — start A / B / C |
+| Interval Block | Blok interwałowy |
+| Return after a break | Powrót po przerwie |
+| Progression Level / challenge | Poziomy trudności; łatwy dla Ciebie / osiągalny / ambitny / bardzo ambitny |
+| Power Profile | Profil mocy |
+| Durability | Odporność na zmęczenie |
+| Form forecast | Prognoza formy na ważne dni |
+| Carbohydrate of the day | Jedzenie dziś |
+| Heat acclimation | Aklimatyzacja do upału |
+| Weekly summary | Podsumowanie tygodnia |
 | Undo | Cofnij |
 | Power Zones | Strefy mocy |
 | Chat Note | Pamiętam |

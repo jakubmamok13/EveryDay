@@ -20,6 +20,8 @@ interface StoredEvent extends IcuWorkoutEvent {
 export class FakeIcuClient implements IcuClient {
   readonly kind = "demo" as const;
   private readonly events = new Map<string, StoredEvent>();
+  /** Activities handed out by activities(), for powerStream(). */
+  private readonly seen = new Map<string, IcuActivity>();
   private nextId = 1;
   constructor(private readonly today: () => ISODate, private readonly ftp = 250) {}
 
@@ -61,7 +63,11 @@ export class FakeIcuClient implements IcuClient {
       out.push(mk(`d${date}-mw`, 18, 60, true, "mywhoosh", ints, true));
       out.push(mk(`d${date}-fx`, 18, 60, true, "fenix", ints, false));
     }
-    if (wd === 6 && r() > 0.1) {
+    // Every other Saturday a 3 h indoor ride with power (durability data, B5).
+    const isoWeek = Math.floor((Date.parse(date) / 86_400_000 + 3) / 7);
+    if (wd === 6 && isoWeek % 2 === 0 && r() > 0.1) {
+      out.push(mk(`d${date}-mwl`, 9, 180, true, "mywhoosh", 0.7, true));
+    } else if (wd === 6 && r() > 0.1) {
       const m = 120 + Math.round(r() * 4) * 15;
       out.push(mk(`d${date}-bolt`, 9, m, false, "bolt", 0.68, false));
       out.push(mk(`d${date}-fx`, 9, m + 2, false, "fenix", 0.68, false));
@@ -116,6 +122,35 @@ export class FakeIcuClient implements IcuClient {
       out.push(...this.historyFor(d));
     }
     for (const e of planned) if (e.date >= oldest && e.date <= newest) out.push(this.fromEvent(e));
+    for (const a of out) this.seen.set(a.id, a);
+    return out;
+  }
+
+  /** Deterministic 1 Hz power: warm-up, intervals or a steady ride with a hard finish. */
+  async powerStream(activityId: string): Promise<number[] | null> {
+    const a = this.seen.get(activityId);
+    if (!a || !a.weightedPower) return null;
+    const r = rng(Number(a.startLocal.slice(0, 10).replace(/-/g, "")) + 3);
+    const ftp = this.ftp;
+    const out: number[] = [];
+    const block = (sec: number, w: number) => {
+      for (let i = 0; i < sec; i++) out.push(Math.round(w * (0.97 + r() * 0.06)));
+    };
+    const total = a.movingSeconds;
+    if (total >= 150 * 60) {
+      block(total - 20 * 60, ftp * 0.68);
+      block(20 * 60, ftp * (0.86 + r() * 0.04)); // strong finish after ~20 kJ/kg
+      return out;
+    }
+    block(10 * 60, ftp * 0.6);
+    block(15, ftp * (2.9 + r() * 0.4)); // sprint
+    block(5 * 60, ftp * 0.6);
+    block(60, ftp * (1.35 + r() * 0.1));
+    block(4 * 60, ftp * 0.55);
+    block(5 * 60, ftp * (1.08 + r() * 0.06));
+    block(4 * 60, ftp * 0.55);
+    while (out.length < total - 5 * 60) block(Math.min(10 * 60, total - 5 * 60 - out.length), Math.min(ftp * 0.95, a.weightedPower * 1.02));
+    block(Math.max(0, total - out.length), ftp * 0.5);
     return out;
   }
 

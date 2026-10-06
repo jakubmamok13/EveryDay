@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, CHANGED, fmtDate, fmtMinutes } from "../api";
+import { api, CHANGED, fmtDate, fmtMinutes, WEEKDAYS } from "../api";
 import { Card, Sheet, useAction, useToast } from "../ui";
 import { sportIcon } from "../WhyCard";
 
@@ -20,6 +20,7 @@ export function Week() {
   const [w, setW] = useState<any>(null);
   const [sel, setSel] = useState<any>(null);
   const [alts, setAlts] = useState<any[] | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
   const { busy, run } = useAction();
   const toast = useToast();
 
@@ -52,11 +53,20 @@ export function Week() {
           <button className="btn small" aria-label="Następny tydzień" onClick={() => setStart(addDays(w.start, 7))}>›</button>
         </div>
       </header>
+      {(w.override || w.hitBlock) && (
+        <p className="small" style={{ marginTop: -6 }}>
+          {w.override ? "✏️ Ten tydzień ma inną dostępność. " : ""}{w.hitBlock ? `⚡ Blok interwałowy: ${w.hitBlock.phase}.` : ""}
+        </p>
+      )}
       <p className="small muted" style={{ marginTop: -6 }}>
         {fmtDate(w.start)} – {fmtDate(addDays(w.start, 6))}
         {w.focus ? ` · blok: ${FOCUS[w.focus] ?? w.focus}` : ""}{w.kind ? ` · ${KIND[w.kind] ?? w.kind}` : ""}
         {w.targetLoad ? ` · plan ${Math.round(w.targetLoad)} obc.` : ""}
       </p>
+
+      {w.start >= mondayOfToday(w.today) && (
+        <button className="btn block small" style={{ marginBottom: 12 }} onClick={() => setEditOpen(true)}>Ten tydzień jest inny…</button>
+      )}
 
       {w.longRide && (
         <Card title="Dzień długiej jazdy">
@@ -73,6 +83,9 @@ export function Week() {
           <div key={d.date} className={`week-day${d.date === w.today ? " today" : ""}`}>
             <div className="date small">{fmtDate(d.date)}</div>
             <div>
+              {w.events?.filter((e: any) => e.date === d.date).map((e: any) => (
+                <div key={e.id} className="event-chip">🏁 {e.name} ({e.priority}){e.hot ? " ☀️" : ""}</div>
+              ))}
               {d.workouts.length === 0 && d.rides.length === 0 && <span className="muted small">wolne</span>}
               {d.workouts.map((x: any) => (
                 <button key={x.id} className={`w-item ${x.status}`} style={{ display: "block", width: "100%", textAlign: "left", border: 0, cursor: canTap(x, d.date) ? "pointer" : "default" }}
@@ -97,6 +110,8 @@ export function Week() {
           </div>
         ))}
       </Card>
+
+      {editOpen && <OverrideSheet start={w.start} onClose={() => setEditOpen(false)} onSaved={async () => { setEditOpen(false); await load(w.start); }} />}
 
       <Sheet open={!!sel} onClose={() => { setSel(null); setAlts(null); }} title={sel?.name ?? ""}>
         {sel?.status === "skipped" && (
@@ -129,5 +144,47 @@ export function Week() {
         )}
       </Sheet>
     </>
+  );
+}
+
+const mondayOfToday = (today: string) => addDays(today, -((new Date(today + "T00:00:00Z").getUTCDay() + 6) % 7));
+const MINUTES = [30, 45, 60, 90, 120, 180, 240];
+
+/** C1: one-off availability for this week only. */
+function OverrideSheet({ start, onClose, onSaved }: { start: string; onClose: () => void; onSaved: () => void }) {
+  const [days, setDays] = useState<any[] | null>(null);
+  const [exists, setExists] = useState(false);
+  const { busy, run } = useAction();
+  useEffect(() => {
+    void api.get(`/api/week/override?start=${start}`).then((r: any) => {
+      setExists(!!r.days);
+      setDays((r.days ?? r.usual).map((d: any) => ({ available: d.available, maxMinutes: d.maxMinutes || 60, defaultRideMode: d.defaultRideMode })));
+    });
+  }, [start]);
+  const upd = (i: number, patch: any) => setDays(days!.map((d, j) => (j === i ? { ...d, ...patch } : d)));
+  return (
+    <Sheet open onClose={onClose} title={`Tydzień od ${fmtDate(start)}`}>
+      {!days ? <p className="muted">Ładuję…</p> : (
+        <>
+          <p className="small muted" style={{ marginTop: 0 }}>Tylko ten tydzień. Plan od dziś ułoży się na nowo; zwykła dostępność się nie zmienia.</p>
+          {days.map((d, i) => (
+            <div key={i} className="day-edit">
+              <button className={`btn small${d.available ? " primary" : ""}`} aria-pressed={d.available} onClick={() => upd(i, { available: !d.available })}>{WEEKDAYS[i + 1]}</button>
+              {d.available ? (
+                <div className="chips">
+                  {MINUTES.map((m) => (
+                    <button key={m} className={`btn small${d.maxMinutes === m ? " on" : ""}`} aria-pressed={d.maxMinutes === m} onClick={() => upd(i, { maxMinutes: m })}>{m < 90 ? `${m}′` : `${m / 60} h`}</button>
+                  ))}
+                </div>
+              ) : <span className="small muted">wolne</span>}
+            </div>
+          ))}
+          <div className="row" style={{ marginTop: 12 }}>
+            <button className="btn primary" disabled={busy} onClick={() => run(async () => { await api.put("/api/week/override", { start, days }); onSaved(); }, "Tydzień ułożony od nowa.")}>Zapisz ten tydzień</button>
+            {exists && <button className="btn" disabled={busy} onClick={() => run(async () => { await api.del(`/api/week/override?start=${start}`); onSaved(); }, "Wrócono do zwykłego tygodnia.")}>Przywróć zwykły tydzień</button>}
+          </div>
+        </>
+      )}
+    </Sheet>
   );
 }

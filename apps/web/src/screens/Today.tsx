@@ -3,16 +3,12 @@ import { FEELINGS, PAIN_PARTS, type Feeling } from "@everyday/core";
 import { api, CHANGED, fmtDate, fmtMinutes, saveFile } from "../api";
 import { StepGraph, StepList } from "../StepGraph";
 import { WhyCard } from "../WhyCard";
+import { BonusOfferCard, CarbsCard, ChallengeChip, ComebackCard, HeatCard, RideRatingCard, SummaryCard, TomorrowCard } from "../Extras";
 import { Card, Seg, Sheet, useAction } from "../ui";
 
 const MODES = [
   { value: "indoor" as const, label: "W domu" },
   { value: "outdoor" as const, label: "Na zewnątrz" },
-];
-const RIDE_FEEL = [
-  { value: "too_easy" as const, label: "Za łatwo" },
-  { value: "just_right" as const, label: "W sam raz" },
-  { value: "too_hard" as const, label: "Za ciężko" },
 ];
 const EMOJI: Record<Feeling, string> = { great: "💪", good: "🙂", ok: "😐", worse: "😕", exhausted: "😫", sick: "🤒" };
 
@@ -46,7 +42,9 @@ export function Today({ goCoach }: { goCoach: () => void }) {
         <span className="sub">{t.weekday}, {fmtDate(t.date).split(" ")[1]}{t.demo ? " · demo" : ""}</span>
       </header>
 
-      {t.unrated?.map((r: any) => <RideRating key={r.id} ride={r} onDone={setT} />)}
+      {t.summary && <SummaryCard s={t.summary} setT={setT} />}
+      {t.unrated?.map((r: any) => <RideRatingCard key={r.id} ride={r} onDone={setT} />)}
+      {t.comeback && <ComebackCard c={t.comeback} />}
 
       {needsCheckIn && (
         <CheckInCard initial={t.checkIn} defaultMode={t.defaultRideMode} busy={busy} editing={editCheckIn}
@@ -87,13 +85,17 @@ export function Today({ goCoach }: { goCoach: () => void }) {
       )}
 
       {(t.brief || t.readiness) && <WhyCard />}
+      {t.tomorrow && <TomorrowCard w={t.tomorrow} setT={setT} />}
+      {t.bonusOffer && <BonusOfferCard offer={t.bonusOffer} defaultMode={t.defaultRideMode} setT={setT} />}
 
       {t.workout ? (
         <WorkoutCard w={t.workout} busy={busy} run={run} setT={setT} goCoach={goCoach} />
-      ) : (
+      ) : !t.bonusOffer && (
         <RestDay t={t} busy={busy} run={run} setT={setT} />
       )}
 
+      <HeatCard h={t.heat} />
+      <CarbsCard c={t.carbs} />
       {t.ftpSuggestion && <FtpCard s={t.ftpSuggestion} run={run} reload={load} />}
       {t.longRide && <LongRideCard p={t.longRide} run={run} reload={load} />}
 
@@ -170,6 +172,7 @@ function WorkoutCard({ w, busy, run, setT, goCoach }: { w: any; busy: boolean; r
         <h3>{w.name}</h3>
         {w.isKey && <span className="tag key">kluczowy</span>}
       </div>
+      <div style={{ margin: "2px 0 6px" }}><ChallengeChip c={w.challenge} /></div>
       <div className="row small muted" style={{ marginBottom: 8 }}>
         <span>{fmtMinutes(w.minutes)}</span>·<span>obciążenie {w.load}</span>·<span>{outdoor ? "Na zewnątrz" : "W domu"}</span>·<span>{done ? "zrobione ✔" : delivery}</span>
       </div>
@@ -238,27 +241,15 @@ function RestDay({ t, busy, run, setT }: { t: any; busy: boolean; run: any; setT
   );
 }
 
-function RideRating({ ride, onDone }: { ride: any; onDone: (t: any) => void }) {
-  const { busy, run } = useAction();
-  return (
-    <Card title={`Jak było? · ${fmtDate(ride.date)}`}>
-      <p className="small" style={{ marginTop: 0 }}>{ride.name} · {fmtMinutes(ride.minutes)}{ride.compliance != null ? ` · wykonanie ${Math.round(ride.compliance)}%` : ""}</p>
-      <div className="seg text">
-        {RIDE_FEEL.map((f) => (
-          <button key={f.value} disabled={busy} onClick={() => run(async () => onDone(await api.post(`/api/rides/${ride.id}/rating`, { feel: f.value })), "Dzięki!")}>{f.label}</button>
-        ))}
-      </div>
-    </Card>
-  );
-}
-
 function FtpCard({ s, run, reload }: { s: any; run: any; reload: () => void }) {
   const [ftp, setFtp] = useState<number>(s.suggested_ftp || s.current_ftp);
   const manual = !s.suggested_ftp;
   return (
     <Card title="FTP">
       <p className="small" style={{ marginTop: 0 }}>
-        {manual ? "Test zrobiony — podaj FTP z MyWhoosh." : `Twoje FTP wygląda na ${s.suggested_ftp} W (${s.suggested_ftp > s.current_ftp ? "+" : ""}${s.suggested_ftp - s.current_ftp} W).`}
+        {manual ? "Test zrobiony — podaj FTP z MyWhoosh." : s.basis === "detraining"
+          ? `Po dłuższej przerwie FTP zwykle spada (Coyle 1984: VO2max −7% w 3 tygodnie). Proponuję ${s.suggested_ftp} W (${s.suggested_ftp - s.current_ftp} W) na start.`
+          : `Twoje FTP wygląda na ${s.suggested_ftp} W (${s.suggested_ftp > s.current_ftp ? "+" : ""}${s.suggested_ftp - s.current_ftp} W).`}
       </p>
       {manual && <label className="field"><span>FTP (W)</span><input type="number" inputMode="numeric" value={ftp} onChange={(e) => setFtp(Number(e.target.value))} /></label>}
       <div className="row">

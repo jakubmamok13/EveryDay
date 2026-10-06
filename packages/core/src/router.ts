@@ -1,16 +1,30 @@
 import { addDays, mondayOf, type ISODate, type RideMode, type ScaledWorkout } from "@everyday/shared";
-import { performanceSeries, powerZoneTable, SPORT_WEIGHTS, toZwo, type SportGroup } from "@everyday/engine";
+import { EFFORT_RPE, performanceSeries, powerZoneTable, SPORT_WEIGHTS, toZwo, type Effort, type SportGroup } from "@everyday/engine";
 import type { App } from "./app";
 import { nowIso } from "./db";
 import { addSnapshot, availability, goals, physiologyOn, plannedActiveOn, plannedBetween, VISIBLE, type PlannedRow } from "./repo";
 import { act, reportPain, reportTravel, whyToday } from "./services/actions";
 import { catchUp } from "./services/catchup";
-import { addBonus, rateRide, refreshBrief, runMorning, submitCheckIn, todayView } from "./services/daily";
+import { addBonus, rateRide, refreshBrief, runMorning, submitCheckIn } from "./services/daily";
 import { exportJson, importJson, wipe, type ExportFile } from "./services/data";
 import { completeOnboarding, connectIcu, saveAvailability, saveGoals, seedDemo, type OnboardingInput } from "./services/onboarding";
 import { alternatives, applyChange, confirmLongRide, ensurePlan, moveWorkout, regenerate, undo, writeCalendar } from "./services/plan";
 import { countsOtherSports, recomputePerformance, syncAll } from "./services/sync";
 import { whyView } from "./services/why";
+import {
+  acceptBonus,
+  carbsView,
+  durabilityViewSafe,
+  forecastView,
+  ftpView,
+  hitBlockInfo,
+  levelsView,
+  setHitBlock,
+  todayFull,
+  tomorrowAction,
+} from "./services/extras";
+import { analyzeStreams, profileView } from "./services/profile";
+import { seasonEvents, weekOverrides } from "./services/plan";
 
 // The same "API" the PWA used to call over HTTP, now an in-process router
 // (D-043): the UI calls handle("POST", "/api/checkin", body) on the phone.
@@ -102,7 +116,7 @@ export function createRouter(app: App): Router {
   on("GET", "/api/today", () => {
     const id = athlete();
     app.db.run("UPDATE daily_brief SET opened_at = COALESCE(opened_at, ?) WHERE athlete_id = ? AND date = ? AND opened_at IS NULL", nowIso(), id, today());
-    return todayView(app, id);
+    return todayFull(app, id);
   });
 
   on("GET", "/api/today/why", () => whyView(app, athlete()));
@@ -122,13 +136,13 @@ export function createRouter(app: App): Router {
       ...(part ? { painNote: `Ból: ${part}` } : {}),
       rideMode: mode(body?.rideMode),
     });
-    return todayView(app, id);
+    return todayFull(app, id);
   });
 
   on("POST", "/api/checkin/skip", async () => {
     const id = athlete();
     await runMorning(app, id, today(), false);
-    return todayView(app, id);
+    return todayFull(app, id);
   });
 
   on("POST", "/api/adaptations/:id/undo", async ({ params }) => {
@@ -136,22 +150,25 @@ export function createRouter(app: App): Router {
     if (!undo(app, id, Number(params.id))) bad("Nie ma takiej zmiany.", 404);
     await refreshBrief(app, id, today());
     await calendarSoon(id);
-    return todayView(app, id);
+    return todayFull(app, id);
   });
 
   on("POST", "/api/rides/:id/rating", ({ params, body }) => {
     const id = athlete();
-    const feel = body?.feel as keyof typeof FEEL_RPE;
-    if (!(feel in FEEL_RPE)) bad("invalid feel");
-    rateRide(app, id, Number(params.id), body?.rpe ? int(body.rpe, 1, 10, "rpe") : FEEL_RPE[feel], feel);
-    return todayView(app, id);
+    const effort = body?.effort as Effort | undefined;
+    const feel = body?.feel as keyof typeof FEEL_RPE | undefined;
+    if (effort && !(effort in EFFORT_RPE)) bad("invalid effort");
+    if (!effort && !(feel && feel in FEEL_RPE)) bad("invalid feel");
+    const completed = (["yes", "partial", "no"] as const).find((c) => c === body?.completed) ?? (effort ? "yes" : null);
+    rateRide(app, id, Number(params.id), { effort: effort ?? null, completed, feel: feel ?? null, rpe: body?.rpe ? int(body.rpe, 1, 10, "rpe") : null });
+    return todayFull(app, id);
   });
 
   on("POST", "/api/bonus", async ({ body }) => {
     const id = athlete();
     await addBonus(app, id, int(body?.minutes, 20, 300, "minutes"), mode(body?.rideMode));
     await calendarSoon(id);
-    return todayView(app, id);
+    return todayFull(app, id);
   });
 
   on("GET", "/api/planned/:id/zwo", ({ params }) => {
@@ -159,6 +176,111 @@ export function createRouter(app: App): Router {
     if (!row) bad("not found", 404);
     const w = JSON.parse(row.workout_json) as ScaledWorkout;
     return { filename: `${w.slug}-${row.date}.zwo`, type: "application/xml", content: toZwo(w) };
+  });
+
+  // ---------- research features (D-049 …) ----------
+
+  on("POST", "/api/bonus/accept", async ({ body }) => {
+    const id = athlete();
+    const ok = await acceptBonus(app, id, String(body?.slug ?? ""), int(body?.minutes, 15, 300, "minutes"), mode(body?.rideMode));
+    if (!ok) bad("Ta propozycja jest już nieaktualna.");
+    await calendarSoon(id);
+    return todayFull(app, id);
+  });
+
+  on("POST", "/api/bonus/dismiss", () => {
+    app.setSetting("bonusDismissed", { date: today() });
+    return todayFull(app, athlete());
+  });
+
+  on("POST", "/api/tomorrow/:action", async ({ params }) => {
+    const action = params.action as "easier" | "move" | "dismiss";
+    if (!["easier", "move", "dismiss"].includes(action)) bad("invalid action", 404);
+    const r = await tomorrowAction(app, athlete(), action);
+    if (!r.ok) bad(r.text);
+    return { ...todayFull(app, athlete()), message: r.text };
+  });
+
+  on("POST", "/api/summary/dismiss", () => {
+    app.setSetting("summaryDismissed", { week: mondayOf(today()) });
+    return todayFull(app, athlete());
+  });
+
+  on("GET", "/api/carbs", () => carbsView(app, athlete()));
+
+  // C1: this week is different
+  on("GET", "/api/week/override", ({ query }) => {
+    const id = athlete();
+    const q = query.get("start");
+    const start = isDate(q) ? mondayOf(q) : mondayOf(today());
+    return { start, days: weekOverrides(app, id)[start] ?? null, usual: availability(app, id).days };
+  });
+
+  on("PUT", "/api/week/override", async ({ body }) => {
+    const id = athlete();
+    const start = isDate(body?.start) ? mondayOf(body.start) : mondayOf(today());
+    if (start < mondayOf(today())) bad("Tylko bieżący lub przyszły tydzień.");
+    const days = body?.days;
+    if (!Array.isArray(days) || days.length !== 7) bad("Potrzebne 7 dni.");
+    const clean = days.map((d: any, i: number) => ({
+      weekday: i + 1,
+      available: !!d.available,
+      maxMinutes: d.available ? int(d.maxMinutes, 20, 600, "maxMinutes") : 0,
+      defaultRideMode: mode(d.defaultRideMode),
+      notifyTime: "07:00",
+    }));
+    app.db.run(
+      `INSERT INTO week_override (athlete_id, week_start, days_json, created_at) VALUES (?,?,?,?)
+       ON CONFLICT(athlete_id, week_start) DO UPDATE SET days_json = excluded.days_json`,
+      id, start, JSON.stringify(clean), nowIso(),
+    );
+    regenerate(app, id, "week_override");
+    await refreshBrief(app, id, today());
+    await calendarSoon(id);
+    return { ok: true };
+  });
+
+  on("DELETE", "/api/week/override", async ({ query }) => {
+    const id = athlete();
+    const q = query.get("start");
+    const start = isDate(q) ? mondayOf(q) : mondayOf(today());
+    app.db.run("DELETE FROM week_override WHERE athlete_id = ? AND week_start = ?", id, start);
+    regenerate(app, id, "week_override_removed");
+    await refreshBrief(app, id, today());
+    await calendarSoon(id);
+    return { ok: true };
+  });
+
+  // C2: season events
+  on("GET", "/api/events", () => ({ events: seasonEvents(app, athlete(), today()), forecast: forecastView(app, athlete()) }));
+
+  on("POST", "/api/events", async ({ body }) => {
+    const id = athlete();
+    if (!isDate(body?.date) || body.date <= today()) bad("Podaj przyszłą datę.");
+    const priority = (["A", "B", "C"] as const).find((p) => p === body?.priority) ?? bad("Wybierz priorytet A, B lub C.");
+    const name = String(body?.name ?? "").trim().slice(0, 60) || `Start ${priority}`;
+    app.db.run("INSERT INTO season_event (athlete_id, date, name, priority, hot, created_at) VALUES (?,?,?,?,?,?)", id, body.date, name, priority, body?.hot ? 1 : 0, nowIso());
+    regenerate(app, id, "season_event");
+    await calendarSoon(id);
+    return { ok: true };
+  });
+
+  on("DELETE", "/api/events/:id", async ({ params }) => {
+    const id = athlete();
+    app.db.run("UPDATE season_event SET deleted_at = ? WHERE id = ? AND athlete_id = ?", nowIso(), Number(params.id), id);
+    regenerate(app, id, "season_event_removed");
+    await calendarSoon(id);
+    return { ok: true };
+  });
+
+  // C5: HIT block
+  on("GET", "/api/plan/hit-block", () => hitBlockInfo(app, athlete()));
+  on("POST", "/api/plan/hit-block", async ({ body }) => {
+    const id = athlete();
+    const r = setHitBlock(app, id, body?.on !== false);
+    if (!r.ok) bad(r.text);
+    await calendarSoon(id);
+    return r;
   });
 
   // ---------- quick actions (buttons instead of chat, D-044) ----------
@@ -232,6 +354,9 @@ export function createRouter(app: App): Router {
       }),
       longRide: app.db.get("SELECT id, proposed_date, minutes FROM long_ride_proposal WHERE athlete_id = ? AND status = 'proposed'", id) ?? null,
       ftpSuggestion: app.db.get("SELECT id, current_ftp, suggested_ftp, basis FROM ftp_suggestion WHERE athlete_id = ? AND status = 'pending'", id) ?? null,
+      events: seasonEvents(app, id, start).filter((e) => e.date <= end),
+      override: !!weekOverrides(app, id)[start],
+      hitBlock: hitBlockInfo(app, id).active,
     };
   });
 
@@ -344,6 +469,11 @@ export function createRouter(app: App): Router {
         milestones: [240, 300, 360, 420],
       },
       weeks,
+      levels: levelsView(app, id),
+      profile: profileView(app, id),
+      durability: durabilityViewSafe(app, id),
+      ftpInsight: ftpView(app, id),
+      forecast: forecastView(app, id),
     };
   });
 
@@ -354,7 +484,8 @@ export function createRouter(app: App): Router {
     const ath = app.db.get("SELECT * FROM athlete WHERE id = ?", id) ?? {};
     const conn = app.db.get("SELECT external_athlete_id, status, last_sync_at, last_error, api_key_encrypted IS NOT NULL AS has_key FROM source_connection WHERE athlete_id = ?", id);
     return {
-      profile: { ...physiologyOn(app, id, today()), heightCm: ath.height_cm, displayName: ath.display_name, outdoorPowerMeter: !!ath.outdoor_power_meter },
+      profile: { ...physiologyOn(app, id, today()), heightCm: ath.height_cm, displayName: ath.display_name, outdoorPowerMeter: !!ath.outdoor_power_meter, sex: ath.sex ?? null },
+      events: seasonEvents(app, id, today()),
       goals: goals(app, id),
       availability: availability(app, id),
       equipment: app.db.all("SELECT kind, model, role FROM equipment WHERE athlete_id = ? AND active = 1", id),
@@ -379,8 +510,8 @@ export function createRouter(app: App): Router {
       addSnapshot(app, id, today(), next, "manual");
       await refreshBrief(app, id, today());
     }
-    app.db.run("UPDATE athlete SET height_cm = COALESCE(?, height_cm), outdoor_power_meter = COALESCE(?, outdoor_power_meter), display_name = COALESCE(?, display_name) WHERE id = ?",
-      b.heightCm ?? null, b.outdoorPowerMeter === undefined ? null : b.outdoorPowerMeter ? 1 : 0, b.displayName ?? null, id);
+    app.db.run("UPDATE athlete SET height_cm = COALESCE(?, height_cm), outdoor_power_meter = COALESCE(?, outdoor_power_meter), display_name = COALESCE(?, display_name), sex = COALESCE(?, sex) WHERE id = ?",
+      b.heightCm ?? null, b.outdoorPowerMeter === undefined ? null : b.outdoorPowerMeter ? 1 : 0, b.displayName ?? null, b.sex === "m" || b.sex === "f" ? b.sex : null, id);
     return { ok: true };
   });
 
@@ -440,6 +571,7 @@ export function createRouter(app: App): Router {
   on("POST", "/api/sync", async () => {
     const id = athlete();
     const r = await syncAll(app, id, 14).catch((e) => bad(`Synchronizacja nie powiodła się: ${e.message}`, 502));
+    await analyzeStreams(app, id).catch(() => 0);
     const cal = await writeCalendar(app, id, addDays(today(), -1), addDays(today(), 7)).catch(() => ({ written: 0, failed: 0 }));
     return { ...r, ...cal };
   });

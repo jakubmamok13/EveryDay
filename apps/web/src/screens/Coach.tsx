@@ -105,6 +105,8 @@ export function Coach() {
         </Card>
       )}
 
+      <HitBlockCard />
+
       <Card title="Baza wiedzy">
         {NOTES.map((n) => (
           <button key={n.path} className="linkbtn" style={{ display: "block", textAlign: "left" }} onClick={() => setNote({ title: noteTitle(n.text, n.path), text: n.text })}>
@@ -135,4 +137,26 @@ export function Coach() {
 function fmtIso(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/** C5: one-week VO2max block (Rønnestad), then 3 weeks with 1 HIT session. */
+function HitBlockCard() {
+  const [h, setH] = useState<any>(null);
+  const { busy, run } = useAction();
+  const load = () => void api.get("/api/plan/hit-block").then(setH);
+  useEffect(load, []);
+  if (!h) return null;
+  return (
+    <Card title="⚡ Blok interwałowy">
+      <p className="small" style={{ marginTop: 0 }}>Tydzień z sesją VO2max w każdy dzień treningowy, potem 3 tygodnie z jedną taką sesją i spokojną jazdą. U wytrenowanych kolarzy dał +4,6% VO2max wobec braku zmian przy zwykłym rozkładzie (Rønnestad). Gotowość nadal pilnuje każdego dnia.</p>
+      {h.active ? (
+        <>
+          <p className="small"><strong>Aktywny od {fmtDate(h.active.start)}:</strong> {h.active.phase}.</p>
+          <button className="btn small" disabled={busy} onClick={() => run(async () => { await api.post("/api/plan/hit-block", { on: false }); load(); }, "Anulowano blok.")}>Anuluj blok</button>
+        </>
+      ) : h.available ? (
+        <button className="btn primary small" disabled={busy} onClick={() => run(async () => { await api.post("/api/plan/hit-block", { on: true }); load(); }, "Zaplanowano blok interwałowy.")}>Zaplanuj od {fmtDate(h.candidate)}</button>
+      ) : <p className="small muted" style={{ marginBottom: 0 }}>{h.why ?? "Niedostępny teraz."}</p>}
+    </Card>
+  );
 }

@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { api, saveFile } from "../api";
+import { api, fmtDate, saveFile } from "../api";
 import { AvailabilityEditor, GoalEditor, goalsFromApi, goalsToApi, type DayForm, type GoalForm } from "../forms";
 import { InstallHint, ReminderGuide } from "../reminder";
 import { runtime, setMode } from "../runtime";
-import { Card, useAction } from "../ui";
+import { Card, Seg, useAction } from "../ui";
 
 export function Settings() {
   const [s, setS] = useState<any>(null);
@@ -23,6 +23,7 @@ export function Settings() {
       {s.demo && <DemoBanner />}
       <Profile s={s} reload={load} />
       <Goals s={s} reload={load} />
+      <Season s={s} reload={load} />
       <Availability s={s} reload={load} />
       <OtherSports s={s} reload={load} />
       <Reminder s={s} reload={load} />
@@ -46,7 +47,7 @@ function DemoBanner() {
 }
 
 function Profile({ s, reload }: { s: any; reload: () => void }) {
-  const [p, setP] = useState({ weightKg: s.profile.weightKg ?? "", heightCm: s.profile.heightCm ?? "", ftp: s.profile.ftp, lthr: s.profile.lthr ?? "", maxHr: s.profile.maxHr ?? "", outdoorPowerMeter: s.profile.outdoorPowerMeter });
+  const [p, setP] = useState({ weightKg: s.profile.weightKg ?? "", heightCm: s.profile.heightCm ?? "", ftp: s.profile.ftp, lthr: s.profile.lthr ?? "", maxHr: s.profile.maxHr ?? "", outdoorPowerMeter: s.profile.outdoorPowerMeter, sex: s.profile.sex ?? "m" });
   const { busy, run } = useAction();
   const f = (k: keyof typeof p, label: string) => (
     <label className="field" style={{ flex: "1 1 40%" }}><span>{label}</span>
@@ -57,6 +58,9 @@ function Profile({ s, reload }: { s: any; reload: () => void }) {
     <Card title="Profil">
       <div className="row">{f("weightKg", "Waga (kg)")}{f("heightCm", "Wzrost (cm)")}{f("ftp", "FTP (W)")}{f("lthr", "LTHR (ud/min)")}{f("maxHr", "Tętno max")}</div>
       <label className="check"><input type="checkbox" checked={p.outdoorPowerMeter} onChange={(e) => setP({ ...p, outdoorPowerMeter: e.target.checked })} /> Miernik mocy na zewnątrz</label>
+      <div className="small muted">Tabela profilu mocy (Coggan)</div>
+      <Seg text label="Tabela profilu mocy" value={p.sex} options={[{ value: "m", label: "Mężczyźni" }, { value: "f", label: "Kobiety" }]} onChange={(v) => setP({ ...p, sex: v })} />
+      <div style={{ height: 10 }} />
       <button className="btn primary" disabled={busy} onClick={() => run(async () => { await api.put("/api/settings/profile", { ...p, weightKg: Number(p.weightKg), heightCm: Number(p.heightCm) || null, ftp: Number(p.ftp), lthr: Number(p.lthr) || null, maxHr: Number(p.maxHr) || null }); reload(); }, "Zapisano. Pamiętaj o FTP także w intervals.icu i MyWhoosh.")}>Zapisz</button>
     </Card>
   );
@@ -225,6 +229,32 @@ function System({ status, reload }: { status: any; reload: () => void }) {
         </table>
       )}
       {!status?.demo && <button className="btn block" style={{ marginTop: 12 }} onClick={() => void setMode("demo")}>Wypróbuj demo (osobne dane)</button>}
+    </Card>
+  );
+}
+
+/** C2 + D2: season events A / B / C (with hot flag). */
+function Season({ s, reload }: { s: any; reload: () => void }) {
+  const [date, setDate] = useState("");
+  const [name, setName] = useState("");
+  const [priority, setPriority] = useState<"A" | "B" | "C">("A");
+  const [hot, setHot] = useState(false);
+  const { busy, run } = useAction();
+  return (
+    <Card title="Sezon: starty i wyjazdy">
+      {s.events.length === 0 ? <p className="small muted" style={{ marginTop: 0 }}>Brak zaplanowanych startów.</p> : s.events.map((e: any) => (
+        <div key={e.id} className="note small">
+          <span><strong>{e.priority}</strong> · {e.name} · {fmtDate(e.date)}{e.hot ? " · ☀️ upał" : ""}</span>
+          <button className="linkbtn" disabled={busy} onClick={() => run(async () => { await api.del(`/api/events/${e.id}`); reload(); }, "Usunięto; plan ułożony na nowo.")}>Usuń</button>
+        </div>
+      ))}
+      <hr style={{ border: 0, borderTop: "1px solid var(--line)", margin: "12px 0" }} />
+      <label className="field"><span>Data</span><input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></label>
+      <label className="field"><span>Nazwa (opcjonalnie)</span><input value={name} maxLength={60} onChange={(e) => setName(e.target.value)} /></label>
+      <Seg text label="Priorytet" value={priority} options={[{ value: "A", label: "A — główny" }, { value: "B", label: "B" }, { value: "C", label: "C — trening" }]} onChange={setPriority} />
+      <label className="check"><input type="checkbox" checked={hot} onChange={(e) => setHot(e.target.checked)} /> Spodziewany upał (plan aklimatyzacji)</label>
+      <p className="tiny muted">A: 2 tygodnie lżej (objętość −25%, potem −50%, intensywność zostaje) i 5 spokojnych dni po. B: 4 lżejsze dni. C: tylko lekki dzień przed.</p>
+      <button className="btn primary" disabled={busy || !date} onClick={() => run(async () => { await api.post("/api/events", { date, name, priority, hot }); setDate(""); setName(""); setHot(false); reload(); }, "Dodano; plan ułożony na nowo.")}>Dodaj start</button>
     </Card>
   );
 }

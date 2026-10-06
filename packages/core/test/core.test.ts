@@ -164,6 +164,9 @@ describe("demo athlete: full morning loop with buttons", () => {
     app.clock = () => new Date("2026-10-08T06:00:00Z"); // Thursday
     expect((await call("POST", "/api/catchup")).ran).toBe("night");
     expect((await call("POST", "/api/catchup")).ran).toBe("none");
+    // Regression: a run that had nothing to do must not block the next one.
+    app.clock = () => new Date("2026-10-08T07:00:00Z");
+    expect((await call("POST", "/api/catchup")).ran).toBe("sync");
     const tue = app.db.get("SELECT status FROM planned_workout WHERE date = '2026-10-06' AND status <> 'replaced' ORDER BY id DESC LIMIT 1");
     expect(["completed", "partial", "missed", "skipped"]).toContain(tue?.status);
     const last = app.db.get("SELECT MAX(date) AS d FROM planned_workout WHERE status = 'planned'")?.d;
@@ -211,5 +214,154 @@ describe("intervals.icu mapping (defensive, confirmed in S05)", () => {
   it("maps wellness including Body Battery custom fields", () => {
     const w = mapWellness({ id: "2026-10-05", hrv: 58, restingHR: 48, sleepSecs: 27000, BodyBatteryMax: 82, readiness: 71 });
     expect(w).toMatchObject({ date: "2026-10-05", hrv: 58, restingHr: 48, sleepSeconds: 27000, bodyBatteryMax: 82, readiness: 71 });
+  });
+});
+
+describe("research features on the demo athlete (D-049 …)", () => {
+  let app: App;
+  let router: Router;
+  const call = (method: Method, url: string, body?: unknown): Promise<any> => router.handle(method, url, body);
+  const at = (iso: string) => (app.clock = () => new Date(iso));
+  const greenToday = () => {
+    const d = app.today();
+    const st = app.db.get("SELECT readiness_json FROM daily_state WHERE date = ?", d)!;
+    const r = JSON.parse(st.readiness_json);
+    r.effective = "green"; r.state = "green"; r.overrides = []; r.inputs = r.inputs.map((i: any) => ({ ...i, rating: i.rating === "missing" ? "missing" : "ok" }));
+    app.db.run("UPDATE daily_state SET readiness_json = ?, form_pct = 0.02 WHERE date = ?", JSON.stringify(r), d);
+  };
+
+  beforeAll(async () => {
+    app = await makeApp(true);
+    router = createRouter(app);
+    await call("POST", "/api/demo/seed");
+  });
+
+  it("B1/D1/C2/D2/C3: challenge, carbs, a hot A event with taper, heat plan and forecast", async () => {
+    const t = await call("GET", "/api/today");
+    expect(t.workout.challenge).toMatchObject({ key: expect.any(String), category: "Sweet Spot" });
+    app.db.run("INSERT INTO long_ride_proposal (athlete_id, proposed_date, minutes, created_at) VALUES (?, '2026-10-17', 240, '2026-10-06T06:00:00Z')", app.athleteId());
+    expect((await call("GET", "/api/today")).longRide).toMatchObject({ proposed_date: "2026-10-17" });
+    expect(t.carbs.text).toMatch(/Węglowodany dziś: (mało|średnio|dużo|bardzo dużo)/);
+    await call("POST", "/api/events", { date: "2026-10-18", name: "Gran Fondo", priority: "A", hot: true });
+    const planned = (d: string) => app.db.all("SELECT workout_slug FROM planned_workout WHERE date = ? AND status = 'planned'", d).map((r: any) => r.workout_slug);
+    expect(planned("2026-10-17")).toEqual(["openers"]);
+    expect(planned("2026-10-18")).toEqual([]);
+    const today = await call("GET", "/api/today");
+    expect(today.longRide).toBeNull(); // the Long Ride Day before the A event is withdrawn
+    expect(today.heat).toMatchObject({ event: "Gran Fondo", daysToGo: 12, target: 10 });
+    const ev = await call("GET", "/api/events");
+    expect(ev.forecast[0]).toMatchObject({ name: "Gran Fondo", priority: "A", target: [5, 20] });
+    expect(typeof ev.forecast[0].form).toBe("number");
+    const wk = await call("GET", "/api/week?start=2026-10-12");
+    expect(wk.events.map((e: any) => e.name)).toEqual(["Gran Fondo"]);
+  });
+
+  it("C1: this week is different, then back to normal", async () => {
+    const days = [1, 2, 3, 4, 5, 6, 7].map((w) => ({ available: w === 3 || w === 5, maxMinutes: 90, defaultRideMode: "indoor" }));
+    await call("PUT", "/api/week/override", { start: "2026-10-05", days });
+    const wk = await call("GET", "/api/week");
+    expect(wk.override).toBe(true);
+    const future = wk.days.filter((d: any) => d.date > "2026-10-06" && d.workouts.some((w: any) => w.status === "planned")).map((d: any) => d.date);
+    expect(future).toEqual(["2026-10-07", "2026-10-09"]);
+    await call("DELETE", "/api/week/override?start=2026-10-05");
+    expect((await call("GET", "/api/week")).override).toBe(false);
+  });
+
+  it("B3/B5/B6: power profile, durability and FTP confidence from power streams", async () => {
+    await call("POST", "/api/sync");
+    await call("POST", "/api/sync");
+    const p = await call("GET", "/api/progress");
+    expect(p.levels.find((l: any) => l.category === "threshold")).toMatchObject({ max: 8 });
+    expect(p.profile.rows).toHaveLength(4);
+    expect(p.profile.riderType).toBeTruthy();
+    expect(p.durability.rides).toBeGreaterThan(0);
+    expect(p.durability.keep1200).toBeGreaterThan(80);
+    expect(["high", "medium", "low"]).toContain(p.ftpInsight.confidence);
+    expect(p.ftpInsight.text).toContain("Pewność");
+  });
+
+  it("A1: green light for an extra ride on a fresh rest day; A4: warning for tomorrow", async () => {
+    at("2026-10-07T06:00:00Z"); // Wednesday, Key Workout on Thursday
+    await call("POST", "/api/catchup");
+    await call("POST", "/api/checkin", { feeling: "great", rideMode: "indoor" });
+    greenToday();
+    const t = await call("GET", "/api/today");
+    expect(t.restDay).toBe(true);
+    expect(t.bonusOffer.options.length).toBeGreaterThan(0);
+    expect(t.bonusOffer.options.every((o: any) => o.intensity === "easy" && o.minutes <= 75)).toBe(true);
+    expect(t.bonusOffer.options.at(-1).impact.date).toBe("2026-10-08");
+    const pick = t.bonusOffer.options.at(-1);
+    const after = await call("POST", "/api/bonus/accept", { slug: pick.slug, minutes: pick.minutes, rideMode: "indoor" });
+    expect(after.workout.role).toBe("bonus");
+    expect(after.bonusOffer).toBeNull();
+    // A4: a huge ride today makes tomorrow's Key Workout risky.
+    app.db.run(
+      "INSERT INTO activity (athlete_id, icu_id, source_device, type, name, date, start_at, moving_seconds, load, sport, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+      app.athleteId(), "big1", "bolt", "Ride", "Wyścig", "2026-10-07", "2026-10-07T07:00:00", 5 * 3600, 330, "ride", new Date().toISOString(),
+    );
+    const w = await call("GET", "/api/today");
+    expect(["yellow", "red"]).toContain(w.tomorrow.level);
+    const before = app.db.get("SELECT workout_json FROM planned_workout WHERE date = '2026-10-08' AND status = 'planned'")!;
+    const r = await call("POST", "/api/tomorrow/easier");
+    expect(r.message).toContain("Zmiana");
+    const thu = app.db.get("SELECT workout_json FROM planned_workout WHERE date = '2026-10-08' AND status = 'planned'")!;
+    expect(JSON.parse(thu.workout_json).load).toBeLessThan(JSON.parse(before.workout_json).load);
+    expect(r.tomorrow).toBeNull();
+  });
+
+  it("B2: 5-step rating with 'completed' drives progression", async () => {
+    at("2026-10-09T06:00:00Z");
+    expect((await call("POST", "/api/catchup")).ran).toBe("night");
+    const t = await call("GET", "/api/today");
+    const ride = t.unrated[0];
+    expect(ride).toBeTruthy();
+    await call("POST", `/api/rides/${ride.id}/rating`, { effort: "easy", completed: "yes" });
+    expect(app.db.get("SELECT effort, completed, rpe, feel FROM activity WHERE id = ?", ride.id)).toMatchObject({ effort: "easy", completed: "yes", rpe: 3, feel: "too_easy" });
+    await expect(call("POST", `/api/rides/${ride.id}/rating`, { effort: "meh" })).rejects.toMatchObject({ statusCode: 400 });
+  });
+
+  it("D3: Monday summary; C5: HIT block after the A event", async () => {
+    at("2026-10-12T06:00:00Z");
+    await call("POST", "/api/catchup");
+    const t = await call("GET", "/api/today");
+    expect(t.summary.lines[0]).toMatch(/^Treningi: \d+ z \d+/);
+    expect((await call("POST", "/api/summary/dismiss")).summary).toBeNull();
+    const info = await call("GET", "/api/plan/hit-block");
+    expect(info.candidate).toBe("2026-11-02");
+    expect(info.available).toBe(true);
+    const r = await call("POST", "/api/plan/hit-block", { on: true });
+    expect(r.ok).toBe(true);
+    expect((await call("GET", "/api/plan/hit-block")).active.start).toBe("2026-11-02");
+    at("2026-11-02T06:00:00Z");
+    await call("POST", "/api/catchup");
+    const hard = app.db.all("SELECT workout_json FROM planned_workout WHERE date BETWEEN '2026-11-02' AND '2026-11-08' AND status IN ('planned','completed','partial')")
+      .filter((w: any) => JSON.parse(w.workout_json).category === "vo2max");
+    expect(hard.length).toBeGreaterThanOrEqual(3);
+  });
+});
+
+describe("C4: gentle return after a break", () => {
+  it("drops levels, suggests a lower FTP and makes the first days easy", async () => {
+    const app = await makeApp(false);
+    app.clock = () => new Date("2026-10-20T06:00:00Z");
+    const router = createRouter(app);
+    await router.handle("POST", "/api/onboarding/complete", {
+      profile: { weightKg: 75, ftp: 250, lthr: 162, maxHr: 184 },
+      goals: [{ role: "primary", type: "raise_ftp" }],
+      availability: { days: [1, 2, 3, 4, 5, 6, 7].map((weekday) => ({ weekday, available: weekday !== 5, maxMinutes: 90, defaultRideMode: "indoor", notifyTime: "07:00" })), longRideDaysAllowed: false, longRideEveryWeeks: 5 },
+      equipment: [],
+    });
+    app.db.run("UPDATE athlete SET ladder_json = ?", JSON.stringify({ sweet_spot: 4, threshold: 3 }));
+    app.db.run("INSERT INTO activity (athlete_id, icu_id, source_device, type, date, start_at, moving_seconds, load, sport, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+      app.athleteId(), "old", "mywhoosh", "VirtualRide", "2026-10-01", "2026-10-01T18:00:00", 3600, 70, "ride", new Date().toISOString());
+    const { checkReturn } = await import("../src/services/extras");
+    expect(await checkReturn(app, app.athleteId())).toBe(true);
+    expect(await checkReturn(app, app.athleteId())).toBe(false); // once per break
+    expect(JSON.parse(app.db.get("SELECT ladder_json FROM athlete")!.ladder_json)).toEqual({ sweet_spot: 2, threshold: 1 });
+    expect(app.db.get("SELECT suggested_ftp, basis FROM ftp_suggestion")).toEqual({ suggested_ftp: 243, basis: "detraining" });
+    const first = app.db.all("SELECT date, workout_json FROM planned_workout WHERE status = 'planned' AND date BETWEEN '2026-10-20' AND '2026-10-22'");
+    expect(first.length).toBeGreaterThan(0);
+    expect(first.every((r: any) => JSON.parse(r.workout_json).intensity === "easy")).toBe(true);
+    expect(((await router.handle("GET", "/api/today")) as any).comeback.text).toContain("Powrót po 18 dniach");
   });
 });

@@ -1,6 +1,6 @@
 # 06 — UX & Interface
 
-Status: **SPEC v1.1**. Phone-only PWA (D-043), Polish UI, buttons only (D-044), friendly and short (D-016, D-021).
+Status: **SPEC v1.2**. Phone-only PWA (D-043), Polish UI, buttons only (D-044), friendly and short (D-016, D-021).
 
 ## 1. Principles
 
@@ -22,8 +22,12 @@ Bottom tab bar: **Dziś · Tydzień · Trener · Postęp · Ustawienia**.
 
 States, top to bottom:
 
-1. Unrated ride from yesterday or today? → **„Jak było?”** card first:
-   [Za łatwo] [W sam raz] [Za ciężko].
+0. Monday–Wednesday: **„Podsumowanie tygodnia”** (rides, Load, Fitness,
+   levels, FTP; stagnation → [Zaplanuj blok interwałowy]) [OK] (D-064).
+1. Unrated ride from yesterday or today? → **„Jak było?”** card:
+   „Ukończone interwały” [Całość | Częściowo | Nie] + [Łatwo]
+   [Umiarkowanie] [Ciężko] [Bardzo ciężko] [Na maksa] (D-053).
+   After a break: **„Powrót po przerwie”** card (D-060).
 2. **„Jak się dziś czujesz?”** (until tapped): [W domu | Na zewnątrz], then six
    big buttons in two columns — 💪 W pełni sił · 🙂 Dobrze · 😐 Średnio ·
    😕 Czuję się gorzej · 😫 Totalne wyczerpanie · 🤒 Choroba (the last two in
@@ -35,14 +39,21 @@ States, top to bottom:
    **Zmiana** line + **Cofnij** when the plan was adapted.
 4a. **„Dlaczego dziś to?”** (collapsed): plan → signals with values and
    limits → rule → decision + „Co by było, gdyby…” → load (D-048).
-5. **Workout card**: name, minutes, Load, step graph colored by zone,
+4b. **„Jutro: uważaj”** (yellow) / **„Jutro: raczej odpoczynek”** (red):
+   [Lżej jutro] [Przesuń na …] [Zostaw plan] (D-051).
+5. **Workout card**: name, challenge chip („osiągalny · poziom 1/6”, D-052), minutes, Load, step graph colored by zone,
    step list with W (indoor) or ud/min + RPE (outdoor), delivery status
    ("MyWhoosh ✔", "licznik / zegarek ✔").
 6. Actions: **Mam mniej czasu** (30–90 min chips) · **Zamień** · **Więcej…**
    (→ Trener) · **.zwo** (indoor).
-7. FTP suggestion / Long Ride Day cards when present; **Najbliższe dni**.
+7. **Aklimatyzacja do upału** (D-062) before a hot event; **Jedzenie dziś**
+   (carbohydrate of the day, D-062); FTP suggestion / Long Ride Day cards
+   when present; **Najbliższe dni**.
 
-Rest day: Readiness + recovery tip + **Mam dziś czas** (Bonus Day) + tomorrow.
+Rest day: Readiness + recovery tip + tomorrow, then either
+**„Zielone światło: możesz dziś dorzucić jazdę”** (reasons, [W domu | Na
+zewnątrz], up to 3 options with „Forma w Czw: −5% → −14%”, [Nie dziś],
+D-050) or, when no green light, **Mam dziś czas** (Bonus Day).
 Offline: everything works from the phone's data (R8-21); sync waits for
 the next open with a connection.
 
@@ -54,6 +65,10 @@ the next open with a connection.
 - Tap a planned workout → move (±1–2 days), „Zamień” (same-category list),
   „Pomiń” (R8-07). Tap a skipped future workout → „Przywróć trening”.
   A warning appears if two hard days end up in a row.
+- **„Ten tydzień jest inny…”** → sheet with 7 days × minute chips (30′ …
+  4 h) → [Zapisz ten tydzień] / [Przywróć zwykły tydzień] (D-057).
+- Event chips („A · Gran Fondo”) on event days; a note when the week has an
+  override or is in the interval block.
 - **Long Ride Day proposal** card 7 days ahead: [Potwierdzam] [Nie tym razem].
 - **FTP suggestion** card: "Twoje FTP wygląda na 262 W (+12 W)" [Akceptuj] [Odrzuć].
 
@@ -65,15 +80,23 @@ Cards of buttons, no text field (02 M10):
 - **Wyjazd:** [Od dziś | Od jutra] × [3 dni] [7 dni] [14 dni] → confirm sheet.
 - **Dlaczego ten trening?** purpose + cue + expandable note sections.
 - **Pamiętam:** active notes with „Zapomnij”.
+- **Blok interwałowy** (D-061): why it is or is not available, start date,
+  [Zaplanuj blok] / [Anuluj blok].
 - **Baza wiedzy:** list of Method Notes → full note in a sheet.
 Every result is shown as a short toast („Zmiana: …”, „Nie mogę: …”).
 
 ### 3.4 Postęp (Progress) (R8-18)
 
-1. Fitness / Fatigue / Form chart (90 days + 4-week projection).
-2. FTP and W/kg history (test markers).
-3. Long-ride progress: longest ride vs the target (e.g. 150 km / 5.5 h), milestones 4 → 5 → 6 → 7 h.
-4. Weekly compliance bars (last 12 weeks).
+1. FTP and W/kg history (test markers).
+2. **FTP — pewność szacunku** (D-056).
+3. **Prognoza formy na ważne dni** (D-059).
+4. **Poziomy trudności** (D-052).
+5. **Profil mocy**: rider type, 4 bars (0–100 on Coggan's table) with W/kg,
+   weakest point (D-054).
+6. **Odporność na zmęczenie** (D-055).
+7. Fitness / Fatigue / Form charts (90 days + 4-week projection).
+8. Long-ride progress: longest ride vs the target (e.g. 150 km / 5.5 h), milestones 4 → 5 → 6 → 7 h.
+9. Weekly compliance bars (last 12 weeks).
 
 ### 3.5 Ustawienia (Settings)
 

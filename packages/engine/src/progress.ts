@@ -1,5 +1,6 @@
-import { addDays, daysBetween, weekday, type AvailabilityDay, type Feel, type ISODate, type WorkoutCategory } from "@everyday/shared";
-import type { Ladder } from "./planner";
+import { addDays, daysBetween, weekday, type AvailabilityDay, type Feel, type ISODate, type SeasonEvent, type WorkoutCategory } from "@everyday/shared";
+import { inEventWindow, type Ladder } from "./planner";
+import { effortScore, type Completed, type Effort } from "./insights";
 
 // Progression from ride feedback (M4.6), FTP suggestions (M12), compliance.
 
@@ -8,28 +9,33 @@ export interface RatedRide {
   category: WorkoutCategory;
   compliancePct: number | null;
   feel: Feel | null;
+  /** 5-step rating (B2); preferred over `feel` when present. */
+  effort?: Effort | null;
+  completed?: Completed | null;
 }
 
 const LADDER_CATEGORIES: WorkoutCategory[] = ["tempo", "sweet_spot", "threshold", "vo2max", "anaerobic", "long_ride"];
 
 /**
- * +1 step after two "too easy" rides in a row (compliance ≥ 90%),
- * −1 step after "too hard" or compliance < 80% (our rule).
+ * Progression from the post-ride rating (our rule, TrainerRoad-style survey):
+ * score easy +1, moderate +0.5, hard 0, very hard −0.5, all out −1, not
+ * completed −1. +1 step when the last two rides score ≥ 1.5 together with
+ * compliance ≥ 90%; −1 step when the last one scores ≤ −1, the last two ≤ −1
+ * together, or compliance < 80%.
  */
 export function progressLadder(ladder: Ladder, rides: RatedRide[]): { ladder: Ladder; changes: { category: WorkoutCategory; delta: number }[] } {
   const next: Ladder = { ...ladder };
   const changes: { category: WorkoutCategory; delta: number }[] = [];
+  const score = (r: RatedRide) => effortScore(r.effort ?? null, r.completed ?? null, r.feel);
   for (const cat of LADDER_CATEGORIES) {
     const recent = rides.filter((r) => r.category === cat).sort((a, b) => (a.date < b.date ? 1 : -1));
     const last = recent[0];
     if (!last) continue;
     const prev = recent[1];
+    const two = score(last) + (prev ? score(prev) : 0);
     let delta = 0;
-    if (last.feel === "too_hard" || (last.compliancePct !== null && last.compliancePct < 80)) delta = -1;
-    else if (
-      last.feel === "too_easy" && prev?.feel === "too_easy" &&
-      (last.compliancePct ?? 100) >= 90 && (prev.compliancePct ?? 100) >= 90
-    ) delta = 1;
+    if (score(last) <= -1 || (prev && two <= -1) || (last.compliancePct !== null && last.compliancePct < 80)) delta = -1;
+    else if (prev && two >= 1.5 && (last.compliancePct ?? 100) >= 90 && (prev.compliancePct ?? 100) >= 90) delta = 1;
     if (delta !== 0) {
       next[cat] = Math.max(1, (next[cat] ?? 1) + delta);
       changes.push({ category: cat, delta });
@@ -77,6 +83,8 @@ export interface LongRideProposalInput {
   longestRideMinutes: number;
   targetMinutes: number;
   availability: AvailabilityDay[];
+  /** Season events: no Long Ride Day in a taper, on an event day or in the recovery after it. */
+  events?: SeasonEvent[];
 }
 
 /** Proposes a Long Ride Day 7–13 days ahead on the long weekend day. */
@@ -89,6 +97,7 @@ export function proposeLongRideDay(input: LongRideProposalInput): { date: ISODat
   for (let i = 7; i <= 13; i++) {
     const date = addDays(input.today, i);
     if (weekday(date) === weekend.weekday) {
+      if (inEventWindow(date, input.events ?? [])) return null;
       const minutes = Math.min(input.targetMinutes, Math.round((input.longestRideMinutes + 60) / 15) * 15);
       return { date, minutes: Math.max(minutes, input.longestRideMinutes + 45) };
     }

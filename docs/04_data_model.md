@@ -1,6 +1,6 @@
 # 04 — Data Model
 
-Status: **SPEC v1.1**. One SQLite database (sql.js, WebAssembly) kept in the
+Status: **SPEC v1.2** (schema v4). One SQLite database (sql.js, WebAssembly) kept in the
 phone's IndexedDB (D-043, 03). No FIT files are stored (the ride summary
 from intervals.icu is enough). All dates are local dates in the phone's
 time zone; timestamps are UTC.
@@ -31,7 +31,7 @@ empty `password_hash`; no login, D-043). Owns the settings.
 
 **athlete** — `account_id`, `display_name`, `height_cm`,
 `outdoor_power_meter` (bool, D-023), `learning_until` (date, end of the
-Learning Period).
+Learning Period), `sex` ('m' | 'f' — only to pick the power profile table, D-054).
 
 **fitness_snapshot** (versioned physiology) — `athlete_id`,
 `effective_from` (date), `ftp_w`, `lthr_bpm`, `max_hr_bpm`, `weight_kg`,
@@ -103,7 +103,11 @@ intervals.icu type for other sports), `sport` ('ride' | 'run' | 'whole_body' |
 'icu' | 'default'),
 `is_master` (bool), `duplicate_of` (activity id), `planned_workout_id`,
 `compliance_pct`, `rpe` (1–10), `feel` ('too_easy' | 'just_right' |
-'too_hard'), `fit_path`, `best_1min_w`, `best_20min_w`.
+'too_hard'), `effort` ('easy' | 'moderate' | 'hard' | 'very_hard' |
+'all_out', D-053), `completed` ('yes' | 'partial' | 'no'), `fit_path`,
+`best_1min_w`, `best_20min_w`, `peaks_json` (best 5 s / 1 / 5 / 20 min W and,
+for rides ≥ 2 h, the bests after 20 kJ/kg — from the power stream, D-063),
+`streams_done` (bool: stream already analysed).
 
 **wellness_day** — `athlete_id`, `date`, `hrv_ms`, `resting_hr`,
 `sleep_seconds`, `sleep_score`, `body_battery_max`, `body_battery_min`,
@@ -161,8 +165,16 @@ missing), `computed_at`. Recomputed when any input for that date changes.
 ('pending' | 'accepted' | 'rejected'), `decided_at`.
 
 **long_ride_proposal** — `athlete_id`, `proposed_date`, `minutes`,
-`status` ('proposed' | 'confirmed' | 'declined' | 'done' | 'expired'),
+`status` ('proposed' | 'confirmed' | 'declined' | 'done' | 'expired' |
+'withdrawn' — an event's taper or recovery now covers the day, D-058),
 `planned_workout_id`.
+
+**week_override** (D-057) — `athlete_id`, `week_start` (Monday),
+`days_json` (7 × `{weekday, available, maxMinutes}`); primary key
+(`athlete_id`, `week_start`). Only that week uses it.
+
+**season_event** (D-058) — `athlete_id`, `date`, `name`, `priority`
+('A' | 'B' | 'C'), `hot` (bool, heat acclimation D-062), `deleted_at`.
 
 ## 8. System tables
 
@@ -170,7 +182,9 @@ missing), `computed_at`. Recomputed when any input for that date changes.
 `finished_at`, `status`, `error_code` (no health data).
 
 **meta** — `key`, `value`: schema version, `last_night_job` (date),
-`last_day_sync` (ms timestamp).
+`last_day_sync` (ms timestamp), `ladder_hist:{athlete}` (Monday snapshots of
+the ladder, 12 weeks, D-064), `return:{athlete}` and `return_done:{athlete}`
+(the current return after a break, D-060).
 
 **setting** — `account_id`, `key`, `value_json` (05_settings.md).
 
@@ -185,4 +199,7 @@ missing), `computed_at`. Recomputed when any input for that date changes.
 - **Delete everything** wipes all user tables on this phone after a
   confirmation. Data in intervals.icu is not touched.
 - **Migrations:** v1 = the original schema; v2 adds `check_in.exhausted`
-  and `check_in.feeling` (D-044); v3 adds `activity.sport` (D-047).
+  and `check_in.feeling` (D-044); v3 adds `activity.sport` (D-047); v4 adds
+  `activity.effort`, `completed`, `peaks_json`, `streams_done`,
+  `athlete.sex`, and the tables `week_override` and `season_event`
+  (D-053 … D-063). Export includes the new tables.

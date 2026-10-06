@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { LIBRARY } from "@everyday/library";
-import { addDays, type PlannedDay, type Readiness } from "@everyday/shared";
+import { addDays, daysBetween, weekday, type PlannedDay, type Readiness } from "@everyday/shared";
 import {
   adapt,
   assembleBrief,
@@ -28,6 +28,21 @@ import {
   toZwo,
   weeklyLoadCap,
   explainSignals,
+  bonusOffer,
+  carbAdvice,
+  challenge,
+  durabilityFromWatts,
+  durabilitySummary,
+  EFFORT_RPE,
+  effortToFeel,
+  ftpInsight,
+  maxLevel,
+  peaksFromWatts,
+  powerProfile,
+  returnPlan,
+  tomorrowOutlook,
+  type Completed,
+  type Effort,
   otherSportLoad,
   rateOtherSport,
   readinessRule,
@@ -321,6 +336,13 @@ describe("progress", () => {
     const p = proposeLongRideDay({ today: MONDAY, lastLongRideDay: null, everyWeeks: 5, longestRideMinutes: 240, targetMinutes: 420, availability: SAMPLE_AVAILABILITY });
     expect(p).toEqual({ date: "2026-10-17", minutes: 300 });
   });
+  it("proposes no Long Ride Day in an A taper, on an event day or right after it", () => {
+    const base = { today: MONDAY, lastLongRideDay: null, everyWeeks: 5, longestRideMinutes: 240, targetMinutes: 420, availability: SAMPLE_AVAILABILITY };
+    expect(proposeLongRideDay({ ...base, events: [{ date: "2026-10-18", name: "Gran Fondo", priority: "A" }] })).toBeNull();
+    expect(proposeLongRideDay({ ...base, events: [{ date: "2026-10-17", name: "Wyścig", priority: "C" }] })).toBeNull();
+    expect(proposeLongRideDay({ ...base, events: [{ date: "2026-10-15", name: "Wyścig", priority: "B" }] })).toBeNull();
+    expect(proposeLongRideDay({ ...base, events: [{ date: "2026-10-25", name: "Wyścig", priority: "C" }] })).toEqual({ date: "2026-10-17", minutes: 300 });
+  });
   it("fuels rides over 90 min", () => {
     expect(fueling(60)).toBeNull();
     expect(fueling(120)!.carbsPerHour).toBe(60);
@@ -419,5 +441,125 @@ describe("other sports (D-047)", () => {
     const rows = explainSignals(r);
     expect(rows.find((x) => x.key === "other_sport")).toMatchObject({ value: "bieg wczoraj, obc. 45", ratingWord: "uważaj" });
     expect(readinessRule(r)).toContain("0× „źle”, 1× „uważaj” → zielony dzień");
+  });
+});
+
+describe("research features (D-049 …)", () => {
+  const green = readiness({ inputs: [{ key: "hrv", rating: "ok" }] });
+  const [week] = plan(1, 50);
+  const tue = week!.days[0]!; // Tuesday key workout
+  const start = { fitness: 50, fatigue: 45 };
+
+  it("A1: offers an extra ride on a fresh rest day, only easy before a Key Workout", () => {
+    const base = {
+      readiness: green, feeling: "great", formPct: 0.05, start, todayLoad: 0, weekLoad: 200, weekCap: 450,
+      freeDaysLeft: 2, bonusesThisWeek: 0, library: LIBRARY,
+    };
+    // Monday, Key Workout tomorrow → only Z1/Z2 ≤ 75 min.
+    const mon = bonusOffer({ ...base, date: MONDAY, ahead: week!.days });
+    expect(mon.eligible).toBe(true);
+    expect(mon.options.every((o) => o.workout.intensity === "easy" && o.workout.minutes <= 75)).toBe(true);
+    expect(mon.options[0]!.impact!.date).toBe(tue.date);
+    expect(mon.options.at(-1)!.impact!.formAfter!).toBeLessThan(mon.options[0]!.impact!.formBefore!);
+    // Three days to the next key session, feeling great → tempo allowed.
+    const far = bonusOffer({ ...base, date: addDays(MONDAY, -2), ahead: week!.days });
+    expect(far.options.some((o) => o.workout.category === "tempo" || o.workout.minutes >= 90)).toBe(true);
+    // Not on a yellow day, not with a full week, not without a free day.
+    expect(bonusOffer({ ...base, date: MONDAY, ahead: week!.days, readiness: readiness({ effective: "yellow" }) }).eligible).toBe(false);
+    expect(bonusOffer({ ...base, date: MONDAY, ahead: week!.days, weekLoad: 449 }).eligible).toBe(false);
+    expect(bonusOffer({ ...base, date: MONDAY, ahead: week!.days, freeDaysLeft: 0 }).eligible).toBe(false);
+    expect(bonusOffer({ ...base, date: MONDAY, ahead: week!.days, bonusesThisWeek: 2 }).eligible).toBe(false);
+  });
+
+  it("A4: warns when tomorrow's hard day will start with low Form", () => {
+    expect(tomorrowOutlook(start, MONDAY, 40, tue).level).toBe("ok");
+    const big = tomorrowOutlook({ fitness: 50, fatigue: 60 }, MONDAY, 250, tue);
+    expect(["yellow", "red"]).toContain(big.level);
+    expect(big.text).toContain(tue.workout.name);
+    expect(tomorrowOutlook({ fitness: 50, fatigue: 60 }, MONDAY, 250, null).level).toBe("ok");
+  });
+
+  it("B1/B2: shows the challenge and progresses from the 5-step rating", () => {
+    expect(challenge(3, 3).key).toBe("achievable");
+    expect(challenge(4, 3).label).toBe("ambitny");
+    expect(maxLevel(LIBRARY, "threshold")).toBe(8);
+    const r = (date: string, effort: Effort, completed: Completed = "yes") => ({ date, category: "sweet_spot" as const, compliancePct: 98, feel: null, effort, completed });
+    expect(progressLadder({ sweet_spot: 2 }, [r("2026-10-05", "easy"), r("2026-10-07", "moderate")]).ladder.sweet_spot).toBe(3);
+    expect(progressLadder({ sweet_spot: 2 }, [r("2026-10-05", "moderate"), r("2026-10-07", "moderate")]).changes).toHaveLength(0);
+    expect(progressLadder({ sweet_spot: 2 }, [r("2026-10-07", "all_out")]).ladder.sweet_spot).toBe(1);
+    expect(progressLadder({ sweet_spot: 2 }, [r("2026-10-07", "hard", "no")]).ladder.sweet_spot).toBe(1);
+    expect(effortToFeel("easy", "yes")).toBe("too_easy");
+    expect(EFFORT_RPE.very_hard).toBe(8);
+  });
+
+  it("B6: rates eFTP confidence from hard efforts", () => {
+    expect(ftpInsight(250, 262, [240, 230, 236], [], 20).confidence).toBe("high");
+    const low = ftpInsight(250, null, [180], [], 60);
+    expect(low.confidence).toBe("low");
+    expect(low.testAdvice).toContain("test");
+  });
+
+  it("B3: builds the Coggan profile and finds the aerobic weakness", () => {
+    const p = powerProfile({ p5: 1100, p60: 560, p300: 260, p1200: 270 }, 250, 75)!;
+    expect(p.rows).toHaveLength(4);
+    expect(p.weakness).toBe("p300");
+    expect(p.focusCategory).toBe("vo2max");
+    expect(p.riderType).toBe("Czasowiec / wspinacz");
+    expect(powerProfile({ p5: 1500, p60: 700, p300: 300, p1200: 270 }, 250, 75)!.riderType).toBe("Sprinter");
+    const flat = powerProfile({ p5: 1050, p60: 560, p300: 330, p1200: 280 }, 265, 75)!;
+    expect(flat.rows.every((r) => r.score >= 0 && r.score <= 100)).toBe(true);
+    expect(powerProfile({ p5: null, p60: null, p300: null, p1200: null }, 250, 75)).toBeNull();
+  });
+
+  it("B5: measures power kept after 20 kJ/kg", () => {
+    const watts = [...Array(3 * 3600).fill(170), ...Array(1200).fill(240), ...Array(600).fill(150)];
+    expect(peaksFromWatts(watts).p1200).toBe(240);
+    const d = durabilityFromWatts(watts, 75);
+    expect(d.kjPerKg).toBeGreaterThan(25);
+    expect(d.after20.p1200).toBe(240);
+    const s = durabilitySummary({ p300: 300, p1200: 250 }, [d]);
+    expect(s.keep1200).toBe(96);
+    expect(s.word).toBe("bardzo dobra");
+    expect(durabilitySummary({ p300: 300, p1200: 250 }, []).word).toBe("brak danych");
+  });
+
+  it("D1: carbohydrate by today's and tomorrow's training (ACSM 2016)", () => {
+    const long = scaleWorkout(findWorkout(LIBRARY, "long-z2"), { targetMinutes: 270 });
+    expect(carbAdvice(75, null, null).level).toBe("low");
+    expect(carbAdvice(75, null, long).level).toBe("high");
+    expect(carbAdvice(75, long, null)).toMatchObject({ level: "very_high", grams: [600, 900] });
+  });
+
+  it("C4: detraining steps", () => {
+    expect(returnPlan(5)).toBeNull();
+    expect(returnPlan(10)!.ladderDrop).toBe(1);
+    expect(returnPlan(30)).toMatchObject({ ladderDrop: 3, ftpFactor: 0.94 });
+  });
+
+  it("C1/C2/C4/C5/B3: planner options", () => {
+    const base = { today: MONDAY, planStart: MONDAY, firstWeek: MONDAY, goals: SAMPLE_GOALS, availability: SAMPLE_AVAILABILITY, fitness: 50, ladder: {}, longestRecentMinutes: 150, library: LIBRARY };
+    // C1: this week only Mon + Sat.
+    const ov = SAMPLE_AVAILABILITY.map((d) => ({ ...d, available: d.weekday === 1 || d.weekday === 6, maxMinutes: d.weekday === 1 ? 90 : d.weekday === 6 ? 180 : 0 }));
+    const [w1] = planWeeks({ ...base, weeks: 1, weekOverrides: { [MONDAY]: ov } });
+    expect(w1!.days.map((d) => weekday(d.date)).sort()).toEqual([1, 6]);
+    // C2: an A event on Sunday 2026-10-25 → taper, openers on Saturday, nothing on the day, easy after.
+    const ws = planWeeks({ ...base, weeks: 4, events: [{ date: "2026-10-25", name: "Gran Fondo", priority: "A" }] });
+    const all = ws.flatMap((w) => w.days);
+    expect(all.find((d) => d.date === "2026-10-25")).toBeUndefined();
+    expect(all.find((d) => d.date === "2026-10-24")!.workout.slug).toBe("openers");
+    const plain = planWeeks({ ...base, weeks: 4 }).flatMap((w) => w.days);
+    const loadIn = (days: typeof all, from: string, to: string) => days.filter((d) => d.date >= from && d.date <= to).reduce((s, d) => s + d.workout.load, 0);
+    expect(loadIn(all, "2026-10-18", "2026-10-23")).toBeLessThan(loadIn(plain, "2026-10-18", "2026-10-23") * 0.75);
+    expect(all.filter((d) => d.date > "2026-10-25").every((d) => d.workout.intensity !== "hard")).toBe(true);
+    // C4: first days after a break are easy and the volume is lower.
+    const [r1] = planWeeks({ ...base, weeks: 1, returnFromBreak: { from: MONDAY, volumeFactor: 0.6, easyDays: 3 } });
+    expect(r1!.days.filter((d) => daysBetween(MONDAY, d.date) < 3).every((d) => d.workout.intensity === "easy")).toBe(true);
+    // C5: HIT week → VO2max on Tue, Thu and Sun; the next weeks keep one HIT session.
+    const hit = planWeeks({ ...base, weeks: 2, hitBlock: MONDAY });
+    expect(hit[0]!.days.filter((d) => d.workout.category === "vo2max").length).toBeGreaterThanOrEqual(3);
+    expect(hit[1]!.days.filter((d) => d.workout.intensity === "hard").length).toBe(1);
+    // B3: VO2max weakness enters a Sweet Spot block.
+    const [wk] = planWeeks({ ...base, weeks: 1, weaknessCategory: "vo2max" });
+    expect(wk!.days.map((d) => d.workout.category)).toContain("vo2max");
   });
 });

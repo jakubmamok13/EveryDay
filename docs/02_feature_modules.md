@@ -1,6 +1,6 @@
 # 02 — Feature Modules
 
-Status: **SPEC v1.1** — interview decisions D-001 … D-046 applied (phone only, no AI, buttons only since D-043/D-044).
+Status: **SPEC v1.2** — interview decisions D-001 … D-065 applied (phone only, no AI, buttons only since D-043/D-044; research features D-049 … D-065).
 Rules marked *(our rule)* are not taken from the book; they are our own
 choices and are tuned after the first weeks of real use.
 
@@ -146,14 +146,48 @@ Roles are assigned from the Weekly Availability. Example for a sample week
 - Missed non-key workout → dropped.
 - Every case is explained in the next Daily Brief.
 
-### 4.6 Progression from ride feedback
+### 4.6 Progression from ride feedback (D-053)
 
-"Adjust to progress" (round 0) works through ride results:
-- Compliance ≥ 90% **and** rating "too easy" twice in a row in the same
-  category → the next workout of that category goes **+1 step** (one more
-  rep or +2% target) *(our rule)*.
-- Rating "too hard", or intervals not completed (compliance < 80%) → **−1 step**.
+"Adjust to progress" (round 0) works through ride results *(our rule)*:
+- Each rating scores: Łatwo +1, Umiarkowanie +0.5, Ciężko 0, Bardzo ciężko
+  −0.5, Na maksa −1; „Częściowo” −0.5 more; „Nie” (not completed) −1.
+- The last two rated rides of a category sum ≥ 1.5 **and** compliance ≥ 90%
+  → the next workout of that category goes **+1 step**.
+- Last ride ≤ −1, the last two ≤ −1, or compliance < 80% → **−1 step**.
+- Levels are visible in Postęp; Today's workout shows „łatwy dla Ciebie /
+  osiągalny / ambitny / bardzo ambitny” (D-052).
 - FTP changes rescale everything (M12).
+
+### 4.7 „Ten tydzień jest inny…” (D-057)
+
+One week can get its own days and minutes (Tydzień screen). Only that week
+is rebuilt; the normal availability stays. Roles (long day, quality days)
+come from each week's own availability.
+
+### 4.8 Season events A / B / C (D-058)
+
+Events with priority change the plan around them: A = 2-week taper (volume
+×0.75, then ×0.5, intensity kept), openers the day before, 5 easy days after;
+B = 4 lighter days, 2 easy after; C = easy or openers the day before, 1 easy
+after; no workout on the event day. The primary Event goal is an A event.
+
+### 4.9 Return after a break (D-060)
+
+≥ 7 days without a ride → ladder −1 / −2 / −3 (7–13 / 14–27 / ≥ 28 days),
+first week at 70 / 60 / 50% volume with 2–3 easy days, FTP suggestion
+×0.97 / ×0.94 from 14 / 28 days. Once per break; not during a trip or illness.
+
+### 4.10 Interval block (D-061, optional)
+
+Raise-FTP goal only: week 1 has VO2max on every available day ≥ 45 min
+(not the long day, no ramp cap); the next 3 weeks have one VO2max session.
+Started in Trener or from the stagnation card (D-064).
+
+### 4.11 Weakness focus (D-054)
+
+Raise-FTP goal only: when the power profile shows VO2max (5 min) or
+threshold as the weakest aerobic point, the second quality workout of load
+weeks uses that category.
 
 ## M5. Readiness & Adaptation
 
@@ -250,12 +284,24 @@ screen:
 intervals.icu delivers the calendar to MyWhoosh / Wahoo / Garmin on its own,
 so devices are up to date even when the app is closed.
 
-### 5.6 Bonus Day (D-027)
+### 5.6 Bonus Day (D-027) and Green light (D-050)
 
 On a rest day, "Mam dziś czas" asks for minutes available and offers an
 **optional** session that fits Form and **never** reduces the quality of
 the next Key Workout (default: Endurance Z2 or Recovery; Tempo only if
 Green and the next day is a rest day).
+
+**Green light (proactive):** when readiness is green, the feeling is good,
+Form ≥ −10% and the week has room under the ramp cap, Today offers up to 3
+extra rides on its own. Each option shows Form on the next key day before →
+after. Key workout tomorrow → Z1/Z2 up to 75 min only; projected Form on
+the next key day must stay ≥ −25%; ≤ 2 extra rides a week and ≥ 1 free day
+left. While the offer is shown, the plain „Mam dziś czas” card is hidden.
+
+### 5.7 Warning for tomorrow (D-051)
+
+Tomorrow key or hard and projected morning Form < −30% → yellow card;
+< −45% → red. Buttons: „Lżej jutro”, „Przesuń na …”, „Zostaw plan”.
 
 ## M6. Daily Brief
 
@@ -304,10 +350,20 @@ Fatigue / Form and other sports of the last 7 days.
 Sleep, fueling, hydration, mobility / stretching, stress. **No diet or
 weight-loss advice** (R8-15). No strength sessions (R8-09).
 
-### 6.4 Ride Rating (R8-20)
+- **Carbohydrate of the day (D-062):** mało 3–5, średnio 5–7, dużo 6–10,
+  bardzo dużo 8–12 g/kg by today's ride; tomorrow's long or hard ride
+  raises it one step (ACSM 2016).
+- **Heat acclimation (D-062):** for a „w upale” event, from 14 to 2 days
+  before: easy 45–60 min rides in the heat, a count of training days, optional
+  hot bath after an easy ride.
+- **Weekly summary (D-064):** Monday–Wednesday, last week in 4 lines;
+  stagnation (6 weeks without progress) offers the interval block.
 
-After a matched ride: three buttons **Za łatwo / W sam raz / Za ciężko**
-(RPE derived: 4 / 6 / 8, D-044). Shown on Today after the ride sync (rides
+### 6.4 Ride Rating (R8-20, D-053)
+
+After a matched ride: „Ukończone interwały: Całość / Częściowo / Nie” and
+five buttons **Łatwo / Umiarkowanie / Ciężko / Bardzo ciężko / Na maksa**
+(RPE stored 3 / 5 / 7 / 8 / 10). Shown on Today after the ride sync (rides
 from yesterday or today). It feeds Progression (M4.6).
 
 ## M7. Workout Delivery
@@ -338,6 +394,14 @@ Minimal on purpose; deep analysis stays in intervals.icu.
 - **Long-ride progress:** longest ride (h, km) vs the long-ride target
   (e.g. 200 km / 7 h), with milestones 4 h → 5 h → 6 h → 7 h.
 - **Weekly compliance:** planned vs completed (count + Load).
+- **FTP confidence (D-056):** eFTP estimate, number of hard efforts in 42
+  days, test advice only when confidence is low.
+- **Form forecast (D-059):** Fitness and Form (% of Fitness) on each event
+  and Long Ride Day in the next 8 weeks vs the target range.
+- **Progression levels (D-052)** per category.
+- **Power profile (D-054):** 5 s / 1 / 5 / 20 min W/kg on Coggan's table,
+  rider type, weakest point (from power streams, D-063).
+- **Durability (D-055):** % of fresh 5 / 20-min power kept after 20 kJ/kg.
 
 ## M9. Reminder (D-031, D-045)
 
@@ -396,7 +460,8 @@ for a skipped day in Tydzień).
   **last long ride + 45–60 min** (5–7 h+), Z2 with an intensity cap. It is
   shown **7 days ahead** and goes into the plan only after the Athlete
   **confirms** it; if declined, the weekend becomes back-to-back (long Sat +
-  shorter Sun).
+  shorter Sun). Never in an event's taper, on its day or in the recovery
+  after it; an event added later withdraws it (D-058).
 - **Fueling lines** (rides > 90 min) *(our rule, from mainstream sports-
   nutrition guidance)*:
   - carbohydrates **60 g/h**; on rides > 3 h raise gradually toward

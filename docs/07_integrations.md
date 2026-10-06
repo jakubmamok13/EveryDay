@@ -90,6 +90,7 @@ from the intervals.icu settings.
 | Write workout | `POST /api/v1/athlete/{id}/events` (category WORKOUT) | Returns event id → `planned_workout.icu_event_id` |
 | Replace workout | `PUT` / `DELETE` on that event | Ride Mode switch, adaptations, undo |
 | eFTP | athlete / activity fields | Used for FTP suggestions (M12) |
+| Power stream | `GET /api/v1/activity/{id}/streams.json?types=watts` | 1 Hz watts of rides with power, ≤ 12 per run, cached → power profile and durability (D-063, S29) |
 
 Polling only, when the app is opened (catch-up: 14 days on the first open of
 the day, 3 days on later opens ≥ 15 min apart). No webhooks (no server).

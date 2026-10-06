@@ -20,5 +20,23 @@ trakcie, jeśli posiłek przed treningiem był normalny.
 2–3 godziny przed długą jazdą posiłek bogaty w węglowodany. Po mocnym lub
 długim treningu w ciągu 30 minut posiłek z węglowodanami i białkiem.
 
+## Węglowodany na cały dzień
+Karta „Jedzenie dziś” podaje, ile węglowodanów potrzeba w dniu, według
+treningu (zalecenia ACSM, Thomas, Erdman i Burke 2016):
+- mało: 3–5 g na kg masy ciała (odpoczynek, krótka spokojna jazda),
+- średnio: 5–7 g/kg (około godziny treningu),
+- dużo: 6–10 g/kg (1–3 h albo mocne interwały),
+- bardzo dużo: 8–12 g/kg (ponad 4 h).
+Jutrzejsza długa lub mocna jazda podnosi dzisiejszy poziom o jeden stopień —
+zapasy uzupełnia się dzień wcześniej.
+
+## Upał
+Przed startem oznaczonym „w upale” przez 10–14 dni jeździsz część treningów
+w cieple (bez wentylatora albo cieplej ubrany), spokojnie 45–60 minut, i
+więcej pijesz. Większość przystosowania do upału pojawia się w 7–14 dni
+(Périard i in. 2015). Opcjonalnie gorąca kąpiel (do 40 °C, do 40 minut) zaraz
+po spokojnej jeździe — też daje aklimatyzację (Zurawlew i in. 2016). Ostatnie
+2–3 dni przed startem bez dodatkowego ciepła.
+
 Trener nie daje porad dietetycznych ani dotyczących odchudzania — tylko
 jedzenie i picie związane z treningiem.

@@ -100,6 +100,15 @@ export interface Physiology {
   weightKg: number | null;
 }
 
+/** Season event (C2): A = main goal (2-week taper), B = mini-taper, C = training race. */
+export interface SeasonEvent {
+  date: ISODate;
+  name: string;
+  priority: "A" | "B" | "C";
+  /** Hot conditions expected → heat acclimation plan (D2). */
+  hot?: boolean;
+}
+
 export interface PlannedDay {
   date: ISODate;
   isKey: boolean;

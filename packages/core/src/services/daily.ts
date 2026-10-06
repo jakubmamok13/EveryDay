@@ -1,4 +1,4 @@
-import { addDays, mondayOf, WEEKDAY_PL_LONG, weekday, type CheckIn, type ISODate, type Readiness, type RideMode, type ScaledWorkout } from "@everyday/shared";
+import { addDays, mondayOf, WEEKDAY_PL_LONG, weekday, type CheckIn, type Feel, type ISODate, type Readiness, type RideMode, type ScaledWorkout } from "@everyday/shared";
 import { LIBRARY } from "@everyday/library";
 import {
   adapt,
@@ -16,6 +16,10 @@ import {
   scaleWorkout,
   type AdaptResult,
   type SportGroup,
+  EFFORT_RPE,
+  effortToFeel,
+  type Completed,
+  type Effort,
 } from "@everyday/engine";
 import type { App } from "../app";
 import { nowIso } from "../db";
@@ -215,15 +219,24 @@ export async function addBonus(app: App, athleteId: number, minutes: number, rid
   return id;
 }
 
-export function rateRide(app: App, athleteId: number, activityId: number, rpe: number, feel: string): void {
-  app.db.run("UPDATE activity SET rpe = ?, feel = ? WHERE id = ? AND athlete_id = ?", rpe, feel, activityId, athleteId);
+/** Post-ride rating (B2): 5 effort steps + completed; legacy 3-button feel still accepted. */
+export function rateRide(
+  app: App,
+  athleteId: number,
+  activityId: number,
+  r: { effort?: Effort | null; completed?: Completed | null; feel?: Feel | null; rpe?: number | null },
+): void {
+  const feel = r.effort ? effortToFeel(r.effort, r.completed ?? "yes") : (r.feel ?? "just_right");
+  const rpe = r.rpe ?? (r.effort ? EFFORT_RPE[r.effort] : feel === "too_easy" ? 4 : feel === "too_hard" ? 8 : 6);
+  app.db.run("UPDATE activity SET rpe = ?, feel = ?, effort = ?, completed = ? WHERE id = ? AND athlete_id = ?",
+    rpe, feel, r.effort ?? null, r.completed ?? null, activityId, athleteId);
   const rides = app.db
     .all(
-      `SELECT a.date, a.compliance_pct, a.feel, p.workout_json FROM activity a JOIN planned_workout p ON p.id = a.planned_workout_id
+      `SELECT a.date, a.compliance_pct, a.feel, a.effort, a.completed, p.workout_json FROM activity a JOIN planned_workout p ON p.id = a.planned_workout_id
        WHERE a.athlete_id = ? AND a.date >= ? AND a.feel IS NOT NULL ORDER BY a.date`,
       athleteId, addDays(app.today(), -60),
     )
-    .map((r) => ({ date: r.date, category: JSON.parse(r.workout_json).category, compliancePct: r.compliance_pct, feel: r.feel }));
+    .map((x) => ({ date: x.date, category: JSON.parse(x.workout_json).category, compliancePct: x.compliance_pct, feel: x.feel, effort: x.effort, completed: x.completed }));
   const { ladder: next, changes } = progressLadder(ladder(app, athleteId), rides);
   if (!changes.length) return;
   setLadder(app, athleteId, next);

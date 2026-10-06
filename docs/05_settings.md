@@ -1,6 +1,6 @@
 # 05 — Settings
 
-Status: **SPEC v1.1** (phone only, D-043; no AI, D-044). UI labels in
+Status: **SPEC v1.2** (phone only, D-043; no AI, D-044; season and research features D-049 … D-065). UI labels in
 Polish (D-013); the English name is given for the docs. "Fixed" = not
 editable, on purpose. Defaults below are the **sample athlete** used by demo
 mode (D-046); real values are entered in onboarding.
@@ -13,6 +13,7 @@ mode (D-046); real values are entered in onboarding.
 | FTP | 250 W | History list in Postęp; change → snapshot + rescale future workouts (M12) |
 | LTHR / tętno max | from the watch / intervals.icu | R8-24 |
 | Miernik mocy na zewnątrz | No | Yes → Outdoor Variant uses power (D-023) |
+| Tabela profilu mocy | Mężczyzna | Mężczyzna / Kobieta — only picks Coggan's table for the power profile (D-054) |
 | Sprzęt | chosen in onboarding (trainer, bike computer, watch, HR strap, power meter) | Roles: indoor recorder, outdoor master (D-024, D-029) |
 
 ## Cele (Goals)
@@ -24,6 +25,18 @@ mode (D-046); real values are entered in onboarding.
 | Wydarzenie | none | Adding one switches to date-based periodization (R8-06) |
 
 Saving goals regenerates the plan from today; history is kept.
+
+## Sezon (Season events, D-058)
+
+- List of events: date, name (optional), priority **A / B / C**, „w upale”
+  (heat acclimation card from 14 to 2 days before, D-062). Delete button.
+- Adding or deleting an event rebuilds the plan from today (taper and
+  recovery around it). A Long Ride Day inside an event window is withdrawn.
+
+## Tydzień inny niż zwykle (one-week override, D-057)
+
+Not in Ustawienia: in **Tydzień › „Ten tydzień jest inny…”** — days and
+minutes for that week only; „Przywróć zwykły tydzień” removes it.
 
 ## Dostępność (Availability)
 

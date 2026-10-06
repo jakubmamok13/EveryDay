@@ -39,6 +39,12 @@ export function Progress() {
         </TableToggle>
       </Card>
 
+      <FtpConfidence f={p.ftpInsight} />
+      <Forecast list={p.forecast} />
+      <Levels levels={p.levels} />
+      <Profile pr={p.profile} />
+      <Durability d={p.durability} />
+
       <Card title="Kondycja i zmęczenie (90 dni + plan)">
         <Legend items={[{ label: "Kondycja", color: "--s-fitness" }, { label: "Zmęczenie", color: "--s-fatigue" }]} projection />
         <LineChart dates={dates} splitAt={split} ariaLabel="Kondycja i zmęczenie przez ostatnie 90 dni i prognoza na 4 tygodnie"
@@ -83,5 +89,79 @@ export function Progress() {
         </TableToggle>
       </Card>
     </>
+  );
+}
+
+function FtpConfidence({ f }: { f: any }) {
+  if (!f) return null;
+  return (
+    <Card title="FTP — pewność szacunku">
+      <p className="small" style={{ marginTop: 0 }}>{f.text}</p>
+      {f.testAdvice && <p className="small muted" style={{ marginBottom: 0 }}>{f.testAdvice}</p>}
+    </Card>
+  );
+}
+
+const sign = (p: number) => `${p > 0 ? "+" : p < 0 ? "−" : ""}${Math.abs(p)}%`;
+
+function Forecast({ list }: { list: any[] }) {
+  if (!list?.length) return null;
+  return (
+    <Card title="Prognoza formy na ważne dni">
+      {list.map((f) => (
+        <div key={f.date + f.name} className="forecast small">
+          <div className="spread"><strong>{f.name}</strong><span className="muted">{fmtDate(f.date)} · za {f.daysToGo} dni</span></div>
+          <div>Kondycja {f.fitness} · Forma {f.formPct === null ? "—" : sign(f.formPct)} (cel {sign(f.target[0])} do {sign(f.target[1])}) — {f.verdict}.</div>
+        </div>
+      ))}
+    </Card>
+  );
+}
+
+function Levels({ levels }: { levels: any[] }) {
+  if (!levels?.length) return null;
+  return (
+    <Card title="Poziomy trudności">
+      {levels.map((l) => (
+        <div key={l.category} className="lvl-row">
+          <span>{l.label}</span>
+          <div className="bar" role="meter" aria-valuemin={1} aria-valuemax={l.max} aria-valuenow={l.level} aria-label={`${l.label}: poziom ${l.level} z ${l.max}`}><i style={{ width: `${(l.level / l.max) * 100}%` }} /></div>
+          <span className="n">{l.level}/{l.max}</span>
+        </div>
+      ))}
+      <p className="tiny muted" style={{ marginBottom: 0 }}>Rosną po ocenach „Łatwo / Umiarkowanie” i po każdym bloku; spadają po „Na maksa” albo nieukończonym treningu.</p>
+    </Card>
+  );
+}
+
+function Profile({ pr }: { pr: any }) {
+  if (!pr) return null;
+  return (
+    <Card title="Profil mocy">
+      {pr.missing ? <p className="small muted" style={{ margin: 0 }}>{pr.missing}</p> : (
+        <>
+          <div className="rider-type">{pr.riderType}</div>
+          <div className="small muted" style={{ marginBottom: 8 }}>typ według tabeli Coggana · {pr.rides} jazd z mocą</div>
+          {pr.rows.map((r: any) => (
+            <div key={r.key} className="lvl-row wide">
+              <span>{r.label}</span>
+              <div className="bar" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={r.score} aria-label={`${r.label}: ${r.score} na 100`}><i style={{ width: `${r.score}%` }} /></div>
+              <span className="n">{r.wkg}</span>
+            </div>
+          ))}
+          <p className="small" style={{ marginBottom: 0 }}>{pr.text}</p>
+          <p className="tiny muted" style={{ marginBottom: 0 }}>W/kg z 12 tygodni; pasek = miejsce w tabeli od „bez treningu” (0) do „klasa światowa” (100).</p>
+        </>
+      )}
+    </Card>
+  );
+}
+
+function Durability({ d }: { d: any }) {
+  if (!d) return null;
+  return (
+    <Card title="Odporność na zmęczenie">
+      <p className="small" style={{ margin: 0 }}>{d.text}</p>
+    </Card>
   );
 }

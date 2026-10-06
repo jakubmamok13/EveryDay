@@ -67,6 +67,18 @@ export interface IcuClient {
   createWorkout(ev: IcuWorkoutEvent): Promise<string>;
   updateWorkout(id: string, ev: IcuWorkoutEvent): Promise<void>;
   deleteWorkout(id: string): Promise<void>;
+  /** 1 Hz power stream of one activity (B3, B5); null when it has no power. */
+  powerStream(activityId: string): Promise<number[] | null>;
+}
+
+/** intervals.icu returns streams as [{ type: "watts", data: [...] }, …] (defensive about the shape). */
+export function wattsFromStreams(json: unknown): number[] | null {
+  const pickData = (x: any) => (Array.isArray(x?.data) ? x.data : Array.isArray(x) ? x : null);
+  let data: unknown[] | null = null;
+  if (Array.isArray(json)) data = pickData(json.find((s: any) => s?.type === "watts"));
+  else if (json && typeof json === "object") data = pickData((json as any).watts);
+  if (!data || !data.length) return null;
+  return data.map((v) => (typeof v === "number" && Number.isFinite(v) ? v : 0));
 }
 
 const num = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
@@ -168,6 +180,11 @@ export class RealIcuClient implements IcuClient {
     const list = await this.req("GET", `/athlete/${this.athleteId}/activities?oldest=${oldest}&newest=${newest}`);
     // All sports (D-047): rides build the plan; other sports count in the load.
     return (list ?? []).map(mapActivity);
+  }
+
+  async powerStream(activityId: string): Promise<number[] | null> {
+    const json = await this.req("GET", `/activity/${encodeURIComponent(activityId)}/streams.json?types=watts`);
+    return wattsFromStreams(json);
   }
 
   async wellness(oldest: ISODate, newest: ISODate): Promise<IcuWellness[]> {

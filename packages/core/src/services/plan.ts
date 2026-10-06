@@ -1,10 +1,12 @@
-import { addDays, mondayOf, weekday, type ISODate, type PlannedDay, type Readiness, type RideMode, type ScaledWorkout } from "@everyday/shared";
+import { addDays, mondayOf, weekday, type AvailabilityDay, type ISODate, type PlannedDay, type Readiness, type RideMode, type ScaledWorkout, type SeasonEvent } from "@everyday/shared";
 import { LIBRARY } from "@everyday/library";
 import {
   advanceLadderAfterBlock,
+  allEvents,
   blockFocus,
   checkEnvelope,
   findWorkout,
+  inEventWindow,
   moveMissedKey,
   planWeeks,
   proposeLongRideDay,
@@ -27,8 +29,34 @@ import {
   toPlannedDay,
   type PlannedRow,
 } from "../repo";
+import { weaknessCategory } from "./profile";
 
 const WEEKS_AHEAD = 4;
+
+// ---------- Season, week overrides, HIT block, return (C1–C5) ----------
+
+export function seasonEvents(app: App, athleteId: number, from?: ISODate): (SeasonEvent & { id: number })[] {
+  return app.db
+    .all("SELECT id, date, name, priority, hot FROM season_event WHERE athlete_id = ? AND deleted_at IS NULL AND date >= ? ORDER BY date", athleteId, from ?? addDays(app.today(), -14))
+    .map((e) => ({ id: e.id, date: e.date, name: e.name, priority: e.priority, hot: !!e.hot }));
+}
+
+export function weekOverrides(app: App, athleteId: number): Record<ISODate, AvailabilityDay[]> {
+  const out: Record<ISODate, AvailabilityDay[]> = {};
+  for (const r of app.db.all("SELECT week_start, days_json FROM week_override WHERE athlete_id = ? AND week_start >= ?", athleteId, addDays(mondayOf(app.today()), -7))) {
+    out[r.week_start] = JSON.parse(r.days_json);
+  }
+  return out;
+}
+
+export function hitBlockStart(app: App): ISODate | null {
+  return app.setting<{ weekStart: ISODate | null }>("hitBlock", { weekStart: null }).weekStart;
+}
+
+export function activeReturn(app: App, athleteId: number): { from: ISODate; volumeFactor: number; easyDays: number } | null {
+  const r = JSON.parse(app.db.meta(`return:${athleteId}`) ?? "null");
+  return r && r.from >= addDays(app.today(), -7) ? r : null;
+}
 
 function activePlan(app: App, athleteId: number): Row | undefined {
   return app.db.get("SELECT * FROM training_plan WHERE athlete_id = ? AND status = 'active' ORDER BY id DESC LIMIT 1", athleteId);
@@ -45,9 +73,10 @@ function fitnessOn(app: App, athleteId: number, date: ISODate): number {
 
 function insertDays(app: App, athleteId: number, planId: number, days: PlannedDay[]): void {
   const avail = availability(app, athleteId);
+  const overrides = weekOverrides(app, athleteId);
   const now = nowIso();
   for (const d of days) {
-    const def = avail.days.find((x) => x.weekday === weekday(d.date));
+    const def = (overrides[mondayOf(d.date)] ?? avail.days).find((x) => x.weekday === weekday(d.date));
     app.db.run(
       `INSERT INTO planned_workout (athlete_id, plan_id, date, workout_slug, role, is_key, origin, workout_json, ride_mode, created_at, updated_at)
        VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
@@ -86,6 +115,11 @@ export function ensurePlan(app: App, athleteId: number, reason = "onboarding"): 
     library: LIBRARY,
     confirmedLongRides: lr as { date: ISODate; minutes: number }[],
     testInRecoveryWeek: true,
+    weekOverrides: weekOverrides(app, athleteId),
+    events: seasonEvents(app, athleteId),
+    returnFromBreak: activeReturn(app, athleteId),
+    hitBlock: hitBlockStart(app),
+    weaknessCategory: weaknessCategory(app, athleteId),
   });
   app.db.tx(() => {
     for (const w of generated) {
@@ -113,6 +147,7 @@ export function regenerate(app: App, athleteId: number, reason: string): void {
       nowIso(), athleteId, from,
     );
   });
+  withdrawLongRidesNearEvents(app, athleteId);
   // Days that still have an active row (today, past days) are not planned again.
   ensurePlan(app, athleteId, reason);
 }
@@ -341,8 +376,22 @@ export function maybeProposeLongRide(app: App, athleteId: number): void {
   const today = app.today();
   const last = app.db.get("SELECT MAX(proposed_date) AS d FROM long_ride_proposal WHERE athlete_id = ? AND status IN ('confirmed','done')", athleteId)?.d ?? null;
   const longest = Math.round((app.db.get("SELECT MAX(moving_seconds) AS s FROM activity WHERE athlete_id = ? AND sport = 'ride' AND is_master = 1 AND date >= ?", athleteId, addDays(today, -84))?.s ?? 0) / 60);
-  const p = proposeLongRideDay({ today, lastLongRideDay: last, everyWeeks: avail.longRideEveryWeeks, longestRideMinutes: longest, targetMinutes: target, availability: avail.days });
+  const p = proposeLongRideDay({ today, lastLongRideDay: last, everyWeeks: avail.longRideEveryWeeks, longestRideMinutes: longest, targetMinutes: target, availability: avail.days,
+    events: allEvents({ events: seasonEvents(app, athleteId), goals: goals(app, athleteId) }) });
   if (p) app.db.run("INSERT INTO long_ride_proposal (athlete_id, proposed_date, minutes, created_at) VALUES (?,?,?,?)", athleteId, p.date, p.minutes, nowIso());
+}
+
+/** A Long Ride Day that now falls in an event's taper or recovery (C2) is withdrawn. */
+function withdrawLongRidesNearEvents(app: App, athleteId: number): void {
+  const events = allEvents({ events: seasonEvents(app, athleteId), goals: goals(app, athleteId) });
+  if (!events.length) return;
+  const rows = app.db.all<{ id: number; proposed_date: ISODate }>(
+    "SELECT id, proposed_date FROM long_ride_proposal WHERE athlete_id = ? AND status IN ('proposed','confirmed') AND proposed_date >= ?",
+    athleteId, app.today(),
+  );
+  for (const r of rows) {
+    if (inEventWindow(r.proposed_date, events)) app.db.run("UPDATE long_ride_proposal SET status = 'withdrawn', decided_at = ? WHERE id = ?", nowIso(), r.id);
+  }
 }
 
 export function confirmLongRide(app: App, athleteId: number, id: number, confirm: boolean): void {

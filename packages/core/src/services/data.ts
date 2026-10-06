@@ -6,7 +6,7 @@ import type { App } from "../app";
 const TABLES = [
   "account", "athlete", "fitness_snapshot", "equipment", "goal", "availability", "availability_day", "training_plan", "plan_week",
   "planned_workout", "activity", "wellness_day", "check_in", "daily_state", "adaptation", "daily_brief",
-  "chat_note", "ftp_suggestion", "long_ride_proposal", "setting", "source_connection",
+  "chat_note", "ftp_suggestion", "long_ride_proposal", "setting", "source_connection", "week_override", "season_event",
 ];
 /** Never exported: the intervals.icu key stays on this phone. */
 const SECRET_COLUMNS: Record<string, string[]> = { source_connection: ["api_key_encrypted"] };

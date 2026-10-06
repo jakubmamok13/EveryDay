@@ -1,7 +1,9 @@
 # 10 — Research: funkcje treningowe, które cenią użytkownicy
 
-Status: **RESEARCH (2026-10-06)**, czeka na wybór autora. Zakres: tylko
-funkcje **treningowe** (bez tras, nagrywania i społeczności).
+Status: **ZROBIONE (2026-10-06).** Autor wybrał A1, A4, B1, B2, B3, B5,
+B6, C1–C5 i D1–D3 — wszystkie są zbudowane (decyzje D-049 … D-065, szczegóły
+reguł tam). Nie budowane: A2, A3, A5, B4. Zakres: tylko funkcje
+**treningowe** (bez tras, nagrywania i społeczności).
 
 ## 1. Metoda
 
@@ -167,7 +169,7 @@ Skala nakładu: **S** = 1 sesja pracy, **M** = 2–3, **L** = 4+.
   celu długich tras; trend co miesiąc.
 - **Podstawa:** Maunder 2021 (definicja); lepsi zawodnicy tracą ~4% mocy
   20-min po 50 kJ/kg, słabsi ~8%.
-- **Uwagi:** wymaga strumienia mocy z intervals.icu (do sprawdzenia: S26).
+- **Uwagi:** wymaga strumienia mocy z intervals.icu (do sprawdzenia: S29).
 
 #### B6. FTP z codziennej jazdy bez testu (S)
 - **Co:** częściowo jest (eFTP). Dodać pewność („na podstawie 6 mocnych
@@ -191,7 +193,9 @@ Skala nakładu: **S** = 1 sesja pracy, **M** = 2–3, **L** = 4+.
   (Bosquet 2007, metaanaliza 27 badań).
 
 #### C3. Prognoza formy na dzień startu / długiej jazdy (S)
-- **Co:** „W dniu 200 km: Kondycja 62, Forma +14 (cel +15 do +25)” + wykres.
+- **Co:** „W dniu 200 km: Kondycja 62, Forma +14% (cel +5% do +20%)”.
+  Zbudowane w % Kondycji (strefa „Fresh” intervals.icu), nie w punktach
+  TSB Coggana (+15 … +25), bo punkty pasują tylko przy wysokiej Kondycji (D-059).
 - **Kto ma:** TrainingPeaks (PMC z projekcją), intervals.icu.
 
 #### C4. Powrót po przerwie (S–M)

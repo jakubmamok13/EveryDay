@@ -36,6 +36,8 @@ terms and test the APIs ourselves.
 | S26 | intervals.icu fields used by the code: `icu_weighted_avg_watts`, `icu_training_load`, wellness `hrv` / `restingHR` / `sleepSecs` / custom `BodyBatteryMax`, eFTP in `sportSettings`, best 1-min power for the ramp test | **High** | Mapped defensively (raw JSON kept); confirm on the first real sync |
 | S27 | The installed PWA (GitHub Pages origin) can call the intervals.icu API: CORS preflight with the `Authorization` header on GET/POST/PUT/DELETE `/api/v1/` | **High** | Research: intervals.icu allows cross-origin `/api/v1/` requests; confirm on the phone (D-043) |
 | S28 | Other-sport weights (D-047: run 0.6 / strength 0 in Fitness, full in Fatigue; leg-session thresholds 40 / 80 / 100) predict next-day bike readiness and ride quality | Med | Research-based starting values; calibrate after 6–8 weeks of the author's data |
+| S29 | The activity streams endpoint `GET /api/v1/activity/{id}/streams.json?types=watts` returns the 1 Hz watts stream from the phone (CORS) in a shape the parser accepts (array of `{type, data}` or an object keyed by type) (D-063) | Med | Parser is defensive; demo verified. Confirm on the first real sync: Postęp › Profil mocy fills after a few rides with power |
+| S30 | Coggan's women's power profile table: bottom ("untrained") values are approximate | Low | Shown as approximate; only affects the 0–100 bar and rider type for „Kobieta” |
 
 ## S01 — Strava API
 

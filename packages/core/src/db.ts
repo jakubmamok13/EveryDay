@@ -85,6 +85,18 @@ const MIGRATIONS: string[] = [
   `
   ALTER TABLE activity ADD COLUMN sport TEXT NOT NULL DEFAULT 'ride';
   `,
+  // v4 — research features (D-049 …): rating, power profile, durability, season, week overrides
+  `
+  ALTER TABLE activity ADD COLUMN effort TEXT;
+  ALTER TABLE activity ADD COLUMN completed TEXT;
+  ALTER TABLE activity ADD COLUMN peaks_json TEXT;
+  ALTER TABLE activity ADD COLUMN streams_done INTEGER NOT NULL DEFAULT 0;
+  ALTER TABLE athlete ADD COLUMN sex TEXT;
+  CREATE TABLE week_override (athlete_id INTEGER NOT NULL, week_start TEXT NOT NULL, days_json TEXT NOT NULL, created_at TEXT NOT NULL,
+    PRIMARY KEY (athlete_id, week_start));
+  CREATE TABLE season_event (id INTEGER PRIMARY KEY, athlete_id INTEGER NOT NULL, date TEXT NOT NULL, name TEXT NOT NULL,
+    priority TEXT NOT NULL, hot INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL, deleted_at TEXT);
+  `,
 ];
 
 export class Db {

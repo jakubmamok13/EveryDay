@@ -107,10 +107,42 @@ Zwift · own trainer control · Strava · multi-device sync · English UI.
 | Data | ✔ export / import JSON, delete everything, demo mode | ✔ round-trip test | — |
 | Hosting | ✔ GitHub Actions → `gh-pages` branch → Pages | CI: typecheck, tests, build pass | site live (if not: Settings → Pages → Deploy from branch `gh-pages`) |
 
+### Research features (2026-10-06, v1.2 — D-049 … D-065)
+
+| ID | Feature | Built | Verified here (demo mode) | Still to verify on the phone |
+|---|---|---|---|---|
+| A1 | Green light for an extra ride | ✔ | ✔ tests + Playwright (rest day 2026-10-07: offer with 3 options) | — |
+| A4 | Warning for tomorrow | ✔ | ✔ tests | — |
+| B1 | Progression levels + challenge chip | ✔ | ✔ tests + screenshots | — |
+| B2 | 5-step rating + „Ukończone interwały” | ✔ | ✔ tests + screenshots | — |
+| B3 | Power profile (Coggan table) | ✔ | ✔ tests; demo: 12 rides with power → „Czasowiec / wspinacz” | streams endpoint shape (S29) |
+| B5 | Durability after 20 kJ/kg | ✔ | ✔ tests (demo 3 h rides with power) | needs long rides with power (S29) |
+| B6 | FTP confidence | ✔ | ✔ tests | — |
+| C1 | „Ten tydzień jest inny…” | ✔ | ✔ tests + Playwright sheet | — |
+| C2 | Season events A/B/C, taper | ✔ | ✔ tests (openers the day before, no workout on the day, Long Ride Day withdrawn) | — |
+| C3 | Form forecast | ✔ | ✔ tests + screenshots | — |
+| C4 | Return after a break | ✔ | ✔ tests (gap 7+ days → plan rebuilt, ladder down) | — |
+| C5 | Interval block | ✔ | ✔ tests + Playwright (Trener card) | — |
+| D1 | Carbohydrate of the day | ✔ | ✔ tests + screenshots | — |
+| D2 | Heat acclimation | ✔ | ✔ tests + Playwright | — |
+| D3 | Weekly summary + stagnation | ✔ | ✔ tests + screenshots | — |
+
+Tests: 75 automated (engine + core), typecheck and production build pass;
+Playwright on a 390 px viewport walks through every new card with no
+console errors. Bugs found and fixed while testing:
+- catch-up lock (D-065);
+- form-forecast verdict and scale (D-059);
+- Long Ride Day proposed the day before an A event (D-058);
+- „0 z 0 zaplanowanych” in the summary;
+- durability above 100%;
+- 59-min easy days after an event.
+
 Known gaps (not blocking first use):
 - FTP accepted in the app must also be changed in intervals.icu / MyWhoosh by hand (the app reminds you).
 - Adaptation happens only when the app is opened (devices keep the default plan otherwise).
 - Exact intervals.icu field names are mapped defensively; the first real sync confirms them (S26).
+- Power profile and durability need rides recorded **with power** (indoor
+  rides count); outdoor rides without a power meter are skipped (S29).
 
 ### Next step for the author
 
