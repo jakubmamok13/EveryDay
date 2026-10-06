@@ -14,6 +14,7 @@ Last updated: 2026-10-02
 | [07 Integrations](07_integrations.md) | **Spec v1.1** | intervals.icu hub, called from the phone; API fields to confirm (S05) |
 | [08 Errors, logging, feedback](08_error_logging_feedback.md) | **Spec v1.1** | "Brief always arrives"; safety rails |
 | [09 v1 build plan](09_v1_build_plan.md) | **v1.1 built** | Phase 0 setup + spikes, Phases 1–7 |
+| [10 Feature research](10_feature_research.md) | **Research** | Training features users value in 14 apps; options A1–D3 for the author to choose (2026-10-06) |
 | [Glossary](glossary.md) | **Spec v1.1** | Canonical terms + Polish UI labels |
 | [Spikes](spikes.md) | Active | 28 spikes; S05, S14, S18, S26, S27 high risk; AI/PC spikes closed |
 | [Decisions](DECISIONS.md) | Active | D-001 … D-048 (D-043 – D-046: phone only, no AI, Shortcut reminder, no personal data; D-047 other sports; D-048 why card) |
