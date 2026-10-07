@@ -22,7 +22,10 @@ Bottom tab bar: **Dziś · Tydzień · Trener · Postęp · Ustawienia**.
 
 States, top to bottom:
 
-0. Monday–Wednesday: **„Podsumowanie tygodnia”** (rides, Load, Fitness,
+0. Drive copy notices (D-067): **„Nowsza kopia na Dysku Google”** [Wczytaj
+   z Dysku] [Zostaw dane z telefonu], or **„Kopia na Dysku Google nie
+   działa”** (no copy for 7 days) [Spróbuj teraz].
+0a. Monday–Wednesday: **„Podsumowanie tygodnia”** (rides, Load, Fitness,
    levels, FTP; stagnation → [Zaplanuj blok interwałowy]) [OK] (D-064).
 1. Unrated ride from yesterday or today? → **„Jak było?”** card:
    „Ukończone interwały” [Całość | Częściowo | Nie] + [Łatwo]
@@ -106,7 +109,8 @@ As in 05_settings.md.
 
 9 steps as in 02 M2, a progress dots bar, "Dalej" button, values
 pre-filled from intervals.icu, choices as buttons. Step 1 shows the
-„Dodaj do ekranu początkowego” hint and „Najpierw wypróbuj demo”. It ends
+„Dodaj do ekranu początkowego” hint, „Najpierw wypróbuj demo” and „Masz kopię
+na Dysku Google?” (address of the copy script → restore, D-067). It ends
 with **Zaczynamy** (history import + 4 weeks planned).
 
 ## 4. Visual language

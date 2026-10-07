@@ -39,8 +39,13 @@ export function App() {
   const onboarded = !!session && "onboarded" in session && session.onboarded;
   useEffect(() => {
     if (!onboarded) return;
+    const changed = () => window.dispatchEvent(new Event(CHANGED));
     const go = () =>
-      void api.post<{ ran: string }>("/api/catchup").then((r) => r.ran !== "none" && window.dispatchEvent(new Event(CHANGED)), () => undefined);
+      void api.post<{ ran: string }>("/api/catchup")
+        .then((r) => r.ran !== "none" && changed(), () => undefined)
+        // Then the Drive copy (D-067): save new data, or ask when another device saved newer.
+        .then(() => api.post<{ result: string }>("/api/backup/auto"))
+        .then((b) => b.result === "conflict" && changed(), () => undefined);
     go();
     const onVisible = () => document.visibilityState === "visible" && go();
     document.addEventListener("visibilitychange", onVisible);

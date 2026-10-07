@@ -137,6 +137,15 @@ console errors. Bugs found and fixed while testing:
 - durability above 100%;
 - 59-min easy days after an event.
 
+### Copy on Google Drive (2026-10-07, D-067)
+
+Built and verified in demo conditions: core tests with a stand-in script,
+and Playwright with a local HTTPS server playing script.google.com and
+script.googleusercontent.com (restore on a new phone, auto-save 20 s after
+a change, newer copy from another device → „Zostaw dane z telefonu”, 0
+preflight requests, POST as text/plain). Still to confirm with the real
+script on the iPhone (S31).
+
 Known gaps (not blocking first use):
 - FTP accepted in the app must also be changed in intervals.icu / MyWhoosh by hand (the app reminds you).
 - Adaptation happens only when the app is opened (devices keep the default plan otherwise).

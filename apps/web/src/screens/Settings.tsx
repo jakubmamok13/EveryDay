@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api, fmtDate, saveFile } from "../api";
 import { AvailabilityEditor, GoalEditor, goalsFromApi, goalsToApi, type DayForm, type GoalForm } from "../forms";
+import { DriveBackupCard } from "../Backup";
 import { InstallHint, ReminderGuide } from "../reminder";
 import { runtime, setMode } from "../runtime";
 import { Card, Seg, useAction } from "../ui";
@@ -28,6 +29,7 @@ export function Settings() {
       <OtherSports s={s} reload={load} />
       <Reminder s={s} reload={load} />
       <Connection s={s} reload={load} />
+      <DriveBackupCard demo={s.demo} />
       <Data s={s} />
       <System status={status} reload={load} />
     </>
@@ -173,7 +175,7 @@ function Data({ s }: { s: any }) {
   });
   return (
     <Card title="Dane i kopia zapasowa">
-      <p className="small" style={{ marginTop: 0 }}>Wszystko jest tylko na tym telefonie. Zrób kopię co jakiś czas (np. do Plików / iCloud). Klucz API nie trafia do kopii.</p>
+      <p className="small" style={{ marginTop: 0 }}>Kopia do pliku (np. w Plikach / iCloud) — ręcznie, niezależnie od kopii na Dysku Google. Klucz API nie trafia do kopii.</p>
       <div className="row">
         <button className="btn" disabled={busy} onClick={exportAll}>Eksportuj kopię</button>
         <button className="btn" disabled={busy} onClick={() => file.current?.click()}>Wczytaj kopię</button>

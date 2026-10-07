@@ -16,8 +16,8 @@ Last updated: 2026-10-07
 | [09 v1 build plan](09_v1_build_plan.md) | **v1.2 built** | Phase 0 setup + spikes, Phases 1–7 |
 | [10 Feature research](10_feature_research.md) | **Done** | Training features users value in 14 apps; 15 options chosen and built (D-049) |
 | [Glossary](glossary.md) | **Spec v1.2** | Canonical terms + Polish UI labels |
-| [Spikes](spikes.md) | Active | 30 spikes; S05, S14, S18, S26, S27 high risk; S29 power streams; AI/PC spikes closed |
-| [Decisions](DECISIONS.md) | Active | D-001 … D-066 (D-043 – D-046: phone only, no AI, Shortcut reminder, no personal data; D-047 other sports; D-048 why card; D-049 – D-065 research features) |
+| [Spikes](spikes.md) | Active | 31 spikes; S05, S14, S18, S26, S27 high risk; S29 power streams; AI/PC spikes closed |
+| [Decisions](DECISIONS.md) | Active | D-001 … D-067 (D-043 – D-046: phone only, no AI, Shortcut reminder, no personal data; D-047 other sports; D-048 why card; D-049 – D-065 research features) |
 
 ## Interview progress
 
@@ -47,4 +47,4 @@ verified and what still needs the real account:
 
 The author opens the app on the iPhone, adds it to the Home Screen,
 connects intervals.icu (new API key) and uses it for a few mornings. The
-spikes S05, S14, S18, S21, S26, S27, S29 are then closed from that real use.
+spikes S05, S14, S18, S21, S26, S27, S29, S31 are then closed from that real use.

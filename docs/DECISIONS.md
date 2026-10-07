@@ -778,3 +778,51 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   - Longer toasts stay on screen longer (about reading speed).
 - Regression tests cover both cases.
 - **Source:** User (2026-10-07).
+
+## D-067 · 2026-10-07 · Copy on the author's Google Drive through an Apps Script link
+- **Context:** the author asked whether the app could read and write its data
+  in a Google Drive folder shared „anyone with the link can edit”.
+- **Research (2026-10-07):**
+  - The Drive API allows anonymous access (API key) for **reading** public
+    files only. Every write needs OAuth or a service account, whatever the
+    folder's link setting.
+  - Google sign-in (OAuth popup or redirect) inside an iPhone Home Screen app
+    is unreliable: the popup loses `window.opener`, or the redirect lands
+    in Safari instead of the app.
+  - Apps Script web apps answer no CORS preflight (OPTIONS → 405). Simple
+    requests (GET, POST `text/plain`, no custom headers) work: `/exec`
+    answers 302 to `script.googleusercontent.com` with
+    `Access-Control-Allow-Origin: *`.
+- **Decision:** the author deploys a small **Google Apps Script** from
+  `tools/everyday-kopia.gs` on their own account ("Execute as: me", "Who
+  has access: Anyone"). Its `/exec` address works as the link: the app
+  reads and writes through it with no Google sign-in in the app.
+  - On Drive: folder „EveryDay” with `everyday-kopia.json` (latest) and one
+    `everyday-RRRR-MM-DD.json` per day, 14 days kept.
+  - The app saves by itself 20 s after a change and on every open, only
+    when the data changed (hash of the data). It checks the Drive copy
+    first.
+  - A newer copy saved by **another device** is never overwritten
+    silently: Today asks „Wczytaj z Dysku” or „Zostaw dane z telefonu”.
+  - Connecting to a link that already holds a copy also asks: load it, or
+    replace it with this phone's data.
+  - New phone: onboarding › „Masz kopię na Dysku Google?” (API key + link).
+  - Errors are kept for Settings. Today warns only when no copy was saved
+    for 7 days.
+  - Demo mode never uploads. The intervals.icu key is never in the copy.
+  - The export (file and Drive) now also carries the athlete's `meta`
+    state: eFTP history, ladder history, return after a break. It leaves
+    out device-only keys (job times, the link). Import keeps this phone's
+    intervals.icu connection even if the file has none.
+- **Accepted risk (author: „nie ma znaczenia”):** whoever has the `/exec`
+  address can read and overwrite the copy.
+- **Rejected:**
+  - a link-shared folder without sign-in: writes are impossible;
+  - Google sign-in in the app: unreliable on iPhone;
+  - storing data in intervals.icu: misuse of a third-party service.
+- **Verified:** core tests with a stand-in script (requests stay
+  CORS-simple), and Playwright with a local HTTPS server playing both
+  Google hosts. Restore, auto-save after a change, conflict and „keep mine”
+  were checked, with 0 preflight requests. The real script on the iPhone is
+  spike S31.
+- **Source:** User (2026-10-07).

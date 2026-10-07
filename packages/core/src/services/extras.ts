@@ -19,6 +19,7 @@ import {
   type LoadState,
 } from "@everyday/engine";
 import type { App } from "../app";
+import { backupNotice } from "./backup";
 import { nowIso } from "../db";
 import { activeNotes, availability, checkIn, dailyState, goals, ladder, physiologyOn, plannedActiveOn, plannedBetween, setLadder, toPlannedDay, addSnapshot } from "../repo";
 import { applyAction } from "./actions";
@@ -388,6 +389,7 @@ export function todayFull(app: App, athleteId: number) {
     heat: heatView(app, athleteId),
     summary: weeklySummary(app, athleteId),
     comeback: returnInfo(app, athleteId),
+    backup: backupNotice(app),
   };
 }
 

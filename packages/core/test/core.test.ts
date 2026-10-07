@@ -406,3 +406,132 @@ describe("answers are remembered (no daily re-asking)", () => {
     expect((await call("GET", "/api/today")).ftpSuggestion).toBeNull();
   });
 });
+
+/** Stand-in for tools/everyday-kopia.gs (same protocol); also checks the requests stay CORS-simple. */
+class FakeScript {
+  static URL = "https://script.google.com/macros/s/AKfyTEST_123-abc/exec";
+  latest: { savedAt: string; device: string | null; data: any } | null = null;
+  posts = 0;
+  down = false;
+  fetch = async (url: string | URL | Request, init?: RequestInit): Promise<Response> => {
+    if (this.down) throw new TypeError("Failed to fetch");
+    const u = new URL(String(url));
+    if (`${u.origin}${u.pathname}` !== FakeScript.URL) return new Response("<html>Not found</html>", { status: 404 });
+    expect(init?.headers).toBeUndefined(); // no preflight: Apps Script cannot answer OPTIONS
+    const json = (o: unknown) => new Response(JSON.stringify(o), { status: 200 });
+    if (init?.method === "POST") {
+      expect(typeof init.body).toBe("string"); // sent as text/plain
+      const b = JSON.parse(init.body as string);
+      if (b.op !== "save" || b.data?.app !== "everyday") return json({ ok: false, error: "To nie jest kopia EveryDay." });
+      this.posts++;
+      this.latest = { savedAt: b.savedAt, device: b.device, data: b.data };
+      return json({ ok: true, savedAt: b.savedAt });
+    }
+    if (!this.latest) return json({ ok: true, empty: true });
+    if (u.searchParams.get("op") === "load") return json({ ok: true, ...this.latest });
+    return json({ ok: true, savedAt: this.latest.savedAt, device: this.latest.device });
+  };
+}
+
+describe("D-067: copy on Google Drive through an Apps Script link", () => {
+  /** A real-mode phone (no demo) with the demo athlete's history. */
+  async function phoneWithData(script: FakeScript) {
+    const demo = await makeApp(true);
+    await createRouter(demo).handle("POST", "/api/demo/seed");
+    await nightJob(demo, demo.athleteId());
+    const file = await createRouter(demo).handle("GET", "/api/export");
+    const app = await makeApp(false);
+    const router = createRouter(app);
+    await router.handle("POST", "/api/import", file);
+    app.fetch = script.fetch as typeof fetch;
+    return { app, call: (method: Method, url: string, body?: unknown): Promise<any> => router.handle(method, url, body) };
+  }
+
+  it("rejects anything that is not a deployed script address", async () => {
+    const { call } = await phoneWithData(new FakeScript());
+    await expect(call("POST", "/api/backup/connect", { url: "https://drive.google.com/drive/folders/abc?usp=sharing" })).rejects.toThrow(/script\.google\.com/);
+  });
+
+  it("connects, saves, skips unchanged data, saves after a change", async () => {
+    const script = new FakeScript();
+    const { app, call } = await phoneWithData(script);
+    const c = await call("POST", "/api/backup/connect", { url: FakeScript.URL });
+    expect(c.state).toBe("saved");
+    expect(script.posts).toBe(1);
+    expect(script.latest!.data.tables.activity.length).toBeGreaterThan(100);
+    expect(script.latest!.data.tables.source_connection.every((r: any) => r.api_key_encrypted === null)).toBe(true);
+    expect((await call("GET", "/api/backup")).lastSavedAt).toBe(script.latest!.savedAt);
+    expect((await call("POST", "/api/backup/auto")).result).toBe("unchanged");
+    expect(script.posts).toBe(1);
+    await call("POST", "/api/checkin", { feeling: "good", rideMode: "indoor" });
+    expect((await call("POST", "/api/backup/auto")).result).toBe("saved");
+    expect(script.posts).toBe(2);
+    expect(script.latest!.data.tables.check_in).toHaveLength(1);
+    void app;
+  });
+
+  it("a newer copy from another device is never overwritten silently", async () => {
+    const script = new FakeScript();
+    const { call } = await phoneWithData(script);
+    await call("POST", "/api/backup/connect", { url: FakeScript.URL });
+    script.latest = { ...script.latest!, device: "other-phone", savedAt: new Date(Date.now() + 60_000).toISOString() };
+    await call("POST", "/api/checkin", { feeling: "good", rideMode: "indoor" });
+    expect((await call("POST", "/api/backup/auto")).result).toBe("conflict");
+    expect(script.posts).toBe(1);
+    expect((await call("GET", "/api/today")).backup).toMatchObject({ kind: "conflict" });
+    await call("POST", "/api/backup/keep-local");
+    expect(script.posts).toBe(2);
+    expect((await call("GET", "/api/today")).backup).toBeNull();
+  });
+
+  it("restores everything on a new phone, incl. levels and eFTP history; the API key stays", async () => {
+    const script = new FakeScript();
+    const { app: oldPhone, call: oldCall } = await phoneWithData(script);
+    await oldCall("POST", "/api/checkin", { feeling: "great", rideMode: "indoor" });
+    await oldCall("POST", "/api/events", { date: "2026-11-15", name: "Maraton", priority: "B" });
+    oldPhone.db.setMeta(`eftp:${oldPhone.athleteId()}`, "[255,258]");
+    await oldCall("POST", "/api/backup/connect", { url: FakeScript.URL });
+
+    const fresh = await makeApp(false);
+    fresh.fetch = script.fetch as typeof fetch;
+    const call = (method: Method, url: string, body?: unknown): Promise<any> => createRouter(fresh).handle(method, url, body);
+    expect((await call("GET", "/api/session")).onboarded).toBe(false);
+    fresh.db.run("INSERT INTO source_connection (athlete_id, provider, api_key_encrypted, status) VALUES (?, 'intervals_icu', 'KEY-ON-NEW-PHONE', 'ok')", fresh.athleteId());
+    const r = await call("POST", "/api/backup/restore", { url: FakeScript.URL });
+    expect(r.onboarded).toBe(true);
+    expect((await call("GET", "/api/settings")).events.map((e: any) => e.name)).toEqual(["Maraton"]);
+    expect(fresh.db.get<{ n: number }>("SELECT COUNT(*) AS n FROM check_in")!.n).toBe(1);
+    expect(fresh.db.meta(`eftp:${fresh.athleteId()}`)).toBe("[255,258]");
+    const key = fresh.db.get<{ k: string | null }>("SELECT api_key_encrypted AS k FROM source_connection WHERE provider = 'intervals_icu'")?.k;
+    expect(key).toBe("KEY-ON-NEW-PHONE");
+    // Just restored: nothing to upload, and no conflict with the copy it came from.
+    expect((await call("POST", "/api/backup/auto")).result).toBe("unchanged");
+    expect((await call("GET", "/api/backup")).connected).toBe(true);
+  });
+
+  it("network errors are kept for Settings and shown on Today when no copy was saved", async () => {
+    const script = new FakeScript();
+    const { call } = await phoneWithData(script);
+    await call("POST", "/api/backup/connect", { url: FakeScript.URL });
+    script.down = true;
+    await call("POST", "/api/checkin", { feeling: "good", rideMode: "indoor" });
+    expect((await call("POST", "/api/backup/auto")).result).toBe("error");
+    expect((await call("GET", "/api/backup")).error.message).toMatch(/Brak połączenia/);
+    expect((await call("GET", "/api/today")).backup).toBeNull(); // a copy was saved less than 7 days ago
+    script.down = false;
+    expect((await call("POST", "/api/backup/auto")).result).toBe("saved");
+    expect((await call("GET", "/api/backup")).error).toBeNull();
+  });
+
+  it("demo mode never uploads; export never contains device-only meta", async () => {
+    const script = new FakeScript();
+    const demo = await makeApp(true);
+    const router = createRouter(demo);
+    await router.handle("POST", "/api/demo/seed");
+    demo.fetch = script.fetch as typeof fetch;
+    demo.db.setMeta("backup_url", FakeScript.URL);
+    expect(((await router.handle("POST", "/api/backup/auto")) as any).result).toBe("off");
+    const file: any = await router.handle("GET", "/api/export");
+    expect(Object.keys(file.meta).some((k) => k.startsWith("backup_") || k.startsWith("last_"))).toBe(false);
+  });
+});

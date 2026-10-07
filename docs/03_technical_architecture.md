@@ -103,13 +103,16 @@ Dates use the phone's time zone (`Intl…timeZone`), DST-safe.
   `intervals.icu` over HTTPS. Export files never contain it.
 - iPhone: Safari and the Home Screen app have separate storage; Home Screen
   apps are exempt from Safari's 7-day eviction of script-written storage.
-- Losing the phone or deleting the app loses the data → the Settings screen
-  asks for a periodic **export** (JSON) to Files / iCloud.
+- Losing the phone or deleting the app loses the data → **copy on the
+  author's Google Drive** through their own Apps Script link (D-067): saved
+  automatically after changes and on open, restored on a new phone. Manual
+  **export** (JSON) to Files / iCloud still works.
 - No personal data in the repository (D-046).
 
 ## 8. Limits (accepted)
 
-- No multi-device sync (export / import moves the data).
+- No live multi-device sync: the Drive copy moves data between devices, and
+  a newer copy from another device is offered, never merged (D-067).
 - Adaptation needs the app to be opened; devices still get the default plan.
 - intervals.icu outage → the app works from local data; sync retries on the
   next open.
@@ -117,4 +120,5 @@ Dates use the phone's time zone (`Intl…timeZone`), DST-safe.
 ## Open questions
 
 None blocking. Confirm on the phone: S05 (the real account),
-S14 (API writes reach the devices), S26 (field names), S27 (CORS from the installed app).
+S14 (API writes reach the devices), S26 (field names), S27 (CORS from the installed app),
+S31 (the Drive copy script from the installed app).

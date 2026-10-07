@@ -22,6 +22,8 @@ export class App {
   private icuClient: IcuClient | null = null;
   /** For tests and demo: override "now". */
   clock: () => Date = () => new Date();
+  /** For tests: network access for the Drive copy (D-067); default global fetch. */
+  fetch?: typeof fetch;
 
   constructor(readonly config: Config, readonly db: Db) {}
 

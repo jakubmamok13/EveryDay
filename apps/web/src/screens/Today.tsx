@@ -3,6 +3,7 @@ import { FEELINGS, PAIN_PARTS, type Feeling } from "@everyday/core";
 import { api, CHANGED, declinedText, fmtDate, fmtMinutes, saveFile } from "../api";
 import { StepGraph, StepList } from "../StepGraph";
 import { WhyCard } from "../WhyCard";
+import { BackupNoticeCard } from "../Backup";
 import { BonusOfferCard, CarbsCard, ChallengeChip, ComebackCard, HeatCard, RideRatingCard, SummaryCard, TomorrowCard } from "../Extras";
 import { Card, Seg, Sheet, useAction } from "../ui";
 
@@ -42,6 +43,7 @@ export function Today({ goCoach }: { goCoach: () => void }) {
         <span className="sub">{t.weekday}, {fmtDate(t.date).split(" ")[1]}{t.demo ? " · demo" : ""}</span>
       </header>
 
+      <BackupNoticeCard b={t.backup} reload={load} />
       {t.summary && <SummaryCard s={t.summary} setT={setT} />}
       {t.unrated?.map((r: any) => <RideRatingCard key={r.id} ride={r} onDone={setT} />)}
       {t.comeback && <ComebackCard c={t.comeback} />}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { PAIN_PARTS } from "@everyday/core";
 import { api } from "../api";
 import { AvailabilityEditor, DEFAULT_DAYS, GoalEditor, goalsToApi, type DayForm, type GoalForm } from "../forms";
+import { RestoreFromDrive } from "../Backup";
 import { InstallHint, ReminderGuide } from "../reminder";
 import { setMode } from "../runtime";
 import { Card, useAction, useToast } from "../ui";
@@ -86,6 +87,7 @@ export function Onboarding({ demo, onDone }: { demo: boolean; onDone: () => void
             )}
             <button className="btn primary block" disabled={busy || (!demo && !apiKey.trim())} onClick={connect}>{busy ? "Sprawdzam…" : "Połącz"}</button>
             {!demo && <button className="btn block" disabled={busy} onClick={() => void setMode("demo")}>Najpierw wypróbuj demo</button>}
+            {!demo && <RestoreFromDrive apiKey={apiKey} athleteId={athleteId} />}
             <p className="small muted">Klucz zostaje tylko na tym telefonie i służy wyłącznie do rozmowy z intervals.icu.</p>
           </div>
         )}

@@ -193,9 +193,16 @@ the ladder, 12 weeks, D-064), `return:{athlete}` and `return_done:{athlete}`
 - Keep **all ride and wellness rows** (R8-22); a year of data is a few MB.
 - **Persistence:** the whole database is exported (`db.export()`) to
   IndexedDB 300 ms after each change and at once when the app is hidden.
-- **Export** (R8-03): one JSON file `{ app: "everyday", version: 1, tables: {…} }`
-  with every user table; the intervals.icu key is blanked.
-- **Import** replaces all data with the file (the current key is kept).
+- **Export** (R8-03): one JSON file `{ app: "everyday", version: 1, tables: {…}, meta: {…} }`
+  with every user table and the athlete's `meta` keys (not the device-only
+  `last_*` and `backup_*`, D-067); the intervals.icu key is blanked.
+- **Copy on Google Drive** (D-067): the same file, wrapped as
+  `{ app: "everyday-backup", savedAt, device, data }`, through the author's
+  Apps Script. Device-local `meta`: `backup_url`, `backup_device`,
+  `backup_hash`, `backup_saved_at`, `backup_seen`, `backup_error`,
+  `backup_conflict`.
+- **Import** replaces all data with the file (the current key and
+  intervals.icu connection are kept).
 - **Delete everything** wipes all user tables on this phone after a
   confirmation. Data in intervals.icu is not touched.
 - **Migrations:** v1 = the original schema; v2 adds `check_in.exhausted`

@@ -327,3 +327,7 @@ ul.signals li:first-child { border-top: 0; }
 .event-chip { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--accent-soft); color: var(--ink); margin: 2px 0; }
 .day-edit { display: grid; grid-template-columns: 64px 1fr; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--line); }
 .day-edit:first-child { border-top: 0; }
+
+/* Copy on Google Drive (D-067) */
+.small.warn { color: var(--bad-text); }
+textarea.code { width: 100%; font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }

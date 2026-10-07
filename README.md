@@ -67,9 +67,15 @@ The same guide, with your chosen time, is in **Ustawienia → Poranne przypomnie
 
 ## 5. Your data
 
-- Everything is stored **on this phone only**. Make a copy from time to
-  time: **Ustawienia → Eksportuj kopię** (save it to Files or iCloud).
-  **Wczytaj kopię** restores it, on this phone or a new one.
+- Everything is stored **on this phone**. Deleting the app's icon or a new
+  phone loses it, so set up the **copy on your Google Drive** once
+  (Ustawienia → Kopia na Dysku Google, about 10 minutes, easiest on a
+  computer): you deploy the small script `tools/everyday-kopia.gs` in
+  script.google.com („Wykonaj jako: Ja”, „Kto ma dostęp: Każdy”) and paste
+  its `/exec` address in the app. From then on the app saves by itself, and a
+  new phone starts from the copy („Masz kopię na Dysku Google?” on the first
+  screen). Whoever has the address can read the copy — keep it to yourself.
+- Manual copy to a file still works: **Eksportuj kopię** / **Wczytaj kopię**.
 - The API key never leaves the phone, except in requests to intervals.icu.
   It is not included in the export.
 - **Usuń wszystkie dane** deletes everything from the phone. Your data in

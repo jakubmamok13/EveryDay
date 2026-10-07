@@ -64,13 +64,27 @@ async function start(): Promise<Runtime> {
     saving = saving.then(() => idbPut(key, data)).then(() => undefined, (e) => console.error("[save]", e));
     return saving;
   };
+  // Drive copy (D-067): 20 s after the last change; the core skips unchanged data.
+  let backupTimer: ReturnType<typeof setTimeout> | undefined;
+  let routerRef: Router | null = null; // set below, once the app exists
+  const backupNow = () => {
+    clearTimeout(backupTimer);
+    backupTimer = undefined;
+    // "everyday:changed" = CHANGED in api.ts (not imported: api.ts imports this file).
+    void routerRef
+      ?.handle("POST", "/api/backup/auto")
+      .then((r) => (r as { result?: string })?.result === "conflict" && window.dispatchEvent(new Event("everyday:changed")), () => undefined);
+  };
   const db: Db = new Db(bytes ? new SQL.Database(bytes) : new SQL.Database(), () => {
     clearTimeout(timer);
     timer = setTimeout(() => void flush(), 300);
+    clearTimeout(backupTimer);
+    backupTimer = setTimeout(backupNow, 20_000);
   });
   // iOS may stop the app any time after it leaves the screen: save right away.
   const saveNow = () => {
     if (timer) void flush();
+    if (backupTimer) backupNow();
   };
   document.addEventListener("visibilitychange", () => document.visibilityState === "hidden" && saveNow());
   window.addEventListener("pagehide", saveNow);
@@ -81,6 +95,7 @@ async function start(): Promise<Runtime> {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Warsaw";
   const app = new App({ demo: mode === "demo", timeZone, notes: NOTES }, db);
   const router = createRouter(app);
+  routerRef = router;
   if (mode === "demo" && !app.onboarded()) await router.handle("POST", "/api/demo/seed");
   return { app, router, mode, flush };
 }

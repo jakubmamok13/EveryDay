@@ -196,6 +196,7 @@ Terms marked are not confirmed yet.
 | Carbohydrate of the day | Jedzenie dziś |
 | Heat acclimation | Aklimatyzacja do upału |
 | Weekly summary | Podsumowanie tygodnia |
+| Drive copy | Kopia na Dysku Google |
 | Undo | Cofnij |
 | Power Zones | Strefy mocy |
 | Chat Note | Pamiętam |

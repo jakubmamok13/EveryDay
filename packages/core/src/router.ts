@@ -6,6 +6,7 @@ import { addSnapshot, availability, goals, physiologyOn, plannedActiveOn, planne
 import { act, reportPain, reportTravel, whyToday } from "./services/actions";
 import { catchUp } from "./services/catchup";
 import { addBonus, rateRide, refreshBrief, runMorning, submitCheckIn } from "./services/daily";
+import { autoBackup, backupStatus, connectBackup, disconnectBackup, keepLocal, restoreBackup, saveBackup } from "./services/backup";
 import { exportJson, importJson, wipe, type ExportFile } from "./services/data";
 import { completeOnboarding, connectIcu, saveAvailability, saveGoals, seedDemo, type OnboardingInput } from "./services/onboarding";
 import { alternatives, applyChange, confirmLongRide, ensurePlan, moveWorkout, regenerate, undo, writeCalendar } from "./services/plan";
@@ -583,6 +584,18 @@ export function createRouter(app: App): Router {
   on("POST", "/api/import", ({ body }) => {
     importJson(app, body as ExportFile);
     return { ok: true };
+  });
+
+  // Copy on the athlete's Google Drive through an Apps Script link (D-067)
+  on("GET", "/api/backup", () => backupStatus(app));
+  on("POST", "/api/backup/connect", async ({ body }) => ({ ...(await connectBackup(app, body?.url)), status: backupStatus(app) }));
+  on("POST", "/api/backup/auto", async () => ({ result: await autoBackup(app) }));
+  on("POST", "/api/backup/save", async () => ({ ...(await saveBackup(app)), status: backupStatus(app) }));
+  on("POST", "/api/backup/keep-local", async () => ({ ...(await keepLocal(app)), status: backupStatus(app) }));
+  on("POST", "/api/backup/restore", async ({ body }) => ({ ...(await restoreBackup(app, body?.url)), onboarded: app.onboarded() }));
+  on("DELETE", "/api/backup", () => {
+    disconnectBackup(app);
+    return backupStatus(app);
   });
 
   on("POST", "/api/wipe", ({ body }) => {
