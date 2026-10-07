@@ -760,3 +760,21 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   until the app was restarted.
 - **Fix:** a per-app lock (`WeakMap`) that is cleared only by the same
   promise, plus a regression test („none” first, later „sync”).
+
+## D-066 · 2026-10-07 · Answers are remembered: no daily re-asking
+- **Problem (reported by the author):** after „Nie tym razem” on a Long Ride
+  Day, the same proposal came back the next day. The rule looked only at
+  confirmed rides, so the daily job proposed the declined date again. A
+  rejected FTP suggestion had the same flaw: the next eFTP check created it
+  again.
+- **Decision:**
+  - A declined (or withdrawn) Long Ride Day date is never proposed again.
+    The next weekend can be proposed once, about a week later; the 4–6-week
+    cycle does not restart.
+  - A rejected FTP value is not suggested again for 28 days, unless the
+    estimate moves ≥ 3% away from it.
+  - After „Nie tym razem” the app says the normal plan stays, and points to
+    Tydzień › „Ten tydzień jest inny…” for a shorter weekend.
+  - Longer toasts stay on screen longer (about reading speed).
+- Regression tests cover both cases.
+- **Source:** User (2026-10-07).

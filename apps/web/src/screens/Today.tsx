@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FEELINGS, PAIN_PARTS, type Feeling } from "@everyday/core";
-import { api, CHANGED, fmtDate, fmtMinutes, saveFile } from "../api";
+import { api, CHANGED, declinedText, fmtDate, fmtMinutes, saveFile } from "../api";
 import { StepGraph, StepList } from "../StepGraph";
 import { WhyCard } from "../WhyCard";
 import { BonusOfferCard, CarbsCard, ChallengeChip, ComebackCard, HeatCard, RideRatingCard, SummaryCard, TomorrowCard } from "../Extras";
@@ -266,7 +266,7 @@ function LongRideCard({ p, run, reload }: { p: any; run: any; reload: () => void
       <p className="small" style={{ marginTop: 0 }}>Propozycja: {fmtDate(p.proposed_date)} — {fmtMinutes(p.minutes)} spokojnie w Z2. Krok w stronę długich tras.</p>
       <div className="row">
         <button className="btn primary" onClick={() => run(async () => { await api.post(`/api/long-ride/${p.id}`, { confirm: true }); reload(); }, "Zaplanowano długą jazdę.")}>Potwierdzam</button>
-        <button className="btn" onClick={() => run(async () => { await api.post(`/api/long-ride/${p.id}`, { confirm: false }); reload(); })}>Nie tym razem</button>
+        <button className="btn" onClick={() => run(async () => { await api.post(`/api/long-ride/${p.id}`, { confirm: false }); reload(); }, declinedText(p.proposed_date))}>Nie tym razem</button>
       </div>
     </Card>
   );

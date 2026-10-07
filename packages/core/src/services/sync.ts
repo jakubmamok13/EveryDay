@@ -1,4 +1,4 @@
-import { addDays, type ISODate } from "@everyday/shared";
+import { addDays, daysBetween, type ISODate } from "@everyday/shared";
 import { compliance, eftpFromBest20, findDuplicates, ftpFromRampTest, ftpSuggestion, otherSportLoad, performanceSeries, powerLoad, sportGroup, SPORT_WEIGHTS, type SportGroup } from "@everyday/engine";
 import type { App } from "../app";
 import { nowIso } from "../db";
@@ -182,7 +182,11 @@ export async function checkFtp(app: App, athleteId: number): Promise<void> {
   const hist: number[] = JSON.parse(app.db.meta(`eftp:${athleteId}`) ?? "[]");
   hist.push(Math.round(estimate));
   app.db.setMeta(`eftp:${athleteId}`, JSON.stringify(hist.slice(-5)));
-  const s = ftpSuggestion(phys.ftp, hist);
+  const rej = app.db.get<{ suggested_ftp: number; decided_at: string }>(
+    "SELECT suggested_ftp, decided_at FROM ftp_suggestion WHERE athlete_id = ? AND status = 'rejected' ORDER BY id DESC LIMIT 1", athleteId,
+  );
+  const rejected = rej ? { ftp: rej.suggested_ftp, daysAgo: rej.decided_at ? daysBetween(rej.decided_at.slice(0, 10) as ISODate, today) : 0 } : null;
+  const s = ftpSuggestion(phys.ftp, hist, rejected);
   if (s !== null) {
     app.db.run(
       "INSERT INTO ftp_suggestion (athlete_id, current_ftp, suggested_ftp, basis, evidence_json, created_at) VALUES (?,?,?,?,?,?)",

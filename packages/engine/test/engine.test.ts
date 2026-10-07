@@ -336,6 +336,17 @@ describe("progress", () => {
     const p = proposeLongRideDay({ today: MONDAY, lastLongRideDay: null, everyWeeks: 5, longestRideMinutes: 240, targetMinutes: 420, availability: SAMPLE_AVAILABILITY });
     expect(p).toEqual({ date: "2026-10-17", minutes: 300 });
   });
+  it("never proposes a declined Long Ride Day again", () => {
+    const base = { today: MONDAY, lastLongRideDay: null, everyWeeks: 5, longestRideMinutes: 240, targetMinutes: 420, availability: SAMPLE_AVAILABILITY };
+    expect(proposeLongRideDay({ ...base, declinedDates: ["2026-10-17"] })).toBeNull();
+    expect(proposeLongRideDay({ ...base, today: "2026-10-11", declinedDates: ["2026-10-17"] })).toEqual({ date: "2026-10-24", minutes: 300 });
+  });
+  it("does not ask again about a rejected FTP for 28 days unless the estimate moves ≥ 3%", () => {
+    expect(ftpSuggestion(250, [262, 264])).toBe(263);
+    expect(ftpSuggestion(250, [262, 264], { ftp: 263, daysAgo: 1 })).toBeNull();
+    expect(ftpSuggestion(250, [272, 274], { ftp: 263, daysAgo: 1 })).toBe(273);
+    expect(ftpSuggestion(250, [262, 264], { ftp: 263, daysAgo: 28 })).toBe(263);
+  });
   it("proposes no Long Ride Day in an A taper, on an event day or right after it", () => {
     const base = { today: MONDAY, lastLongRideDay: null, everyWeeks: 5, longestRideMinutes: 240, targetMinutes: 420, availability: SAMPLE_AVAILABILITY };
     expect(proposeLongRideDay({ ...base, events: [{ date: "2026-10-18", name: "Gran Fondo", priority: "A" }] })).toBeNull();

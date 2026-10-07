@@ -56,7 +56,8 @@ export function ToastHost({ children }: { children: ReactNode }) {
   const [msg, setMsg] = useState<string | null>(null);
   useEffect(() => {
     if (!msg) return;
-    const t = setTimeout(() => setMsg(null), 3500);
+    // Longer messages stay longer (~ reading speed), at least 3.5 s.
+    const t = setTimeout(() => setMsg(null), Math.max(3500, msg.length * 55));
     return () => clearTimeout(t);
   }, [msg]);
   return (

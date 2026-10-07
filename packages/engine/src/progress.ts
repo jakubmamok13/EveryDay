@@ -64,14 +64,20 @@ export function compliance(planned: { minutes: number; load: number }, actual: {
 export const eftpFromBest20 = (best20: number) => Math.round(best20 * 0.95);
 export const ftpFromRampTest = (best1min: number) => Math.round(best1min * 0.75);
 
-/** Suggest a new FTP when the last two estimates differ ≥ 3% in the same direction. */
-export function ftpSuggestion(currentFtp: number, estimates: number[]): number | null {
+/**
+ * Suggest a new FTP when the last two estimates differ ≥ 3% in the same
+ * direction. A value the Athlete rejected is not asked again for 28 days
+ * unless the estimate moves ≥ 3% away from it (our rule).
+ */
+export function ftpSuggestion(currentFtp: number, estimates: number[], rejected?: { ftp: number; daysAgo: number } | null): number | null {
   const [a, b] = estimates.slice(-2);
   if (a === undefined || b === undefined) return null;
   const da = (a - currentFtp) / currentFtp;
   const db = (b - currentFtp) / currentFtp;
-  if (Math.abs(da) >= 0.03 && Math.abs(db) >= 0.03 && Math.sign(da) === Math.sign(db)) return Math.round((a + b) / 2);
-  return null;
+  if (!(Math.abs(da) >= 0.03 && Math.abs(db) >= 0.03 && Math.sign(da) === Math.sign(db))) return null;
+  const s = Math.round((a + b) / 2);
+  if (rejected && rejected.daysAgo < 28 && Math.abs(s - rejected.ftp) / rejected.ftp < 0.03) return null;
+  return s;
 }
 
 // ---------- Long rides & fueling (M13) ----------
@@ -85,6 +91,8 @@ export interface LongRideProposalInput {
   availability: AvailabilityDay[];
   /** Season events: no Long Ride Day in a taper, on an event day or in the recovery after it. */
   events?: SeasonEvent[];
+  /** Days the Athlete already declined („Nie tym razem”): never proposed again. */
+  declinedDates?: ISODate[];
 }
 
 /** Proposes a Long Ride Day 7–13 days ahead on the long weekend day. */
@@ -97,7 +105,7 @@ export function proposeLongRideDay(input: LongRideProposalInput): { date: ISODat
   for (let i = 7; i <= 13; i++) {
     const date = addDays(input.today, i);
     if (weekday(date) === weekend.weekday) {
-      if (inEventWindow(date, input.events ?? [])) return null;
+      if (inEventWindow(date, input.events ?? []) || input.declinedDates?.includes(date)) return null;
       const minutes = Math.min(input.targetMinutes, Math.round((input.longestRideMinutes + 60) / 15) * 15);
       return { date, minutes: Math.max(minutes, input.longestRideMinutes + 45) };
     }

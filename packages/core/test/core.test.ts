@@ -365,3 +365,44 @@ describe("C4: gentle return after a break", () => {
     expect(((await router.handle("GET", "/api/today")) as any).comeback.text).toContain("Powrót po 18 dniach");
   });
 });
+
+describe("answers are remembered (no daily re-asking)", () => {
+  it("„Nie tym razem” on a Long Ride Day is not asked again the next days", async () => {
+    const app = await makeApp(true);
+    const router = createRouter(app);
+    const call = (method: Method, url: string, body?: unknown): Promise<any> => router.handle(method, url, body);
+    await call("POST", "/api/demo/seed");
+    await nightJob(app, app.athleteId());
+    const p = (await call("GET", "/api/today")).longRide;
+    expect(p).toMatchObject({ proposed_date: "2026-10-17" });
+    await call("POST", `/api/long-ride/${p.id}`, { confirm: false });
+    for (const day of ["07", "08", "09", "10"]) {
+      app.clock = () => new Date(`2026-10-${day}T06:00:00Z`);
+      await nightJob(app, app.athleteId());
+      expect((await call("GET", "/api/today")).longRide).toBeNull();
+      expect((await call("GET", "/api/week")).longRide ?? null).toBeNull();
+    }
+    // The next weekend may be proposed once, a week later.
+    app.clock = () => new Date("2026-10-11T06:00:00Z");
+    await nightJob(app, app.athleteId());
+    expect((await call("GET", "/api/today")).longRide).toMatchObject({ proposed_date: "2026-10-24" });
+  });
+
+  it("a rejected FTP suggestion does not come back the next day", async () => {
+    const app = await makeApp(true);
+    const router = createRouter(app);
+    const call = (method: Method, url: string, body?: unknown): Promise<any> => router.handle(method, url, body);
+    await call("POST", "/api/demo/seed");
+    const fake = app.icu()!;
+    app.icu = () => Object.assign(Object.create(Object.getPrototypeOf(fake)), fake, { athlete: async () => ({ ...(await fake.athlete()), eftp: 264 }) });
+    app.db.setMeta(`eftp:${app.athleteId()}`, JSON.stringify([262]));
+    app.clock = () => new Date("2026-10-07T06:00:00Z");
+    await nightJob(app, app.athleteId());
+    const s = (await call("GET", "/api/today")).ftpSuggestion;
+    expect(s).toMatchObject({ suggested_ftp: 263 });
+    await call("POST", `/api/ftp-suggestion/${s.id}`, { accept: false });
+    app.clock = () => new Date("2026-10-08T06:00:00Z");
+    await nightJob(app, app.athleteId());
+    expect((await call("GET", "/api/today")).ftpSuggestion).toBeNull();
+  });
+});

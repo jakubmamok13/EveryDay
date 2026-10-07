@@ -376,8 +376,11 @@ export function maybeProposeLongRide(app: App, athleteId: number): void {
   const today = app.today();
   const last = app.db.get("SELECT MAX(proposed_date) AS d FROM long_ride_proposal WHERE athlete_id = ? AND status IN ('confirmed','done')", athleteId)?.d ?? null;
   const longest = Math.round((app.db.get("SELECT MAX(moving_seconds) AS s FROM activity WHERE athlete_id = ? AND sport = 'ride' AND is_master = 1 AND date >= ?", athleteId, addDays(today, -84))?.s ?? 0) / 60);
+  const declined = app.db
+    .all<{ d: ISODate }>("SELECT DISTINCT proposed_date AS d FROM long_ride_proposal WHERE athlete_id = ? AND status IN ('declined','withdrawn') AND proposed_date >= ?", athleteId, today)
+    .map((r) => r.d);
   const p = proposeLongRideDay({ today, lastLongRideDay: last, everyWeeks: avail.longRideEveryWeeks, longestRideMinutes: longest, targetMinutes: target, availability: avail.days,
-    events: allEvents({ events: seasonEvents(app, athleteId), goals: goals(app, athleteId) }) });
+    events: allEvents({ events: seasonEvents(app, athleteId), goals: goals(app, athleteId) }), declinedDates: declined });
   if (p) app.db.run("INSERT INTO long_ride_proposal (athlete_id, proposed_date, minutes, created_at) VALUES (?,?,?,?)", athleteId, p.date, p.minutes, nowIso());
 }
 

@@ -1,6 +1,6 @@
 # 00 — Index
 
-Last updated: 2026-10-06
+Last updated: 2026-10-07
 
 | Doc | Status | Notes |
 |---|---|---|
@@ -17,7 +17,7 @@ Last updated: 2026-10-06
 | [10 Feature research](10_feature_research.md) | **Done** | Training features users value in 14 apps; 15 options chosen and built (D-049) |
 | [Glossary](glossary.md) | **Spec v1.2** | Canonical terms + Polish UI labels |
 | [Spikes](spikes.md) | Active | 30 spikes; S05, S14, S18, S26, S27 high risk; S29 power streams; AI/PC spikes closed |
-| [Decisions](DECISIONS.md) | Active | D-001 … D-065 (D-043 – D-046: phone only, no AI, Shortcut reminder, no personal data; D-047 other sports; D-048 why card; D-049 – D-065 research features) |
+| [Decisions](DECISIONS.md) | Active | D-001 … D-066 (D-043 – D-046: phone only, no AI, Shortcut reminder, no personal data; D-047 other sports; D-048 why card; D-049 – D-065 research features) |
 
 ## Interview progress
 

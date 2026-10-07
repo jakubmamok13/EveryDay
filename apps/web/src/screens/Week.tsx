@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, CHANGED, fmtDate, fmtMinutes, WEEKDAYS } from "../api";
+import { api, CHANGED, declinedText, fmtDate, fmtMinutes, WEEKDAYS } from "../api";
 import { Card, Sheet, useAction, useToast } from "../ui";
 import { sportIcon } from "../WhyCard";
 
@@ -73,7 +73,7 @@ export function Week() {
           <p className="small" style={{ marginTop: 0 }}>{fmtDate(w.longRide.proposed_date)} — {fmtMinutes(w.longRide.minutes)} w Z2.</p>
           <div className="row">
             <button className="btn primary" onClick={() => act(() => api.post(`/api/long-ride/${w.longRide.id}`, { confirm: true }), "Zaplanowano.")}>Potwierdzam</button>
-            <button className="btn" onClick={() => act(() => api.post(`/api/long-ride/${w.longRide.id}`, { confirm: false }), "OK.")}>Nie tym razem</button>
+            <button className="btn" onClick={() => act(() => api.post(`/api/long-ride/${w.longRide.id}`, { confirm: false }), declinedText(w.longRide.proposed_date))}>Nie tym razem</button>
           </div>
         </Card>
       )}

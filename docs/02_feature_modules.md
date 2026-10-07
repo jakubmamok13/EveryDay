@@ -1,6 +1,6 @@
 # 02 — Feature Modules
 
-Status: **SPEC v1.2** — interview decisions D-001 … D-065 applied (phone only, no AI, buttons only since D-043/D-044; research features D-049 … D-065).
+Status: **SPEC v1.2** — interview decisions D-001 … D-066 applied (phone only, no AI, buttons only since D-043/D-044; research features D-049 … D-065).
 Rules marked *(our rule)* are not taken from the book; they are our own
 choices and are tuned after the first weeks of real use.
 
@@ -446,7 +446,8 @@ for a skipped day in Tydzień).
   best 20-min power in the last 42 days (indoor or outdoor power).
 - **Suggestion** when eFTP differs from current FTP by **≥ 3%** on two
   syncs in a row. The Athlete accepts or rejects. Accept → new Fitness
-  Snapshot, future workouts rescaled, calendar rewritten.
+  Snapshot, future workouts rescaled, calendar rewritten. Reject → the same
+  value is not suggested again for 28 days unless eFTP moves ≥ 3% from it (D-066).
 - **Ramp test** at the end of each block (second quality day of the Recovery
   Week), indoor on the smart trainer in ERG: start 100 W, +20 W per minute until failure; **FTP =
   75% of the best 1-minute power**. The result becomes a suggestion as above.
@@ -461,7 +462,8 @@ for a skipped day in Tydzień).
   shown **7 days ahead** and goes into the plan only after the Athlete
   **confirms** it; if declined, the weekend becomes back-to-back (long Sat +
   shorter Sun). Never in an event's taper, on its day or in the recovery
-  after it; an event added later withdraws it (D-058).
+  after it; an event added later withdraws it (D-058). A declined date is
+  never proposed again (D-066).
 - **Fueling lines** (rides > 90 min) *(our rule, from mainstream sports-
   nutrition guidance)*:
   - carbohydrates **60 g/h**; on rides > 3 h raise gradually toward

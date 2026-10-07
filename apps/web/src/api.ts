@@ -66,6 +66,10 @@ export function fmtDate(date: string): string {
   return `${WEEKDAYS[weekdayOf(date)]} ${Number(d)}.${m}`;
 }
 
+/** Toast after „Nie tym razem” on a Long Ride Day proposal. */
+export const declinedText = (date: string) =>
+  `OK — na ${fmtDate(date)} zostaje zwykły plan; nie zapytam o ten dzień ponownie. Masz w ten weekend mniej czasu? Tydzień › „Ten tydzień jest inny…”.`;
+
 export function fmtMinutes(m: number): string {
   if (m < 90) return `${m} min`;
   const h = Math.floor(m / 60);
