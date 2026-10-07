@@ -874,3 +874,38 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
     silent try then a button, no loop. 0 console errors.
 - **Source:** User (2026-10-07: „Działa, przenieś rozwiązanie. Ale będziemy
   używać innego klienta”).
+
+## D-069 · 2026-10-07 · Other sports: the same weight in Fitness and Fatigue; honest „tomorrow” card
+- **Problem (reported by the author):** on a rest day the app showed
+  „Forma −110%” and a red card „Po dzisiejszym obciążeniu Forma jutro rano
+  wyniesie ok. −86%”.
+- **Two faults:**
+  1. **The card text.** It always said „after today's load”, also on a rest
+     day, when Form actually **rises** (−110% → −86%). The card stays
+     because −86% is still below −45%.
+  2. **The model (D-047).** Other sports went into Fatigue at full Load and
+     into Fitness only partly. A load that never builds Fitness never pays
+     back its Fatigue, so a **steady** habit keeps Form below zero for good.
+     Simulated, a 280-day steady routine averages: rides only 0%; + gym
+     3×/week −37%; + 2 runs and daily walks −54%. Readiness then reads
+     „duże zmęczenie” although nothing changed.
+- **Decision:**
+  - Each sport's cycling weight (run 0.6, ski/row 0.5, walk 0.3, swim 0.2,
+    strength/yoga 0) goes into Fitness **and** Fatigue. A steady routine
+    then settles at Form 0, as in the standard Performance Manager, which
+    feeds both channels from one Load (sport-filtered PMCs work the same way).
+  - The short-term fatigue of a leg-heavy session stays in Readiness: the
+    „Inne sporty (nogi)” signal (D-047 thresholds), and HRV, resting HR and
+    sleep, which measure systemic fatigue directly.
+  - A model version in `meta` (`perf_model` = "2") recomputes the history
+    and today's readiness and brief once on the next open. It also does
+    this after loading an older copy.
+  - The card now says either „Po dzisiejszym treningu (obciążenie X) Forma
+    jutro rano wyniesie ok. Y% (dziś Z%)” or „Dziś bez treningu, więc Forma
+    rośnie z Z% do ok. Y% jutro rano — ale to wciąż poniżej −45%…”.
+  - Method Notes „Inne sporty” and „Obciążenie i forma” were updated. The
+    latter also gets the event target in % of Fitness (D-059).
+- **Supersedes:** the „full weight in Fatigue” part of D-047.
+- **Tests:** engine (a steady routine with gym and runs averages Form within
+  ±3%; rest-day card text), core (the model change recomputes once).
+- **Source:** User (2026-10-07, screenshot) + analysis by Claude.

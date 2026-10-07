@@ -19,8 +19,11 @@ lżejszy (tydzień regeneracyjny), żeby organizm zdążył się zaadaptować.
 
 ## Forma na start
 Przed ważnym startem zmniejszamy objętość na 7–10 dni (taper), zostawiając
-krótkie mocne akcenty. Celem jest Forma około +15 do +25 w dniu startu.
+krótkie mocne akcenty. Celem jest Forma około +5% do +20% Kondycji w dniu
+startu (strefa „świeży” w intervals.icu).
 
 ## Inne sporty
-Bieg, siłownia czy pływanie też męczą. Dodają pełne obciążenie do Zmęczenia,
-a do Kondycji kolarskiej tylko część (szczegóły w notatce „Inne sporty”).
+Bieg, siłownia czy pływanie też się liczą, ale tylko ta część, która
+przenosi się na rower — tak samo w Kondycji i w Zmęczeniu. Doraźne
+zmęczenie nóg po biegu czy siłowni ocenia Gotowość (szczegóły w notatce
+„Inne sporty”).

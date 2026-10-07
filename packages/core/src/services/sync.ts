@@ -130,7 +130,7 @@ export const countsOtherSports = (app: App): boolean => app.setting("otherSports
 
 /**
  * Load, Fitness, Fatigue, Form for every day from the first activity to today
- * (D-010). Other sports: full Load in Fatigue, sport-weighted in Fitness (D-047).
+ * (D-010). Other sports: sport-weighted, the same in Fitness and Fatigue (D-047, D-069).
  */
 export function recomputePerformance(app: App, athleteId: number): void {
   const today = app.today();
@@ -139,17 +139,16 @@ export function recomputePerformance(app: App, athleteId: number): void {
     "SELECT date, sport, SUM(load) AS load FROM activity WHERE athlete_id = ? AND is_master = 1 AND load IS NOT NULL GROUP BY date, sport",
     athleteId,
   );
-  const fit = new Map<ISODate, number>();
-  const fat = new Map<ISODate, number>();
+  // Other sports count with their cycling weight in Fitness and Fatigue alike (D-069).
+  const loads = new Map<ISODate, number>();
   for (const r of rows) {
     if (r.sport !== "ride" && !others) continue;
     const w = SPORT_WEIGHTS[r.sport] ?? SPORT_WEIGHTS.other;
-    fit.set(r.date, (fit.get(r.date) ?? 0) + r.load * w.fitness);
-    fat.set(r.date, (fat.get(r.date) ?? 0) + r.load * w.fatigue);
+    loads.set(r.date, (loads.get(r.date) ?? 0) + r.load * w.weight);
   }
-  const first = [...fat.keys()].sort()[0] ?? today;
+  const first = [...loads.keys()].sort()[0] ?? today;
   const from = first < addDays(today, -365) ? addDays(today, -365) : first;
-  const series = performanceSeries(fit, from, addDays(today, 1), undefined, fat);
+  const series = performanceSeries(loads, from, addDays(today, 1));
   const now = nowIso();
   app.db.tx(() => {
     for (const d of series) {

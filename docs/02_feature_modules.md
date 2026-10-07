@@ -1,6 +1,6 @@
 # 02 — Feature Modules
 
-Status: **SPEC v1.2** — interview decisions D-001 … D-068 applied (phone only, no AI, buttons only since D-043/D-044; research features D-049 … D-065).
+Status: **SPEC v1.2** — interview decisions D-001 … D-069 applied (phone only, no AI, buttons only since D-043/D-044; research features D-049 … D-065).
 Rules marked *(our rule)* are not taken from the book; they are our own
 choices and are tuned after the first weeks of real use.
 
@@ -70,10 +70,11 @@ workouts back (D-004, D-009). Details: 07_integrations.md.
 - **Out:** the chosen Workout Variant for each Planned Workout, written to
   the intervals.icu calendar. intervals.icu then pushes it to MyWhoosh,
   Garmin and Wahoo.
-- **Other sports (D-047):** runs, strength, swims etc. are stored with a
-  sport group. They never match the plan; they add Load: **full weight in
-  Fatigue, sport-weighted in Fitness** (run 0.6, ski/row 0.5, walk 0.3,
-  swim 0.2, strength/yoga 0). Load = intervals.icu Load, else a per-sport
+- **Other sports (D-047, D-069):** runs, strength, swims etc. are stored with a
+  sport group. They never match the plan; they add Load **sport-weighted, the
+  same in Fitness and Fatigue** (run 0.6, ski/row 0.5, walk 0.3, swim 0.2,
+  strength/yoga 0), so a steady routine settles at Form 0. Their short-term
+  leg fatigue is a Readiness signal (M5.2). Load = intervals.icu Load, else a per-sport
   hourly default (strength ≥ 45/h). Setting: Ustawienia › Inne sporty.
 - **Master Copy rule** (D-024, D-029): every ride counts once.
   Indoors = MyWhoosh copy. Outdoors = bike computer copy, with the watch copy

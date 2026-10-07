@@ -1,20 +1,26 @@
 # Inne sporty
 
-## Dwa kanały: Zmęczenie i Kondycja
-Zmęczenie jest wspólne dla całego ciała: układ nerwowy, glikogen, sen i
-uszkodzenia mięśni nie pytają, czy to był rower, bieg czy siłownia. Dlatego
-każdy trening dodaje **pełne obciążenie do Zmęczenia**.
-
+## Jaka część innego sportu się liczy
 Kondycja kolarska jest częściowo „specyficzna”. Serce i pułap tlenowy
 (VO2max) rosną przy każdym sporcie wytrzymałościowym, ale mięśnie pracujące
-na pedałach i technika pedałowania — tylko na rowerze. Dlatego do
-**Kondycji wlicza się tylko część** obciążenia z innych sportów (nasza reguła):
+na pedałach i technika pedałowania — tylko na rowerze. Dlatego liczy się
+**tylko część** obciążenia z innych sportów (nasza reguła):
 
 - bieg: 60%,
 - narty biegowe, wioślarstwo, orbitrek: 50%,
 - marsz, wędrówka: 30%,
 - pływanie: 20%,
 - siłownia, joga: 0% (nie budują wytrzymałości tlenowej).
+
+Ta sama część trafia **do Kondycji i do Zmęczenia**. Gdyby Zmęczenie
+dostawało pełne obciążenie, a Kondycja tylko część, stały nawyk (np.
+siłownia 3 razy w tygodniu) trzymałby Formę stale 35–55% poniżej zera, choć
+organizm dawno by się do niego przyzwyczaił. Tak liczyła pierwsza wersja
+aplikacji; poprawione 7.10.2026.
+
+Doraźne zmęczenie po innym sporcie jest jednak prawdziwe — ocenia je
+Gotowość: osobny sygnał „Inne sporty (nogi)” (niżej) oraz HRV, tętno
+spoczynkowe i sen, które pokazują zmęczenie całego organizmu.
 
 ## Bieg i siłownia dzień przed jazdą
 Bieg ma fazę ekscentryczną (mięśnie hamują przy lądowaniu), więc uszkadza

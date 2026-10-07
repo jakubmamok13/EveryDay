@@ -1,13 +1,16 @@
-// Other sports in the training load (D-047). Two channels, because the
-// research points two ways:
+// Other sports in the training load (D-047, corrected by D-069).
 //
-// - Fatigue is systemic (autonomic system, glycogen, sleep, muscle damage):
-//   every session tires the whole body, whatever the sport → full weight.
 // - Cycling Fitness is partly sport-specific: central adaptations (heart,
 //   VO2max) transfer between running and cycling, peripheral ones (muscles
 //   used, pedalling) do not; swimming transfers very little; strength
 //   training adds no aerobic fitness (Tanaka 1994; Millet et al. 2002;
 //   Menges et al. 2026) → reduced weight.
+// - The same weight goes into Fitness **and** Fatigue (D-069). D-047 put the
+//   full Load into Fatigue; with a steady habit (gym 3×/week) that kept Form
+//   permanently 35–55% below zero, because a load that never builds Fitness
+//   never "pays back" its Fatigue. The short-term fatigue of a leg-heavy
+//   session is judged by Readiness instead („Inne sporty (nogi)”), next to
+//   HRV, resting HR and sleep, which show systemic fatigue directly.
 //
 // The weights are *our rule*, set from those studies, and are tuned with real
 // data after the Learning Period.
@@ -15,10 +18,8 @@
 export type SportGroup = "ride" | "run" | "whole_body" | "walk" | "swim" | "strength" | "mobility" | "other";
 
 export interface SportWeights {
-  /** Share of the session's Load that builds cycling Fitness. */
-  fitness: number;
-  /** Share of the session's Load that adds Fatigue. */
-  fatigue: number;
+  /** Share of the session's Load that counts for cycling (Fitness and Fatigue alike, D-069). */
+  weight: number;
   /** Load per hour when intervals.icu has no Load for the session. */
   defaultLoadPerHour: number;
   /** Hard on the legs (eccentric work or heavy lifting) → counts in Readiness. */
@@ -27,14 +28,14 @@ export interface SportWeights {
 }
 
 export const SPORT_WEIGHTS: Record<SportGroup, SportWeights> = {
-  ride: { fitness: 1, fatigue: 1, defaultLoadPerHour: 50, legs: false, label: "jazda" },
-  run: { fitness: 0.6, fatigue: 1, defaultLoadPerHour: 65, legs: true, label: "bieg" },
-  whole_body: { fitness: 0.5, fatigue: 1, defaultLoadPerHour: 55, legs: false, label: "trening wytrzymałościowy" },
-  walk: { fitness: 0.3, fatigue: 1, defaultLoadPerHour: 25, legs: false, label: "marsz / wędrówka" },
-  swim: { fitness: 0.2, fatigue: 1, defaultLoadPerHour: 50, legs: false, label: "pływanie" },
-  strength: { fitness: 0, fatigue: 1, defaultLoadPerHour: 45, legs: true, label: "siłownia" },
-  mobility: { fitness: 0, fatigue: 1, defaultLoadPerHour: 15, legs: false, label: "joga / mobilność" },
-  other: { fitness: 0.3, fatigue: 1, defaultLoadPerHour: 40, legs: false, label: "inny sport" },
+  ride: { weight: 1, defaultLoadPerHour: 50, legs: false, label: "jazda" },
+  run: { weight: 0.6, defaultLoadPerHour: 65, legs: true, label: "bieg" },
+  whole_body: { weight: 0.5, defaultLoadPerHour: 55, legs: false, label: "trening wytrzymałościowy" },
+  walk: { weight: 0.3, defaultLoadPerHour: 25, legs: false, label: "marsz / wędrówka" },
+  swim: { weight: 0.2, defaultLoadPerHour: 50, legs: false, label: "pływanie" },
+  strength: { weight: 0, defaultLoadPerHour: 45, legs: true, label: "siłownia" },
+  mobility: { weight: 0, defaultLoadPerHour: 15, legs: false, label: "joga / mobilność" },
+  other: { weight: 0.3, defaultLoadPerHour: 40, legs: false, label: "inny sport" },
 };
 
 /** intervals.icu activity type → group. */

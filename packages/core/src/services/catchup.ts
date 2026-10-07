@@ -2,7 +2,9 @@ import { addDays } from "@everyday/shared";
 import type { App } from "../app";
 import { logJob } from "../repo";
 import { advanceBlocks, ensurePlan, handleMissed, maybeProposeLongRide, writeCalendar } from "./plan";
-import { checkFtp, syncAll } from "./sync";
+import { checkFtp, recomputePerformance, syncAll } from "./sync";
+import { checkIn } from "../repo";
+import { runMorning } from "./daily";
 import { checkReturn, snapshotLadder } from "./extras";
 import { analyzeStreams } from "./profile";
 
@@ -27,6 +29,23 @@ export async function nightJob(app: App, athleteId: number): Promise<void> {
   app.db.setMeta("last_day_sync", String(app.clock().getTime()));
 }
 
+/**
+ * Version of the Fitness / Fatigue / Form model. A new version (D-069: other
+ * sports weighted the same in both) recomputes the history and today's
+ * readiness once, also after loading an older copy.
+ */
+const PERF_MODEL = "2";
+
+async function upgradePerformance(app: App, athleteId: number): Promise<void> {
+  if (app.db.meta("perf_model") === PERF_MODEL) return;
+  recomputePerformance(app, athleteId);
+  const today = app.today();
+  if (app.db.get("SELECT 1 FROM daily_brief WHERE athlete_id = ? AND date = ?", athleteId, today)) {
+    await runMorning(app, athleteId, today, !!checkIn(app, athleteId, today));
+  }
+  app.db.setMeta("perf_model", PERF_MODEL);
+}
+
 const running = new WeakMap<App, Promise<"night" | "sync" | "none">>();
 
 /** Called on open and when the app becomes visible. One run at a time per app. */
@@ -36,6 +55,7 @@ export function catchUp(app: App): Promise<"night" | "sync" | "none"> {
   const p = (async (): Promise<"night" | "sync" | "none"> => {
     if (!app.onboarded()) return "none";
     const athleteId = app.athleteId();
+    await upgradePerformance(app, athleteId);
     if ((app.db.meta("last_night_job") ?? "") < app.today()) {
       await nightJob(app, athleteId);
       return "night";

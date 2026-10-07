@@ -54,7 +54,7 @@ Per weekday: available · max minutes · default Ride Mode.
 
 Plus: **Dni długiej jazdy** (Long Ride Days) on/off, every 4–6 weeks (R8-08).
 
-## Inne sporty (Other sports, D-047)
+## Inne sporty (Other sports, D-047, D-069)
 
 - „Licz bieg, siłownię i inne sporty” — default **on**. Off = only rides count;
   turning it on or off recalculates Fitness, Fatigue and Form at once.

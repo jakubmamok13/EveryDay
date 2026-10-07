@@ -115,7 +115,7 @@ export function whyView(app: App, athleteId: number): WhyView {
     athleteId, addDays(date, -7), addDays(date, -1),
   );
   if (counted) {
-    load.push("Liczę wszystkie sporty: każdy trening dodaje pełne obciążenie do Zmęczenia; do Kondycji kolarskiej wlicza się jego część (bieg 60%, inne wytrzymałościowe 50%, marsz 30%, pływanie 20%, siłownia i joga 0%).");
+    load.push("Liczę wszystkie sporty: do Kondycji i Zmęczenia wlicza się ta część treningu, która przenosi się na rower (bieg 60%, inne wytrzymałościowe 50%, marsz 30%, pływanie 20%, siłownia i joga 0%). Zmęczenie nóg po biegu lub siłowni ocenia Gotowość.");
   } else {
     load.push("Liczę tylko jazdy rowerowe (inne sporty wyłączone w Ustawieniach). Zmęczenie po nich widać tylko pośrednio: w HRV, tętnie i śnie.");
   }

@@ -18,7 +18,7 @@ Last updated: 2026-10-07
 | [Dysk Google](DYSK-GOOGLE.md) | **Guide (PL)** | One-time Google OAuth client for the Drive copy (D-068) |
 | [Glossary](glossary.md) | **Spec v1.2** | Canonical terms + Polish UI labels |
 | [Spikes](spikes.md) | Active | 31 spikes; S05, S14, S18, S26, S27 high risk; S29 power streams; AI/PC spikes closed |
-| [Decisions](DECISIONS.md) | Active | D-001 … D-068 (D-043 – D-046: phone only, no AI, Shortcut reminder, no personal data; D-047 other sports; D-048 why card; D-049 – D-065 research features) |
+| [Decisions](DECISIONS.md) | Active | D-001 … D-069 (D-043 – D-046: phone only, no AI, Shortcut reminder, no personal data; D-047 other sports; D-048 why card; D-049 – D-065 research features) |
 
 ## Interview progress
 

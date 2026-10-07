@@ -431,13 +431,21 @@ describe("other sports (D-047)", () => {
     expect(otherSportLoad("strength", 3600, 15)).toBe(45);
     expect(otherSportLoad("swim", 3600, 0)).toBe(50);
   });
-  it("adds full Load to Fatigue but only part of it to Fitness", () => {
-    const fit = new Map([["2026-10-01", 60 * SPORT_WEIGHTS.run.fitness]]);
-    const fat = new Map([["2026-10-01", 60]]);
-    const two = performanceSeries(fit, "2026-10-01", "2026-10-02", undefined, fat);
-    const ride = performanceSeries(fat, "2026-10-01", "2026-10-02");
-    expect(two[0]!.fatigue).toBeCloseTo(ride[0]!.fatigue);
-    expect(two[0]!.fitness).toBeLessThan(ride[0]!.fitness);
+  it("a steady routine with other sports settles at Form 0 (D-069: the same weight in Fitness and Fatigue)", () => {
+    // 40 weeks: rides Tue/Thu/Sat/Sun, gym Mon/Wed/Fri (Load 45 each), easy run Fri (40).
+    const week: Record<number, [keyof typeof SPORT_WEIGHTS, number][]> = {
+      1: [["strength", 45]], 2: [["ride", 55]], 3: [["strength", 45]], 4: [["ride", 55]], 5: [["strength", 45], ["run", 40]], 6: [["ride", 150]], 7: [["ride", 110]],
+    };
+    const loads = new Map<string, number>();
+    for (let i = 0; i < 280; i++) {
+      const d = addDays("2026-01-05", i);
+      for (const [s, l] of week[(i % 7) + 1] ?? []) loads.set(d, (loads.get(d) ?? 0) + l * SPORT_WEIGHTS[s].weight);
+    }
+    const last = performanceSeries(loads, "2026-01-05", addDays("2026-01-05", 279)).slice(-7);
+    const avg = last.reduce((a, x) => a + x.formPct!, 0) / 7;
+    expect(Math.abs(avg)).toBeLessThan(0.03);
+    expect(SPORT_WEIGHTS.strength.weight).toBe(0);
+    expect(SPORT_WEIGHTS.run.weight).toBe(0.6);
   });
   it("rates leg-heavy sessions of the last two days", () => {
     expect(rateOtherSport(undefined, MONDAY)).toBeNull();
@@ -488,6 +496,15 @@ describe("research features (D-049 …)", () => {
     expect(["yellow", "red"]).toContain(big.level);
     expect(big.text).toContain(tue.workout.name);
     expect(tomorrowOutlook({ fitness: 50, fatigue: 60 }, MONDAY, 250, null).level).toBe("ok");
+    expect(big.text).toMatch(/^Po dzisiejszym treningu \(obciążenie 250\)/);
+  });
+
+  it("A4 on a rest day says Form rises, just not enough (no 'after today's load')", () => {
+    const rest = tomorrowOutlook({ fitness: 50, fatigue: 105 }, MONDAY, 0, tue);
+    expect(rest.level).toBe("red");
+    expect(rest.formPct!).toBeGreaterThan(-1.1);
+    expect(rest.text).toMatch(/^Dziś bez treningu, więc Forma rośnie z -110% do ok\. -\d+% jutro rano/);
+    expect(rest.text).not.toContain("Po dzisiejszym");
   });
 
   it("B1/B2: shows the challenge and progresses from the 5-step rating", () => {

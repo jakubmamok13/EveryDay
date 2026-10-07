@@ -136,7 +136,7 @@ describe("demo athlete: full morning loop with buttons", () => {
     expect(why.load.counted).toBe(true);
   });
 
-  it("counts other sports: full Load in Fatigue, part in Fitness, toggle in Settings (D-047)", async () => {
+  it("counts other sports with their cycling weight in Fitness and Fatigue, toggle in Settings (D-047, D-069)", async () => {
     const others = app.db.all("SELECT sport, load FROM activity WHERE sport <> 'ride'");
     expect(others.some((a: any) => a.sport === "strength")).toBe(true);
     expect(others.some((a: any) => a.sport === "run")).toBe(true);
@@ -144,8 +144,8 @@ describe("demo athlete: full morning loop with buttons", () => {
     const on = app.db.get("SELECT fitness, fatigue FROM daily_state WHERE date = '2026-10-06'")!;
     await call("PUT", "/api/settings/other-sports", { enabled: false });
     const off = app.db.get("SELECT fitness, fatigue FROM daily_state WHERE date = '2026-10-06'")!;
-    expect(off.fatigue).toBeLessThan(on.fatigue);
-    expect(on.fitness - off.fitness).toBeLessThan(on.fatigue - off.fatigue);
+    expect(off.fatigue).toBeLessThan(on.fatigue); // the Friday run counts 60%
+    expect(off.fitness).toBeLessThan(on.fitness);
     expect((await call("GET", "/api/settings")).otherSports).toBe(false);
     expect((await call("GET", "/api/today/why")).load.counted).toBe(false);
     await call("PUT", "/api/settings/other-sports", { enabled: true });
@@ -557,5 +557,22 @@ describe("D-068: copy in a Google Drive folder", () => {
     expect(((await router.handle("POST", "/api/backup/auto")) as any).result).toBe("off");
     const file: any = await router.handle("GET", "/api/export");
     expect(Object.keys(file.meta).some((k) => k.startsWith("backup_") || k.startsWith("last_"))).toBe(false);
+  });
+});
+
+describe("D-069: the Form model change recomputes once", () => {
+  it("recomputes history and today's readiness after the update, and after loading an older copy", async () => {
+    const app = await makeApp(true);
+    const router = createRouter(app);
+    await router.handle("POST", "/api/demo/seed");
+    await router.handle("POST", "/api/catchup");
+    expect(app.db.meta("perf_model")).toBe("2");
+    const good = app.db.get<{ fitness: number }>("SELECT fitness FROM daily_state WHERE date = '2026-10-05'")!.fitness;
+    // As if computed by the old model: wrong numbers and no version.
+    app.db.run("UPDATE daily_state SET fitness = 1, fatigue = 99, form = -98 WHERE date = '2026-10-05'");
+    app.db.run("DELETE FROM meta WHERE key = 'perf_model'");
+    await router.handle("POST", "/api/catchup");
+    expect(app.db.get<{ fitness: number }>("SELECT fitness FROM daily_state WHERE date = '2026-10-05'")!.fitness).toBeCloseTo(good);
+    expect(app.db.meta("perf_model")).toBe("2");
   });
 });

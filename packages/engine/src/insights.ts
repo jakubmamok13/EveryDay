@@ -143,10 +143,15 @@ export function tomorrowOutlook(start: LoadState, date: ISODate, todayLoad: numb
   if (!tomorrow || (tomorrow.workout.intensity !== "hard" && !tomorrow.isKey)) return { level: "ok", formPct: f, text: "" };
   if (f === null || f >= -0.3) return { level: "ok", formPct: f, text: "" };
   const level = f < -0.45 ? "red" : "yellow";
+  const now = projectFormPct(start, loads, date, date);
+  const limit = level === "red" ? "poniżej −45%" : "poniżej −30%";
+  const why = todayLoad > 0
+    ? `Po dzisiejszym treningu (obciążenie ${Math.round(todayLoad)}) Forma jutro rano wyniesie ok. ${pct(f)}${now !== null ? ` (dziś ${pct(now)})` : ""} — ${limit}.`
+    : `Dziś bez treningu, więc Forma rośnie${now !== null ? ` z ${pct(now)}` : ""} do ok. ${pct(f)} jutro rano — ale to wciąż ${limit}: zmęczenie z ostatnich dni jeszcze nie zeszło.`;
   return {
     level,
     formPct: f,
-    text: `Po dzisiejszym obciążeniu Forma jutro rano wyniesie ok. ${pct(f)} (${level === "red" ? "poniżej −45%" : "poniżej −30%"}). „${tomorrow.workout.name}” będzie prawdopodobnie ${level === "red" ? "za ciężki" : "bardzo ciężki"}.`,
+    text: `${why} „${tomorrow.workout.name}” będzie prawdopodobnie ${level === "red" ? "za ciężki" : "bardzo ciężki"}.`,
   };
 }
 
