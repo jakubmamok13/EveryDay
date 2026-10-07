@@ -90,7 +90,8 @@ from the intervals.icu settings.
 | Write workout | `POST /api/v1/athlete/{id}/events` (category WORKOUT) | Returns event id → `planned_workout.icu_event_id` |
 | Replace workout | `PUT` / `DELETE` on that event | Ride Mode switch, adaptations, undo |
 | eFTP | athlete / activity fields | Used for FTP suggestions (M12) |
-| Drive copy (D-067) | Author's Apps Script: `GET …/exec?op=meta` / `?op=load`, `POST …/exec` (text/plain JSON `{op:"save", device, savedAt, data}`) | Simple CORS requests only (no preflight support); `/exec` → 302 → `script.googleusercontent.com` (S31) |
+| Drive sign-in (D-068) | `https://accounts.google.com/o/oauth2/v2/auth` (redirect, `response_type=token`, scope `drive.file`, `prompt=select_account` / `none`) | EveryDay's own OAuth client; token 1 h, silent renewal by redirect (S31) |
+| Drive copy (D-068) | `GET/POST https://www.googleapis.com/drive/v3/files` (folders, list), `…/files/{id}?alt=media`, `POST/PATCH https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart` (resumable above 4.5 MB) | One gzip file per device in the app's folder |
 | Power stream | `GET /api/v1/activity/{id}/streams.json?types=watts` | 1 Hz watts of rides with power, ≤ 12 per run, cached → power profile and durability (D-063, S29) |
 
 Polling only, when the app is opened (catch-up: 14 days on the first open of

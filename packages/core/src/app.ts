@@ -2,6 +2,7 @@ import { localDateTime, type ISODate } from "@everyday/shared";
 import { Db, nowIso } from "./db";
 import { FakeIcuClient } from "./fake-icu";
 import { RealIcuClient, type IcuClient } from "./icu";
+import type { BackupStore } from "./services/backup";
 
 // The app runs entirely on the phone (D-043): this object ties the local
 // database, the intervals.icu client and the bundled coaching notes together.
@@ -22,8 +23,8 @@ export class App {
   private icuClient: IcuClient | null = null;
   /** For tests and demo: override "now". */
   clock: () => Date = () => new Date();
-  /** For tests: network access for the Drive copy (D-067); default global fetch. */
-  fetch?: typeof fetch;
+  /** Google Drive for the copy (D-068): set by the web app, a stand-in in tests. */
+  backupStore?: BackupStore;
 
   constructor(readonly config: Config, readonly db: Db) {}
 

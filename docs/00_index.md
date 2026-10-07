@@ -15,9 +15,10 @@ Last updated: 2026-10-07
 | [08 Errors, logging, feedback](08_error_logging_feedback.md) | **Spec v1.1** | "Brief always arrives"; safety rails |
 | [09 v1 build plan](09_v1_build_plan.md) | **v1.2 built** | Phase 0 setup + spikes, Phases 1–7 |
 | [10 Feature research](10_feature_research.md) | **Done** | Training features users value in 14 apps; 15 options chosen and built (D-049) |
+| [Dysk Google](DYSK-GOOGLE.md) | **Guide (PL)** | One-time Google OAuth client for the Drive copy (D-068) |
 | [Glossary](glossary.md) | **Spec v1.2** | Canonical terms + Polish UI labels |
 | [Spikes](spikes.md) | Active | 31 spikes; S05, S14, S18, S26, S27 high risk; S29 power streams; AI/PC spikes closed |
-| [Decisions](DECISIONS.md) | Active | D-001 … D-067 (D-043 – D-046: phone only, no AI, Shortcut reminder, no personal data; D-047 other sports; D-048 why card; D-049 – D-065 research features) |
+| [Decisions](DECISIONS.md) | Active | D-001 … D-068 (D-043 – D-046: phone only, no AI, Shortcut reminder, no personal data; D-047 other sports; D-048 why card; D-049 – D-065 research features) |
 
 ## Interview progress
 

@@ -104,7 +104,7 @@ Dates use the phone's time zone (`Intl…timeZone`), DST-safe.
 - iPhone: Safari and the Home Screen app have separate storage; Home Screen
   apps are exempt from Safari's 7-day eviction of script-written storage.
 - Losing the phone or deleting the app loses the data → **copy on the
-  author's Google Drive** through their own Apps Script link (D-067): saved
+  author's Google Drive** (Google sign-in, `drive.file`, D-068): saved
   automatically after changes and on open, restored on a new phone. Manual
   **export** (JSON) to Files / iCloud still works.
 - No personal data in the repository (D-046).
@@ -112,7 +112,7 @@ Dates use the phone's time zone (`Intl…timeZone`), DST-safe.
 ## 8. Limits (accepted)
 
 - No live multi-device sync: the Drive copy moves data between devices, and
-  a newer copy from another device is offered, never merged (D-067).
+  a newer copy from another device is offered, never merged (D-068).
 - Adaptation needs the app to be opened; devices still get the default plan.
 - intervals.icu outage → the app works from local data; sync retries on the
   next open.
@@ -121,4 +121,4 @@ Dates use the phone's time zone (`Intl…timeZone`), DST-safe.
 
 None blocking. Confirm on the phone: S05 (the real account),
 S14 (API writes reach the devices), S26 (field names), S27 (CORS from the installed app),
-S31 (the Drive copy script from the installed app).
+S31 (Google sign-in and the Drive copy with EveryDay's own client).

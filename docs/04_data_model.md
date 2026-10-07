@@ -195,12 +195,14 @@ the ladder, 12 weeks, D-064), `return:{athlete}` and `return_done:{athlete}`
   IndexedDB 300 ms after each change and at once when the app is hidden.
 - **Export** (R8-03): one JSON file `{ app: "everyday", version: 1, tables: {…}, meta: {…} }`
   with every user table and the athlete's `meta` keys (not the device-only
-  `last_*` and `backup_*`, D-067); the intervals.icu key is blanked.
-- **Copy on Google Drive** (D-067): the same file, wrapped as
-  `{ app: "everyday-backup", savedAt, device, data }`, through the author's
-  Apps Script. Device-local `meta`: `backup_url`, `backup_device`,
-  `backup_hash`, `backup_saved_at`, `backup_seen`, `backup_error`,
-  `backup_conflict`.
+  `last_*` and `backup_*`, D-068); the intervals.icu key is blanked.
+- **Copy on Google Drive** (D-068): the same file, gzipped, one per device
+  (`everyday-kopia-<name>-<id>.json.gz`, appProperties `everydayDevice`,
+  `everydayDeviceName`) in the app's folder. Device-local `meta`:
+  `backup_device`, `backup_hash`, `backup_saved_at` (Drive time of this
+  device's last copy), `backup_seen` (newest other copy loaded or answered),
+  `backup_error`, `backup_conflict`. Sign-in and folder live in the phone's
+  `localStorage` (`everyday.drive`), never in a copy.
 - **Import** replaces all data with the file (the current key and
   intervals.icu connection are kept).
 - **Delete everything** wipes all user tables on this phone after a

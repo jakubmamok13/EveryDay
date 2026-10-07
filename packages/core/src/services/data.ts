@@ -13,7 +13,7 @@ const SECRET_COLUMNS: Record<string, string[]> = { source_connection: ["api_key_
 
 /**
  * Meta keys that belong to this device, not to the athlete's data: job
- * timestamps and the Drive copy link (D-067). Everything else in `meta`
+ * timestamps and the Drive copy state (D-068). Everything else in `meta`
  * (eFTP history, ladder history, return after a break …) is exported.
  */
 const isDeviceMeta = (key: string) => key === "last_night_job" || key === "last_day_sync" || key.startsWith("backup_");
@@ -23,7 +23,7 @@ export interface ExportFile {
   version: 1;
   exportedAt: string;
   tables: Record<string, Record<string, unknown>[]>;
-  /** Athlete state kept in `meta` (absent in files from before D-067). */
+  /** Athlete state kept in `meta` (absent in files from before D-068). */
   meta?: Record<string, string>;
 }
 

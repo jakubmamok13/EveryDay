@@ -87,7 +87,7 @@ export function Onboarding({ demo, onDone }: { demo: boolean; onDone: () => void
             )}
             <button className="btn primary block" disabled={busy || (!demo && !apiKey.trim())} onClick={connect}>{busy ? "Sprawdzam…" : "Połącz"}</button>
             {!demo && <button className="btn block" disabled={busy} onClick={() => void setMode("demo")}>Najpierw wypróbuj demo</button>}
-            {!demo && <RestoreFromDrive apiKey={apiKey} athleteId={athleteId} />}
+            {!demo && <RestoreFromDrive />}
             <p className="small muted">Klucz zostaje tylko na tym telefonie i służy wyłącznie do rozmowy z intervals.icu.</p>
           </div>
         )}

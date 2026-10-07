@@ -328,6 +328,9 @@ ul.signals li:first-child { border-top: 0; }
 .day-edit { display: grid; grid-template-columns: 64px 1fr; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--line); }
 .day-edit:first-child { border-top: 0; }
 
-/* Copy on Google Drive (D-067) */
+/* Copy on Google Drive (D-068) */
 .small.warn { color: var(--bad-text); }
-textarea.code { width: 100%; font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+.drive-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px 10px; padding: 8px 0; border-top: 1px solid var(--line); }
+.drive-row:first-child { border-top: 0; }
+.inline-input { flex: 1; min-width: 0; font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); }
+.notice { padding: 12px; border-radius: 12px; background: var(--accent-soft); }

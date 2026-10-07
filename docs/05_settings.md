@@ -72,16 +72,19 @@ Plus: **Dni długiej jazdy** (Long Ride Days) on/off, every 4–6 weeks (R8-08).
   phone only.
 - The app also syncs on every open (catch-up).
 
-## Kopia na Dysku Google (Drive copy, D-067)
+## Kopia na Dysku Google (Drive copy, D-068)
 
-- Not connected: why, the 5 setup steps (script.google.com › paste
-  `tools/everyday-kopia.gs` › Wdróż as web app, „Wykonaj jako: Ja”, „Kto ma
-  dostęp: Każdy” › allow › copy the `/exec` address), [Kopiuj kod skryptu],
-  address field, [Połącz].
-- Connected: last copy time, last error, [Zapisz kopię teraz],
-  [Wczytaj z Dysku…] (confirm), „Odłącz” (the copy on Drive stays).
-- Saving is automatic (20 s after a change, on every open); there is no
-  on/off switch besides „Odłącz”.
+- No client ID: why, link to [DYSK-GOOGLE.md](DYSK-GOOGLE.md), the redirect
+  URI and JavaScript origin to copy, client ID field (a built-in ID from the
+  `GOOGLE_CLIENT_ID` variable is used when present).
+- Not signed in: [Połącz z Dyskiem Google] (redirect to Google), hint for
+  „invalid_client”.
+- Signed in, no folder: the app's folders [Użyj tego folderu], or a name +
+  [Utwórz folder].
+- Connected: folder + account, last copy / error, the copies in the folder
+  (device, time, [Wczytaj…] for other devices), this phone's name,
+  [Zapisz kopię teraz] or [Zaloguj do Dysku Google], „Odłącz” (copies stay).
+- Saving is automatic (20 s after a change, on every open).
 
 ## Dane i kopia zapasowa (Data & backup)
 

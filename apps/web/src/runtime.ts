@@ -1,6 +1,7 @@
 import initSqlJs from "sql.js";
 import wasmUrl from "sql.js/dist/sql-wasm-browser.wasm?url";
 import { App, createRouter, Db, type Note, type Router } from "@everyday/core";
+import { driveStore } from "./drive";
 
 // Everything runs on this phone (D-043): SQLite (sql.js) in memory, saved to
 // IndexedDB after every change. Demo data lives under a separate key.
@@ -64,7 +65,7 @@ async function start(): Promise<Runtime> {
     saving = saving.then(() => idbPut(key, data)).then(() => undefined, (e) => console.error("[save]", e));
     return saving;
   };
-  // Drive copy (D-067): 20 s after the last change; the core skips unchanged data.
+  // Drive copy (D-068): 20 s after the last change; the core skips unchanged data.
   let backupTimer: ReturnType<typeof setTimeout> | undefined;
   let routerRef: Router | null = null; // set below, once the app exists
   const backupNow = () => {
@@ -94,6 +95,7 @@ async function start(): Promise<Runtime> {
 
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Warsaw";
   const app = new App({ demo: mode === "demo", timeZone, notes: NOTES }, db);
+  if (mode === "real") app.backupStore = driveStore; // D-068
   const router = createRouter(app);
   routerRef = router;
   if (mode === "demo" && !app.onboarded()) await router.handle("POST", "/api/demo/seed");

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, CHANGED } from "./api";
+import { ensureDriveAccess } from "./drive";
 import { Coach } from "./screens/Coach";
 import { Onboarding } from "./screens/Onboarding";
 import { Progress } from "./screens/Progress";
@@ -37,20 +38,27 @@ export function App() {
 
   // No server: sync and the daily jobs run when the app opens or comes back (D-043).
   const onboarded = !!session && "onboarded" in session && session.onboarded;
+  const demo = !!session && "demo" in session && session.demo;
   useEffect(() => {
     if (!onboarded) return;
     const changed = () => window.dispatchEvent(new Event(CHANGED));
-    const go = () =>
-      void api.post<{ ran: string }>("/api/catchup")
-        .then((r) => r.ran !== "none" && changed(), () => undefined)
-        // Then the Drive copy (D-067): save new data, or ask when another device saved newer.
-        .then(() => api.post<{ result: string }>("/api/backup/auto"))
-        .then((b) => b.result === "conflict" && changed(), () => undefined);
-    go();
-    const onVisible = () => document.visibilityState === "visible" && go();
+    const go = async (renew: boolean) => {
+      // Drive copy (D-068): an expired sign-in is renewed first by a quick silent trip to Google.
+      if (renew && !demo && (await ensureDriveAccess()) === "redirecting") return;
+      await api.post<{ ran: string }>("/api/catchup").then((r) => r.ran !== "none" && changed(), () => undefined);
+      // Then the copy: save new data, or ask when another device saved a newer one.
+      await api.post<{ result: string }>("/api/backup/auto").then((b) => b.result === "conflict" && changed(), () => undefined);
+    };
+    void go(true);
+    let hiddenAt = 0;
+    const onVisible = () => {
+      if (document.visibilityState === "hidden") hiddenAt = Date.now();
+      // Back after a while counts as opening the app again (iPhone keeps apps in memory for days).
+      else void go(Date.now() - hiddenAt > 10 * 60_000);
+    };
     document.addEventListener("visibilitychange", onVisible);
     return () => document.removeEventListener("visibilitychange", onVisible);
-  }, [onboarded]);
+  }, [onboarded, demo]);
 
   if (!session) return <p className="muted center" style={{ marginTop: 80 }}>EveryDay…</p>;
   if ("error" in session) {

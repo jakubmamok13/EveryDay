@@ -43,7 +43,7 @@ export function Today({ goCoach }: { goCoach: () => void }) {
         <span className="sub">{t.weekday}, {fmtDate(t.date).split(" ")[1]}{t.demo ? " · demo" : ""}</span>
       </header>
 
-      <BackupNoticeCard b={t.backup} reload={load} />
+      <BackupNoticeCard b={t.backup} demo={t.demo} reload={load} />
       {t.summary && <SummaryCard s={t.summary} setT={setT} />}
       {t.unrated?.map((r: any) => <RideRatingCard key={r.id} ride={r} onDone={setT} />)}
       {t.comeback && <ComebackCard c={t.comeback} />}
@@ -111,7 +111,10 @@ export function Today({ goCoach }: { goCoach: () => void }) {
           ))}
         </Card>
       )}
-      {t.sync && t.sync.status !== "ok" && (
+      {!t.demo && !t.sync?.hasKey && (
+        <p className="error">Brak klucza API intervals.icu (nie ma go w kopii) — wklej go w Ustawienia › intervals.icu, żeby wrócić do synchronizacji jazd.</p>
+      )}
+      {t.sync && t.sync.hasKey && t.sync.status !== "ok" && (
         <p className="error">Problem z intervals.icu: {t.sync.status === "auth_error" ? "klucz API odrzucony — sprawdź Ustawienia › intervals.icu." : "brak połączenia, dane mogą być nieaktualne."}</p>
       )}
     </>

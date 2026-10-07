@@ -137,14 +137,19 @@ console errors. Bugs found and fixed while testing:
 - durability above 100%;
 - 59-min easy days after an event.
 
-### Copy on Google Drive (2026-10-07, D-067)
+### Copy on Google Drive (2026-10-07, D-068, ported from Paragraf)
 
-Built and verified in demo conditions: core tests with a stand-in script,
-and Playwright with a local HTTPS server playing script.google.com and
-script.googleusercontent.com (restore on a new phone, auto-save 20 s after
-a change, newer copy from another device → „Zostaw dane z telefonu”, 0
-preflight requests, POST as text/plain). Still to confirm with the real
-script on the iPhone (S31).
+Built and verified: core tests with a stand-in Drive; Playwright with
+Paragraf's mock of Google's sign-in and Drive API. Checked:
+- the client ID is checked;
+- sign-in with `drive.file` returns to `/EveryDay/`;
+- a new phone is restored, then saves its own file next to the tablet's;
+- auto-save after a check-in;
+- a newer tablet copy → „Zostaw dane z telefonu”;
+- silent renewal; withdrawn consent → one try, then a button.
+
+Still to do: the author creates EveryDay's OAuth client and connects on the
+iPhone (S31; the same mechanism already works in Paragraf).
 
 Known gaps (not blocking first use):
 - FTP accepted in the app must also be changed in intervals.icu / MyWhoosh by hand (the app reminds you).

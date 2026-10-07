@@ -826,3 +826,51 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   were checked, with 0 preflight requests. The real script on the iPhone is
   spike S31.
 - **Source:** User (2026-10-07).
+
+## D-068 · 2026-10-07 · Drive copy through Google sign-in, ported from Paragraf (supersedes the transport of D-067)
+- **Context:** the author pointed to Paragraf, their other app, whose Google
+  Drive sync already works on their iPhone. They asked to port it, with a
+  **separate OAuth client** for EveryDay.
+- **Decision:** the same mechanism as Paragraf (`apps/web/src/drive.ts`):
+  - **Sign-in:** OAuth 2.0 for client-side apps as a **full-page redirect**
+    (no pop-up, which fails in Home Screen apps). Scope **`drive.file`**: the
+    app sees only the files and folders it created.
+  - **Token renewal:** the token lasts an hour. On opening, or on coming back
+    after more than 10 minutes, it is renewed by a silent redirect
+    (`prompt=none`), at most every 3 minutes and only when Google is
+    reachable. When Google wants a click, Today shows „Zaloguj do Dysku
+    Google” and never loops.
+  - **Client ID:** built in from the repository variable `GOOGLE_CLIENT_ID`
+    (Pages workflow), or typed in on the phone. A pasted secret or a labelled
+    ID is cleaned up or refused.
+  - **Folder:** created by the app („EveryDay”), or picked from the app's
+    folders on another device. **One gzip file per device**
+    (`everyday-kopia-<name>-<id>.json.gz`, appProperties `everydayDevice` and
+    `everydayDeviceName`). Drive keeps earlier versions of each file.
+- **Kept from D-067 (core, `services/backup.ts`, now with a pluggable
+  `BackupStore`):**
+  - save only changed data, 20 s after a change and on open;
+  - a newer copy from another device (Drive's `modifiedTime`) is never
+    overwritten silently: Today asks „Wczytaj z Dysku” or „Zostaw dane z
+    telefonu”;
+  - a phone with data asks before using a folder that holds another device's
+    copy;
+  - a new phone (not set up) starts from the newest copy: onboarding › „Masz
+    kopię na Dysku Google?”;
+  - the export carries `meta`; the intervals.icu key is never in a copy.
+    Today reminds to paste the key after a restore.
+- **Not ported:** Paragraf's row-by-row merge. EveryDay keeps whole copies
+  and asks, because two phones would both write workouts to intervals.icu.
+- **Removed:** the Apps Script link (`tools/everyday-kopia.gs`). It was never
+  set up.
+- **Guide:** [DYSK-GOOGLE.md](DYSK-GOOGLE.md).
+- **Verified:**
+  - core tests with a stand-in Drive;
+  - Playwright on a 390 px iPhone viewport with Paragraf's mock of Google's
+    sign-in page and the Drive API. Checked: secret refused, labelled ID
+    cleaned, sign-in with `drive.file` back to `/EveryDay/`, restore on a new
+    phone, own file next to the tablet's, auto-save after a check-in, newer
+    tablet copy → keep the phone's, silent renewal, consent withdrawn → one
+    silent try then a button, no loop. 0 console errors.
+- **Source:** User (2026-10-07: „Działa, przenieś rozwiązanie. Ale będziemy
+  używać innego klienta”).

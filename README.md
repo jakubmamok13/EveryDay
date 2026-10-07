@@ -69,12 +69,11 @@ The same guide, with your chosen time, is in **Ustawienia → Poranne przypomnie
 
 - Everything is stored **on this phone**. Deleting the app's icon or a new
   phone loses it, so set up the **copy on your Google Drive** once
-  (Ustawienia → Kopia na Dysku Google, about 10 minutes, easiest on a
-  computer): you deploy the small script `tools/everyday-kopia.gs` in
-  script.google.com („Wykonaj jako: Ja”, „Kto ma dostęp: Każdy”) and paste
-  its `/exec` address in the app. From then on the app saves by itself, and a
-  new phone starts from the copy („Masz kopię na Dysku Google?” on the first
-  screen). Whoever has the address can read the copy — keep it to yourself.
+  (Ustawienia → Kopia na Dysku Google): EveryDay's own Google OAuth client,
+  about 5 minutes on a computer — [docs/DYSK-GOOGLE.md](docs/DYSK-GOOGLE.md).
+  From then on the app saves by itself into a folder on your Drive (it sees
+  only its own files), and a new phone starts from the copy („Masz kopię na
+  Dysku Google?” on the first screen).
 - Manual copy to a file still works: **Eksportuj kopię** / **Wczytaj kopię**.
 - The API key never leaves the phone, except in requests to intervals.icu.
   It is not included in the export.

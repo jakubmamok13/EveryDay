@@ -20,6 +20,7 @@ No personal data goes into these docs (D-046): examples use a sample athlete.
 08_error_logging_feedback.md  Operational concerns, observability
 09_v1_build_plan.md           Phased scope and sequencing
 10_feature_research.md        Market research: training features users value
+DYSK-GOOGLE.md                Guide (PL): Google OAuth client for the Drive copy
 
 glossary.md                   Canonical terms for the project
 spikes.md                     Things assumed to work that need verification

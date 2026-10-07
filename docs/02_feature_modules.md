@@ -1,6 +1,6 @@
 # 02 — Feature Modules
 
-Status: **SPEC v1.2** — interview decisions D-001 … D-067 applied (phone only, no AI, buttons only since D-043/D-044; research features D-049 … D-065).
+Status: **SPEC v1.2** — interview decisions D-001 … D-068 applied (phone only, no AI, buttons only since D-043/D-044; research features D-049 … D-065).
 Rules marked *(our rule)* are not taken from the book; they are our own
 choices and are tuned after the first weeks of real use.
 
@@ -24,10 +24,10 @@ M12 FTP Management · M13 Long Rides & Fueling
   manual). Old rides keep the values that were valid on their date.
 - **Data:** export everything (one JSON file, without the API key), import it
   on this or another phone, and delete everything, in Settings (R8-03).
-- **Copy on Google Drive (D-067):** through the author's own Apps Script
-  link; saved automatically after changes and on open; a new phone starts
-  from it; a newer copy from another device is offered on Today, never
-  overwritten silently.
+- **Copy on Google Drive (D-068):** Google sign-in (redirect, scope
+  `drive.file`), one file per device in an app folder; saved automatically
+  after changes and on open; a new phone starts from it; a newer copy from
+  another device is offered on Today, never overwritten silently.
 - **Demo mode:** simulated data in a separate store; enter and leave from
   onboarding or Settings.
 

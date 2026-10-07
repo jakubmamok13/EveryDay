@@ -276,7 +276,7 @@ export function todayView(app: App, athleteId: number) {
      WHERE a.athlete_id = ? AND a.sport = 'ride' AND a.is_master = 1 AND a.feel IS NULL AND a.date >= ? ORDER BY a.date DESC, a.start_at DESC LIMIT 1`,
     athleteId, addDays(date, -1),
   );
-  const conn = app.db.get("SELECT status, last_sync_at, last_error FROM source_connection WHERE athlete_id = ? AND provider = 'intervals_icu'", athleteId);
+  const conn = app.db.get("SELECT status, last_sync_at, last_error, api_key_encrypted IS NOT NULL AS has_key FROM source_connection WHERE athlete_id = ? AND provider = 'intervals_icu'", athleteId);
   const garmin = r?.inputs.find((i) => i.key === "garmin_readiness")?.value ?? null;
   const skipped = app.db.get("SELECT 1 FROM planned_workout WHERE athlete_id = ? AND date = ? AND status = 'skipped'", athleteId, date);
   return {
@@ -329,7 +329,7 @@ export function todayView(app: App, athleteId: number) {
       const uw = JSON.parse(u.workout_json) as ScaledWorkout;
       return { date: u.date, name: uw.name, minutes: uw.minutes, isKey: !!u.is_key };
     }),
-    sync: conn ? { status: conn.status, lastSyncAt: conn.last_sync_at, error: conn.last_error } : null,
+    sync: conn ? { status: conn.status, lastSyncAt: conn.last_sync_at, error: conn.last_error, hasKey: !!conn.has_key } : null,
     physiology: phys,
   };
 }
