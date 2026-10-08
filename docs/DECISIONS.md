@@ -925,3 +925,13 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
   intervals.icu's own Fitness / Fatigue (wellness `ctl` / `atl`) for
   comparison: a big difference means missing or doubled rides.
 - **Source:** User screenshot (2026-10-08).
+
+## D-071 · 2026-10-08 · Sauna is not tracked
+- **Decision:** no sauna button, and no sauna in Load or Readiness.
+- **Why:** there is no strong evidence that sauna speeds recovery. Its acute
+  effect (heat strain, fluid loss) already shows in HRV, resting HR and sleep.
+  The only benefit with some evidence, heat acclimation, rests on one small
+  study (Scoon et al. 2007, n = 6); D-062 already covers heat acclimation
+  with heat rides and a hot bath.
+- **Source:** User (2026-10-08: „Jeśli sauna nie ma naukowych dowodów że coś
+  zmienia to nie dodajemy”).
