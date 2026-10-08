@@ -27,3 +27,9 @@ Bieg, siłownia czy pływanie też się liczą, ale tylko ta część, która
 przenosi się na rower — tak samo w Kondycji i w Zmęczeniu. Doraźne
 zmęczenie nóg po biegu czy siłowni ocenia Gotowość (szczegóły w notatce
 „Inne sporty”).
+
+## Forma w procentach przy niskiej Kondycji
+Forma w aplikacji to procent Kondycji, ale nigdy nie mniej niż względem 40.
+Przy krótkiej historii (np. Kondycja 18) zwykły tydzień treningu dałby
+inaczej −68% i alarm, choć −9 punktów to normalna wartość w trakcie
+treningu (nasza reguła).

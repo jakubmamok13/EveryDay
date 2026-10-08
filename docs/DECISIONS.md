@@ -909,3 +909,19 @@ Format: ID · date · decision · why · alternatives rejected · source (who de
 - **Tests:** engine (a steady routine with gym and runs averages Form within
   ±3%; rest-day card text), core (the model change recomputes once).
 - **Source:** User (2026-10-07, screenshot) + analysis by Claude.
+
+## D-070 · 2026-10-08 · Form % never against less than 40 Fitness; intervals.icu values for comparison
+- **Seen on the author's phone:** Kondycja 18, Zmęczenie 27 → Forma −9, shown
+  as −68% → „źle” → a yellow day and the workout moved. −9 is an ordinary
+  training value. The % only exploded because Fitness is small (short history
+  in the app; HRV needed 14 nights too).
+- **Decision (our rule):** Form % = Form / max(Fitness, 40). The % scale
+  exists to scale Coggan's absolute zones (−10 … −30) for fit riders. Below
+  Fitness 40, a fixed base keeps a normal week normal, while a real overload
+  still shows (Form −20 at Fitness 18 → −50% → „źle”). It applies everywhere
+  Form % is used: readiness, tomorrow card, green light, forecast. The model
+  version (`perf_model` = "3") recomputes once.
+- „Dlaczego dziś to?” says when the base of 40 is used. It also shows
+  intervals.icu's own Fitness / Fatigue (wellness `ctl` / `atl`) for
+  comparison: a big difference means missing or doubled rides.
+- **Source:** User screenshot (2026-10-08).

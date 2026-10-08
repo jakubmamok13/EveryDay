@@ -1,5 +1,5 @@
 import { addDays, mondayOf, WEEKDAY_PL_LONG, weekday, type ISODate, type Readiness, type ScaledWorkout } from "@everyday/shared";
-import { explainSignals, readinessRule, SPORT_WEIGHTS, type SignalRow, type SportGroup } from "@everyday/engine";
+import { explainSignals, FORM_PCT_FLOOR, readinessRule, SPORT_WEIGHTS, type SignalRow, type SportGroup } from "@everyday/engine";
 import type { App } from "../app";
 import { availability, checkIn, dailyState, plannedActiveOn } from "../repo";
 import { computeReadinessFor } from "./daily";
@@ -109,6 +109,21 @@ export function whyView(app: App, athleteId: number): WhyView {
   const load: string[] = [];
   if (st?.fitness != null) {
     load.push(`Kondycja ${Math.round(st.fitness)} · Zmęczenie ${Math.round(st.fatigue)} · Forma ${st.form_pct != null ? `${st.form_pct > 0 ? "+" : ""}${Math.round(st.form_pct * 100)}%` : Math.round(st.form)}.`);
+    if (st.fitness < FORM_PCT_FLOOR) {
+      load.push(`Kondycja jest niska (mało historii albo przerwa), więc Formę w % liczę względem ${FORM_PCT_FLOOR}, nie ${Math.round(st.fitness)} — inaczej zwykły trening wyglądałby na przetrenowanie.`);
+    }
+  }
+  // intervals.icu computes its own Fitness / Fatigue: shown to check ours.
+  const icuRow = app.db.get<{ raw_json: string | null }>(
+    "SELECT raw_json FROM wellness_day WHERE athlete_id = ? AND date <= ? AND raw_json IS NOT NULL ORDER BY date DESC LIMIT 1", athleteId, date,
+  );
+  try {
+    const raw = icuRow?.raw_json ? JSON.parse(icuRow.raw_json) : null;
+    if (typeof raw?.ctl === "number" && typeof raw?.atl === "number") {
+      load.push(`Dla porównania intervals.icu: Kondycja ${Math.round(raw.ctl)} · Zmęczenie ${Math.round(raw.atl)}. Duża różnica oznacza brakujące albo podwójne jazdy.`);
+    }
+  } catch {
+    /* raw data in another shape: skip the comparison */
   }
   const others = app.db.all<{ sport: SportGroup; n: number; l: number }>(
     "SELECT sport, COUNT(*) AS n, SUM(load) AS l FROM activity WHERE athlete_id = ? AND sport <> 'ride' AND is_master = 1 AND date BETWEEN ? AND ? GROUP BY sport ORDER BY l DESC",

@@ -566,13 +566,13 @@ describe("D-069: the Form model change recomputes once", () => {
     const router = createRouter(app);
     await router.handle("POST", "/api/demo/seed");
     await router.handle("POST", "/api/catchup");
-    expect(app.db.meta("perf_model")).toBe("2");
+    expect(app.db.meta("perf_model")).toBe("3");
     const good = app.db.get<{ fitness: number }>("SELECT fitness FROM daily_state WHERE date = '2026-10-05'")!.fitness;
     // As if computed by the old model: wrong numbers and no version.
     app.db.run("UPDATE daily_state SET fitness = 1, fatigue = 99, form = -98 WHERE date = '2026-10-05'");
     app.db.run("DELETE FROM meta WHERE key = 'perf_model'");
     await router.handle("POST", "/api/catchup");
     expect(app.db.get<{ fitness: number }>("SELECT fitness FROM daily_state WHERE date = '2026-10-05'")!.fitness).toBeCloseTo(good);
-    expect(app.db.meta("perf_model")).toBe("2");
+    expect(app.db.meta("perf_model")).toBe("3");
   });
 });

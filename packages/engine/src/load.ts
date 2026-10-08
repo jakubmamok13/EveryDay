@@ -28,6 +28,15 @@ export interface DayPerformance {
  * `loads` maps date → Load; the same Load feeds Fitness and Fatigue, so a
  * steady routine settles at Form 0 (other sports are weighted before, D-069).
  */
+/**
+ * Form in % is measured against Fitness, but never against less than 40
+ * (D-070). With a short history (Fitness 18) an ordinary week (Form −9)
+ * would read −68% — "high risk" — although −9 is a normal training value.
+ * The % scale exists to scale Coggan's absolute zones for fit riders; at
+ * low Fitness the absolute value is the better guide (our rule).
+ */
+export const FORM_PCT_FLOOR = 40;
+
 export function performanceSeries(
   loads: Map<ISODate, number>,
   from: ISODate,
@@ -39,7 +48,7 @@ export function performanceSeries(
   let fatigue = start.fatigue;
   for (let d = from; d <= to; d = addDays(d, 1)) {
     const form = fitness - fatigue;
-    const formPct = fitness >= 15 ? form / fitness : null;
+    const formPct = fitness >= 15 ? form / Math.max(fitness, FORM_PCT_FLOOR) : null;
     const load = loads.get(d) ?? 0;
     fitness += (load - fitness) * kFit;
     fatigue += (load - fatigue) * kFat;

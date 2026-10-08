@@ -499,6 +499,13 @@ describe("research features (D-049 …)", () => {
     expect(big.text).toMatch(/^Po dzisiejszym treningu \(obciążenie 250\)/);
   });
 
+  it("D-070: Form % is measured against at least 40 Fitness", () => {
+    const low = performanceSeries(new Map(), "2026-10-01", "2026-10-01", { fitness: 18, fatigue: 27 })[0]!;
+    expect(low.formPct!).toBeCloseTo(-9 / 40);
+    const fit = performanceSeries(new Map(), "2026-10-01", "2026-10-01", { fitness: 60, fatigue: 69 })[0]!;
+    expect(fit.formPct!).toBeCloseTo(-9 / 60);
+  });
+
   it("A4 on a rest day says Form rises, just not enough (no 'after today's load')", () => {
     const rest = tomorrowOutlook({ fitness: 50, fatigue: 105 }, MONDAY, 0, tue);
     expect(rest.level).toBe("red");

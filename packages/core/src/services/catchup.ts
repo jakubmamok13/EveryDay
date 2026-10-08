@@ -34,7 +34,7 @@ export async function nightJob(app: App, athleteId: number): Promise<void> {
  * sports weighted the same in both) recomputes the history and today's
  * readiness once, also after loading an older copy.
  */
-const PERF_MODEL = "2";
+const PERF_MODEL = "3"; // 2: D-069 weights; 3: D-070 Form % floor
 
 async function upgradePerformance(app: App, athleteId: number): Promise<void> {
   if (app.db.meta("perf_model") === PERF_MODEL) return;
