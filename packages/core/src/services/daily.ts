@@ -4,6 +4,7 @@ import {
   adapt,
   assembleBrief,
   buildBriefFacts,
+  computeAcwr,
   computeReadiness,
   displaySteps,
   findWorkout,
@@ -14,6 +15,11 @@ import {
   READINESS_EMOJI,
   READINESS_WORD,
   scaleWorkout,
+  estimateLactate,
+  flatten,
+  lt1Watts,
+  lt2Watts,
+  norwegianSubThresholdRange,
   type AdaptResult,
   type SportGroup,
   EFFORT_RPE,
@@ -42,6 +48,14 @@ import { countsOtherSports } from "./sync";
 
 export function computeReadinessFor(app: App, athleteId: number, date: ISODate, withCheckIn: boolean): Readiness {
   const learning = app.db.get("SELECT learning_until FROM athlete WHERE id = ?", athleteId)?.learning_until ?? null;
+  const loadRows = app.db.all<{ date: ISODate; load: number }>(
+    "SELECT date, load FROM daily_state WHERE athlete_id = ? AND date BETWEEN ? AND ?",
+    athleteId, addDays(date, -35), addDays(date, -1),
+  );
+  const loads = new Map<ISODate, number>();
+  for (const r of loadRows) loads.set(r.date, r.load);
+  const acwr = computeAcwr(loads, date);
+
   const r = computeReadiness({
     date,
     wellness: wellnessRange(app, athleteId, addDays(date, -70), date),
@@ -49,6 +63,7 @@ export function computeReadinessFor(app: App, athleteId: number, date: ISODate, 
     formPct: dailyState(app, athleteId, date)?.form_pct ?? null,
     learningUntil: learning,
     activeNotes: activeNotes(app, athleteId, date),
+    acwr,
     ...(countsOtherSports(app)
       ? {
           recentOther: app.db.all<{ date: ISODate; sport: SportGroup; load: number }>(
@@ -285,6 +300,7 @@ export function todayView(app: App, athleteId: number) {
     demo: app.config.demo,
     checkIn: ci,
     defaultRideMode: rideModeFor(app, athleteId, date),
+    reminder: app.setting("reminder", { time: "07:30", enabled: true }),
     readiness: !r ? null : {
       state: r.state,
       effective: r.effective,
@@ -293,6 +309,8 @@ export function todayView(app: App, athleteId: number) {
       emoji: READINESS_EMOJI[r.state],
       reason: readinessReason(r, !!ci),
       garmin,
+      garminStatus: r.inputs.find((i) => i.key === "garmin_status")?.detail ?? null,
+      acwr: r.inputs.find((i) => i.key === "acwr")?.value ?? null,
       inputs: r.inputs,
     },
     brief: !brief ? null : { lines: JSON.parse(brief.lines_json), withCheckIn: !!brief.with_check_in, generatedAt: brief.generated_at, sources: JSON.parse(brief.slots_source_json ?? "{}") },
@@ -331,5 +349,30 @@ export function todayView(app: App, athleteId: number) {
     }),
     sync: conn ? { status: conn.status, lastSyncAt: conn.last_sync_at, error: conn.last_error, hasKey: !!conn.has_key } : null,
     physiology: phys,
+    norwegian: {
+      methodology: app.setting("methodology", "norwegian"),
+      lt1Watts: lt1Watts(phys.ftp),
+      lt2Watts: lt2Watts(phys.ftp),
+      subThreshold: norwegianSubThresholdRange(phys.ftp),
+      targetLactate: (() => {
+        if (!w) return null;
+        const workStep = flatten(w.steps).find((s) => s.kind === "work" || s.kind === "steady");
+        if (!workStep) return null;
+        return estimateLactate(workStep.pctHigh ?? workStep.pct);
+      })(),
+      tip: (() => {
+        if (!w) return "Metoda norweska: odpoczynek to klucz do regeneracji autonomicznego układu nerwowego.";
+        if (w.category === "threshold" || w.category === "sweet_spot") {
+          return "Metoda norweska (Sub-LT2): trzymaj moc w przedziale 88–95% FTP. Nie przekraczaj 3.8 mmol/L — zyskujesz maksymalną adaptację bez wypalenia.";
+        }
+        if (w.category === "endurance" || w.category === "recovery" || w.category === "long_ride") {
+          return "Metoda norweska: cała baza tlenowa (< LT1) powinna być lekka (mleczan < 2.0 mmol/L). 80% objętości buduje Twoje mitochondria.";
+        }
+        if (w.category === "vo2max") {
+          return "Metoda norweska: mocne bodźce dawkuj precyzyjnie (najlepiej mikrointerwały 30/15 s). Wysoki pułap bez niepotrzebnego niszczenia nóg.";
+        }
+        return "Metoda norweska: kontroluj intensywność i pilnuj równowagi kwasowo-zasadowej.";
+      })(),
+    },
   };
 }

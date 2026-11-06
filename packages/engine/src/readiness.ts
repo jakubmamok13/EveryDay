@@ -18,6 +18,8 @@ export interface ReadinessContext {
    * Athlete does not count other sports; the input is then left out.
    */
   recentOther?: { date: ISODate; group: SportGroup; load: number }[];
+  /** Acute:Chronic Workload Ratio result */
+  acwr?: { acute: number; chronic: number; acwr: number | null; risk: string } | null;
 }
 
 const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
@@ -86,6 +88,38 @@ export function rateGarminReadiness(w: WellnessDay | undefined): ReadinessInput 
   return { key: "garmin_readiness", rating: r < 25 ? "bad" : r < 50 ? "caution" : "ok", value: r };
 }
 
+export function rateGarminTrainingStatus(w: WellnessDay | undefined): ReadinessInput {
+  const status = (w?.garminTrainingStatus ?? "").toLowerCase().trim();
+  if (!status) return { key: "garmin_status", rating: "missing" };
+  const isOverload =
+    status.includes("overreaching") ||
+    status.includes("przeciążenie") ||
+    status.includes("przeciazenie") ||
+    status.includes("overload") ||
+    status.includes("strained");
+  const isCaution =
+    status.includes("unproductive") ||
+    status.includes("bezproduktywny") ||
+    status.includes("recovery") ||
+    status.includes("regeneracja");
+  return {
+    key: "garmin_status",
+    rating: isOverload ? "bad" : isCaution ? "caution" : "ok",
+    detail: w?.garminTrainingStatus ?? status,
+  };
+}
+
+export function rateAcwr(acwr: ReadinessContext["acwr"]): ReadinessInput {
+  if (!acwr || acwr.acwr === null) return { key: "acwr", rating: "missing" };
+  const rating: InputRating = acwr.risk === "danger" ? "bad" : acwr.risk === "caution" ? "caution" : "ok";
+  return {
+    key: "acwr",
+    rating,
+    value: acwr.acwr,
+    detail: `acute:${acwr.acute}/chr:${acwr.chronic}`,
+  };
+}
+
 export function rateForm(formPct: number | null | undefined): ReadinessInput {
   if (typeof formPct !== "number") return { key: "form", rating: "missing" };
   const pct = Math.round(formPct * 100);
@@ -135,40 +169,72 @@ export function computeReadiness(ctx: ReadinessContext): Readiness {
     rateSleep(today),
     rateBodyBattery(today),
     rateGarminReadiness(today),
+    rateGarminTrainingStatus(today),
+    rateAcwr(ctx.acwr),
     rateForm(ctx.formPct),
     rateCheckIn(ctx.checkIn),
   ];
   const other = rateOtherSport(ctx.recentOther, ctx.date);
   if (other) inputs.push(other);
-  const bads = inputs.filter((i) => i.rating === "bad").length;
-  const cautions = inputs.filter((i) => i.rating === "caution").length;
-  const score = Math.max(0, Math.min(100, 100 - 10 * cautions - 25 * bads));
 
   const overrides: Readiness["overrides"] = [];
   if (ctx.checkIn?.sick || noteActive(ctx.activeNotes, "illness", ctx.date)) overrides.push("sick");
   if (ctx.checkIn?.pain || noteActive(ctx.activeNotes, "injury", ctx.date)) overrides.push("pain");
   if (ctx.checkIn?.exhausted) overrides.push("exhausted");
 
+  // Overload override: triggered by Garmin Overreaching / Przeciążenie OR ACWR danger zone (>= 1.5)
+  const garminStatusRating = inputs.find((i) => i.key === "garmin_status")?.rating;
+  const acwrRating = inputs.find((i) => i.key === "acwr")?.rating;
+  const garminReadiness = typeof today?.garminReadiness === "number" ? today.garminReadiness : null;
+  const isOverload =
+    garminStatusRating === "bad" ||
+    acwrRating === "bad" ||
+    (garminReadiness !== null && garminReadiness < 35 && typeof ctx.formPct === "number" && ctx.formPct < -0.3);
+
+  if (isOverload) {
+    overrides.push("overload");
+  }
+
+  const bads = inputs.filter((i) => i.rating === "bad").length;
+  const cautions = inputs.filter((i) => i.rating === "caution").length;
+  let score = Math.max(0, Math.min(100, 100 - 10 * cautions - 25 * bads));
+
+  if (overrides.includes("sick") || overrides.includes("exhausted")) {
+    score = Math.min(score, 20);
+  } else if (overrides.includes("overload")) {
+    score = Math.min(score, 35);
+  }
+
   let effective: Readiness["effective"] = "green";
-  if (overrides.includes("sick") || overrides.includes("exhausted") || bads >= 2) effective = "red";
-  else if (bads === 1 || cautions >= 2) effective = "yellow";
+  if (
+    overrides.includes("sick") ||
+    overrides.includes("exhausted") ||
+    bads >= 2 ||
+    (overrides.includes("overload") && (bads >= 1 || cautions >= 2))
+  ) {
+    effective = "red";
+  } else if (bads === 1 || cautions >= 2 || overrides.includes("overload")) {
+    effective = "yellow";
+  }
 
   const first = inputs.find((i) => i.rating === "bad") ?? inputs.find((i) => i.rating === "caution");
   const mainReason = overrides.includes("sick")
     ? "sick"
     : overrides.includes("exhausted")
       ? "exhausted"
-      : overrides.includes("pain") && effective === "green"
-      ? "pain"
-      : first
-        ? `${first.key}:${first.rating}`
-        : inputs.every((i) => i.rating === "missing")
-          ? "no_data"
-          : "all_ok";
+      : overrides.includes("overload")
+        ? "overload"
+        : overrides.includes("pain") && effective === "green"
+        ? "pain"
+        : first
+          ? `${first.key}:${first.rating}`
+          : inputs.every((i) => i.rating === "missing")
+            ? "no_data"
+            : "all_ok";
 
   return {
     date: ctx.date,
-    score: overrides.includes("sick") || overrides.includes("exhausted") ? Math.min(score, 20) : score,
+    score,
     state: learning ? "learning" : effective,
     effective,
     inputs,

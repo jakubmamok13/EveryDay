@@ -1,5 +1,137 @@
 [
   {
+    "slug": "norwegian-5x6",
+    "name": "Próg norweski {n}×6 min (Sub-LT2)",
+    "category": "threshold",
+    "intensity": "hard",
+    "level": 1,
+    "purpose": "Metoda norweska — stymulacja progu przy stabilnym mleczanie 2.5–3.2 mmol/L (Sub-LT2) bez akumulacji zmęczenia.",
+    "cue": "trzymaj równe {target} — nie przekraczaj górnego limitu, klucz to powtarzalność.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 5,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 6,
+            "pct": 91,
+            "pctHigh": 94,
+            "label": "Sub-LT2",
+            "cadence": 92
+          },
+          {
+            "kind": "recovery",
+            "minutes": 1.5,
+            "pct": 52,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "norwegian-4x8",
+    "name": "Próg norweski {n}×8 min (Sub-LT2)",
+    "category": "threshold",
+    "intensity": "hard",
+    "level": 2,
+    "purpose": "Złoty standard metody norweskiej — wysoka kumulacja czasu w strefie 2.5–3.2 mmol/L.",
+    "cue": "trzymaj równe {target} — unikaj skoków mocy, kontroluj oddech i tętno poniżej LT2.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 4,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 8,
+            "pct": 90,
+            "pctHigh": 94,
+            "label": "Sub-LT2",
+            "cadence": 92
+          },
+          {
+            "kind": "recovery",
+            "minutes": 2,
+            "pct": 52,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
+    "slug": "norwegian-3x10",
+    "name": "Próg norweski {n}×10 min (Sub-LT2)",
+    "category": "threshold",
+    "intensity": "hard",
+    "level": 3,
+    "purpose": "Metoda norweska — długie powtórzenia podprogowe budujące pojemność tlenową i utylizację mleczanu.",
+    "cue": "trzymaj {target} — po każdym powtórzeniu powinieneś czuć rezerwę na jeszcze jedno.",
+    "steps": [
+      {
+        "kind": "warmup",
+        "minutes": 10,
+        "pct": 50,
+        "pctHigh": 70,
+        "ramp": true,
+        "label": "Rozgrzewka"
+      },
+      {
+        "repeat": 3,
+        "steps": [
+          {
+            "kind": "work",
+            "minutes": 10,
+            "pct": 90,
+            "pctHigh": 93,
+            "label": "Sub-LT2",
+            "cadence": 92
+          },
+          {
+            "kind": "recovery",
+            "minutes": 2,
+            "pct": 52,
+            "label": "Luźno"
+          }
+        ]
+      },
+      {
+        "kind": "cooldown",
+        "minutes": 5,
+        "pct": 50,
+        "label": "Schłodzenie"
+      }
+    ]
+  },
+  {
     "slug": "thr-4x6",
     "name": "Próg {n}×6 min",
     "category": "threshold",

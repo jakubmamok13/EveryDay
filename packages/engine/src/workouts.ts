@@ -1,5 +1,5 @@
 import type { Physiology, RepeatBlock, RideMode, ScaledWorkout, Step, StepOrRepeat, WorkoutDef } from "@everyday/shared";
-import { hrRange, hrZoneForPowerZone, powerZone, rpeForZone, watts } from "./zones";
+import { estimateLactate, hrRange, hrZoneForPowerZone, type LactateEstimate, norwegian3Zone, powerZone, rpeForZone, watts } from "./zones";
 
 export function isRepeat(s: StepOrRepeat): s is RepeatBlock {
   return (s as RepeatBlock).repeat !== undefined;
@@ -253,12 +253,15 @@ export interface DisplayStep {
   pct: number;
   pctHigh?: number;
   ramp?: boolean;
+  lactate?: LactateEstimate;
+  norwegianZone?: 1 | 2 | 3;
 }
 
 /** Steps with concrete targets for the athlete, for cards and the brief. */
 export function displaySteps(w: ScaledWorkout, phys: Physiology): DisplayStep[] {
   return flatten(w.steps).map((s) => {
-    const zone = powerZone(s.pctHigh ?? s.pct);
+    const effectivePct = s.pctHigh ?? s.pct;
+    const zone = powerZone(effectivePct);
     const indoor =
       s.pctHigh !== undefined
         ? `${watts(s.pct, phys.ftp)}${s.ramp ? "→" : "–"}${watts(s.pctHigh, phys.ftp)} W`
@@ -268,6 +271,8 @@ export function displaySteps(w: ScaledWorkout, phys: Physiology): DisplayStep[] 
     if (!(zone >= 5 && s.minutes < 3)) {
       outdoor = phys.lthr ? (() => { const r = hrRange(hz, phys.lthr!); return `Z${hz} HR ${r.low}–${r.high} ud/min`; })() : `Z${hz} HR · RPE ${rpeForZone(zone)}`;
     }
+    const lactate = estimateLactate(effectivePct);
+    const norwegianZone = norwegian3Zone(effectivePct);
     return {
       minutes: s.minutes,
       label: s.label ?? "",
@@ -277,6 +282,8 @@ export function displaySteps(w: ScaledWorkout, phys: Physiology): DisplayStep[] 
       pct: s.pct,
       ...(s.pctHigh !== undefined ? { pctHigh: s.pctHigh } : {}),
       ...(s.ramp ? { ramp: true } : {}),
+      lactate,
+      norwegianZone,
     };
   });
 }

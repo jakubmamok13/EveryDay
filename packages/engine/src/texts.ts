@@ -35,6 +35,10 @@ export const CHANGE_REASON: Record<string, string> = {
   exhausted: "totalne wyczerpanie",
   return_after_illness: "powrót po chorobie",
   pain: "zgłoszony ból",
+  overload_swap: "przeciążenie organizmu — przełożenie mocnej jednostki",
+  overload_recovery: "przeciążenie organizmu — zamiana na regenerację Z1",
+  overload_reduce: "przeciążenie organizmu — lżejszy wariant",
+  overload_shorten: "przeciążenie organizmu — skrócona jednostka",
   yellow: "gotowość na żółto",
   yellow_twice: "drugi żółty dzień z rzędu",
   red: "organizm potrzebuje odpoczynku",
@@ -60,6 +64,10 @@ function inputText(r: Readiness, key: string): string | null {
       return `Body Battery ${i.value}`;
     case "garmin_readiness":
       return `Garmin: gotowość ${i.value}`;
+    case "garmin_status":
+      return i.rating === "bad" ? "przeciążenie wg Garmina" : i.rating === "caution" ? "ostrzeżenie o obciążeniu z Garmina" : "status Garmina zrównoważony";
+    case "acwr":
+      return i.rating === "bad" ? `wysoki skok obciążenia (ACWR ${i.value})` : i.rating === "caution" ? `podwyższone obciążenie (ACWR ${i.value})` : "obciążenie ACWR w normie";
     case "form":
       return i.rating === "ok" ? "zmęczenie pod kontrolą" : `duże zmęczenie treningowe (Forma ${i.value}%)`;
     case "other_sport": {
@@ -97,6 +105,7 @@ export function readinessReason(r: Readiness, withCheckIn: boolean): string {
   let text: string;
   if (r.mainReason === "sick") text = "zgłoszona choroba";
   else if (r.mainReason === "exhausted") text = "totalne wyczerpanie — dziś odpoczynek";
+  else if (r.mainReason === "overload") text = "przeciążenie organizmu — odpoczynek lub regeneracja";
   else if (r.mainReason === "pain") text = "zgłoszony ból — bez mocnych akcentów";
   else if (r.mainReason === "no_data") text = "brak danych z zegarka";
   else if (r.mainReason === "all_ok") {
@@ -120,6 +129,8 @@ export const INPUT_LABEL: Record<ReadinessInput["key"], string> = {
   sleep: "Sen",
   body_battery: "Body Battery",
   garmin_readiness: "Gotowość Garmina",
+  garmin_status: "Status Garmina",
+  acwr: "Wskaźnik obciążenia ACWR",
   form: "Forma",
   check_in: "Samopoczucie",
   other_sport: "Inne sporty (nogi)",
@@ -170,6 +181,14 @@ export function explainSignals(r: Readiness): SignalRow[] {
       case "garmin_readiness":
         norm = "uważaj < 50, źle < 25";
         break;
+      case "garmin_status":
+        value = i.detail ? String(i.detail) : "brak";
+        norm = "Przeciążenie = źle, bezproduktywny = uważaj";
+        break;
+      case "acwr":
+        value = v == null ? "—" : `${v}`;
+        norm = "uważaj ≥ 1.35, źle ≥ 1.50 (kumulacja obciążenia)";
+        break;
       case "form":
         value = v == null ? "—" : `${v > 0 ? "+" : ""}${v}% Kondycji`;
         norm = "uważaj < −30%, źle < −45%";
@@ -196,6 +215,7 @@ export function readinessRule(r: Readiness): string {
   const counted = `${bads}× „źle”, ${cautions}× „uważaj”`;
   if (r.overrides.includes("sick")) return `Choroba zawsze oznacza odpoczynek (${counted}).`;
   if (r.overrides.includes("exhausted")) return `Totalne wyczerpanie zawsze oznacza odpoczynek (${counted}).`;
+  if (r.overrides.includes("overload")) return `Przeciążenie organizmu (Garmin / kumulacja ACWR) blokuje mocne akcenty (${counted}).`;
   const colour = r.effective === "red" ? "czerwony" : r.effective === "yellow" ? "żółty" : "zielony";
   const why = r.effective === "red" ? "co najmniej 2× „źle”" : r.effective === "yellow" ? (bads === 1 ? "1× „źle”" : "co najmniej 2× „uważaj”") : "najwyżej 1× „uważaj” i żadnego „źle”";
   const pain = r.overrides.includes("pain") ? " Aktywny ból: bez mocnych akcentów." : "";

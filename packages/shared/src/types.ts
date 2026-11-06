@@ -136,6 +136,9 @@ export interface WellnessDay {
   bodyBatteryMax?: number | null;
   bodyBatteryMin?: number | null;
   garminReadiness?: number | null;
+  garminTrainingStatus?: string | null;
+  acuteLoad?: number | null;
+  chronicLoad?: number | null;
   weightKg?: number | null;
 }
 
@@ -155,7 +158,7 @@ export interface CheckIn {
 }
 
 export interface ReadinessInput {
-  key: "hrv" | "rhr" | "sleep" | "body_battery" | "garmin_readiness" | "form" | "check_in" | "other_sport";
+  key: "hrv" | "rhr" | "sleep" | "body_battery" | "garmin_readiness" | "form" | "check_in" | "other_sport" | "acwr" | "garmin_status";
   rating: InputRating;
   value?: number | null;
   baseline?: number | null;
@@ -170,7 +173,7 @@ export interface Readiness {
   /** State used for decisions (never "learning"). */
   effective: Exclude<ReadinessState, "learning">;
   inputs: ReadinessInput[];
-  overrides: ("sick" | "pain" | "exhausted")[];
+  overrides: ("sick" | "pain" | "exhausted" | "overload")[];
   /** Main reason code for the brief. */
   mainReason: string;
 }

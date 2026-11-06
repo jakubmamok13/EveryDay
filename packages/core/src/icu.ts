@@ -45,6 +45,8 @@ export interface IcuWellness {
   bodyBatteryMax: number | null;
   bodyBatteryMin: number | null;
   readiness: number | null;
+  trainingStatus?: string | null;
+  acuteLoad?: number | null;
   stress: number | null;
   weightKg: number | null;
   raw: unknown;
@@ -126,6 +128,14 @@ export function mapActivity(a: any): IcuActivity {
   };
 }
 
+function pickStr(o: any, ...keys: string[]): string | null {
+  for (const k of keys) {
+    const v = o?.[k];
+    if (typeof v === "string" && v.trim().length > 0) return v.trim();
+  }
+  return null;
+}
+
 export function mapWellness(w: any): IcuWellness {
   return {
     date: String(w.id ?? w.date),
@@ -136,6 +146,8 @@ export function mapWellness(w: any): IcuWellness {
     bodyBatteryMax: pick(w, "BodyBatteryMax", "bodyBatteryMax", "BodyBattery"),
     bodyBatteryMin: pick(w, "BodyBatteryMin", "bodyBatteryMin"),
     readiness: pick(w, "readiness", "TrainingReadiness"),
+    trainingStatus: pickStr(w, "trainingStatus", "training_status", "GarminTrainingStatus", "status"),
+    acuteLoad: pick(w, "acuteLoad", "acute_load", "atlLoad", "atl"),
     stress: pick(w, "stress", "avgStress"),
     weightKg: pick(w, "weight"),
     raw: w,

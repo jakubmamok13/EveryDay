@@ -9,6 +9,15 @@ export interface DisplayStep {
   pct: number;
   pctHigh?: number;
   ramp?: boolean;
+  lactate?: {
+    mmol: number;
+    label: string;
+    zone: 1 | 2 | 3;
+    zoneName: string;
+    subThreshold: boolean;
+    description: string;
+  };
+  norwegianZone?: 1 | 2 | 3;
 }
 
 const ZONE_NAMES = ["", "Z1 Regeneracja", "Z2 Wytrzymałość", "Z3 Tempo", "Z4 Próg", "Z5 VO2max", "Z6 Beztlenowa", "Z7 Sprint"];
@@ -73,10 +82,12 @@ export function StepList({ steps, outdoor }: { steps: DisplayStep[]; outdoor: bo
           </span>
           <span style={{ textAlign: "right" }}>
             {r.pattern.map((p, j) => (
-              <span key={j} className="zchip" style={{ display: "flex", justifyContent: "flex-end" }}>
+              <span key={j} className="zchip" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 4 }}>
                 <i className={zoneClass(p.zone)} aria-hidden="true" />
                 {outdoor ? p.outdoor : p.indoor}
-                <span className="muted small">Z{p.zone}</span>
+                <span className="muted small" title={p.lactate?.description ?? `Z${p.zone}`}>
+                  {p.lactate ? `${p.lactate.mmol} mM` : `Z${p.zone}`}
+                </span>
               </span>
             ))}
           </span>

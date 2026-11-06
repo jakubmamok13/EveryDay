@@ -1,5 +1,5 @@
 import { addDays, mondayOf, type ISODate, type RideMode, type ScaledWorkout } from "@everyday/shared";
-import { EFFORT_RPE, performanceSeries, powerZoneTable, SPORT_WEIGHTS, toZwo, type Effort, type SportGroup } from "@everyday/engine";
+import { analyzeTid, EFFORT_RPE, flatten, lt1Watts, lt2Watts, norwegian3ZoneTable, norwegian5ZoneTable, norwegianSubThresholdRange, performanceSeries, powerZoneTable, SPORT_WEIGHTS, toZwo, type Effort, type SportGroup } from "@everyday/engine";
 import type { App } from "./app";
 import { nowIso } from "./db";
 import { addSnapshot, availability, goals, physiologyOn, plannedActiveOn, plannedBetween, VISIBLE, type PlannedRow } from "./repo";
@@ -475,6 +475,23 @@ export function createRouter(app: App): Router {
       durability: durabilityViewSafe(app, id),
       ftpInsight: ftpView(app, id),
       forecast: forecastView(app, id),
+      norwegian: {
+        lt1Watts: lt1Watts(phys.ftp),
+        lt2Watts: lt2Watts(phys.ftp),
+        subThreshold: norwegianSubThresholdRange(phys.ftp),
+        norwegian3Zones: norwegian3ZoneTable(phys.ftp, phys.lthr),
+        norwegian5Zones: norwegian5ZoneTable(phys.ftp, phys.lthr),
+        tid: (() => {
+          const allSteps: { minutes: number; pct: number }[] = [];
+          for (const r of planned) {
+            try {
+              const sw = JSON.parse(r.workout_json) as ScaledWorkout;
+              for (const s of flatten(sw.steps)) allSteps.push({ minutes: s.minutes, pct: s.pctHigh ?? s.pct });
+            } catch {}
+          }
+          return analyzeTid(allSteps.length > 0 ? allSteps : [{ minutes: 120, pct: 68 }, { minutes: 30, pct: 92 }, { minutes: 5, pct: 108 }]);
+        })(),
+      },
     };
   });
 
@@ -491,10 +508,17 @@ export function createRouter(app: App): Router {
       availability: availability(app, id),
       equipment: app.db.all("SELECT kind, model, role FROM equipment WHERE athlete_id = ? AND active = 1", id),
       connection: conn ? { athleteId: conn.external_athlete_id, status: conn.status, lastSyncAt: conn.last_sync_at, error: conn.last_error, hasKey: !!conn.has_key } : null,
-      reminder: app.setting("reminder", { time: "07:00" }),
+      reminder: app.setting("reminder", { time: "07:30", enabled: true }),
       otherSports: countsOtherSports(app),
+      methodology: app.setting("methodology", "norwegian"),
       demo: app.config.demo,
     };
+  });
+
+  on("PUT", "/api/settings/methodology", ({ body }) => {
+    const m = (body as any)?.methodology === "coggan" ? "coggan" : "norwegian";
+    app.setSetting("methodology", m);
+    return { ok: true, methodology: m };
   });
 
   on("PUT", "/api/settings/profile", async ({ body }) => {
@@ -540,10 +564,11 @@ export function createRouter(app: App): Router {
   });
 
   on("PUT", "/api/settings/reminder", ({ body }) => {
-    const time = String(body?.time ?? "");
+    const time = String(body?.time ?? "07:30");
     if (!/^\d{2}:\d{2}$/.test(time)) bad("invalid time");
-    app.setSetting("reminder", { time });
-    return { ok: true };
+    const enabled = body?.enabled !== undefined ? !!body.enabled : true;
+    app.setSetting("reminder", { time, enabled });
+    return { ok: true, reminder: { time, enabled } };
   });
 
   on("PUT", "/api/settings/other-sports", async ({ body }) => {

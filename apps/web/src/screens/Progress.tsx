@@ -39,6 +39,8 @@ export function Progress() {
         </TableToggle>
       </Card>
 
+      <NorwegianCard n={p.norwegian} />
+
       <FtpConfidence f={p.ftpInsight} />
       <Forecast list={p.forecast} />
       <Levels levels={p.levels} />
@@ -165,3 +167,78 @@ function Durability({ d }: { d: any }) {
     </Card>
   );
 }
+
+function NorwegianCard({ n }: { n: any }) {
+  if (!n) return null;
+  const tid = n.tid;
+  return (
+    <Card title="Metoda norweska — progi i rozkład (TID)">
+      <div className="stats" style={{ marginBottom: 12 }}>
+        <div className="stat"><div className="v">{n.lt1Watts} W</div><div className="l">LT1 (Tlenowy, &lt;2.0 mM)</div></div>
+        <div className="stat"><div className="v">{n.lt2Watts} W</div><div className="l">LT2 / FTP (Beztlenowy)</div></div>
+      </div>
+      <div style={{ background: "var(--accent-soft)", borderRadius: 12, padding: "8px 12px", marginBottom: 12 }}>
+        <div className="spread small" style={{ fontWeight: 600 }}>
+          <span>Sub-LT2 (próg norweski)</span>
+          <span>{n.subThreshold.low}–{n.subThreshold.high} W (cel {n.subThreshold.target} W)</span>
+        </div>
+        <p className="tiny muted" style={{ margin: "2px 0 0" }}>
+          Praca w stężeniu mleczanu 2.5–3.5 mmol/L: maksymalny bodziec bez zakwaszenia.
+        </p>
+      </div>
+
+      {tid && (
+        <div style={{ marginBottom: 12 }}>
+          <div className="spread small" style={{ marginBottom: 4 }}>
+            <strong>Rozkład intensywności (TID Seilera)</strong>
+            <span className={`tag ${tid.isNorwegianCompliant ? "key" : ""}`}>{tid.isNorwegianCompliant ? "Wzorowy norweski" : "Rozkład intensywności"}</span>
+          </div>
+          <div style={{ display: "flex", height: 16, borderRadius: 8, overflow: "hidden", margin: "6px 0" }}>
+            <div style={{ width: `${tid.z1Pct}%`, background: "var(--good)" }} title={`Z1: ${tid.z1Pct}% (${tid.z1Minutes} min)`} />
+            <div style={{ width: `${tid.z2Pct}%`, background: "var(--warn)" }} title={`Z2: ${tid.z2Pct}% (${tid.z2Minutes} min)`} />
+            <div style={{ width: `${tid.z3Pct}%`, background: "var(--bad)" }} title={`Z3: ${tid.z3Pct}% (${tid.z3Minutes} min)`} />
+          </div>
+          <div className="spread tiny muted">
+            <span>Z1 (&lt;LT1): {tid.z1Pct}% (cel 80–85%)</span>
+            <span>Z2 (Próg): {tid.z2Pct}% (cel 15–18%)</span>
+            <span>Z3 (&gt;LT2): {tid.z3Pct}% (cel 2–5%)</span>
+          </div>
+          <p className="tiny" style={{ marginTop: 6, marginBottom: 0 }}>{tid.diagnosis}</p>
+        </div>
+      )}
+
+      <TableToggle>
+        <div className="small" style={{ fontWeight: 600, marginTop: 4 }}>Model 3-strefowy (Seiler / Bakken)</div>
+        <table className="data" style={{ marginTop: 4, marginBottom: 12 }}>
+          <thead><tr><th>Strefa</th><th>Mleczan</th><th>Moc</th><th>Udział</th></tr></thead>
+          <tbody>
+            {n.norwegian3Zones.map((z: any) => (
+              <tr key={z.zone}>
+                <td>Z{z.zone} {z.name.split(" (")[0]}</td>
+                <td>{z.lactate}</td>
+                <td>{z.lowWatts ? `${z.lowWatts}–${z.highWatts ?? "∞"} W` : `< ${z.highWatts} W`}</td>
+                <td>{z.targetShare}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <div className="small" style={{ fontWeight: 600 }}>Model 5-strefowy Olympiatoppen (Norwegia)</div>
+        <table className="data" style={{ marginTop: 4 }}>
+          <thead><tr><th>Strefa</th><th>Mleczan</th><th>Moc</th><th>Tętno</th></tr></thead>
+          <tbody>
+            {n.norwegian5Zones.map((z: any) => (
+              <tr key={z.zone}>
+                <td>{z.name.split(" ")[0]}</td>
+                <td>{z.lactate}</td>
+                <td>{z.lowWatts ? `${z.lowWatts}–${z.highWatts ?? "∞"} W` : `< ${z.highWatts} W`}</td>
+                <td>{z.hrHigh ? `do ${z.hrHigh}` : "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </TableToggle>
+    </Card>
+  );
+}
+

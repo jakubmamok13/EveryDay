@@ -5,6 +5,7 @@ import { StepGraph, StepList } from "../StepGraph";
 import { WhyCard } from "../WhyCard";
 import { BackupNoticeCard } from "../Backup";
 import { BonusOfferCard, CarbsCard, ChallengeChip, ComebackCard, HeatCard, RideRatingCard, SummaryCard, TomorrowCard } from "../Extras";
+import { checkMorningReminder } from "../reminder";
 import { Card, Seg, Sheet, useAction } from "../ui";
 
 const MODES = [
@@ -32,6 +33,12 @@ export function Today({ goCoach }: { goCoach: () => void }) {
     window.addEventListener(CHANGED, on);
     return () => window.removeEventListener(CHANGED, on);
   }, []);
+
+  useEffect(() => {
+    if (t) {
+      checkMorningReminder(t.reminder?.time ?? "07:30", !!t.checkIn);
+    }
+  }, [t]);
 
   if (!t) return <p className="muted center">{error ?? "Ładuję…"}</p>;
   const needsCheckIn = (!t.checkIn && !t.brief) || editCheckIn;
@@ -61,6 +68,8 @@ export function Today({ goCoach }: { goCoach: () => void }) {
             <div style={{ flex: 1 }}>
               <div><strong>{t.readiness.word}</strong> <span className="muted">· {t.readiness.reason}</span></div>
               {t.readiness.garmin != null && <div className="muted small">Garmin: gotowość {t.readiness.garmin}</div>}
+              {t.readiness.garminStatus && <div className="muted small">Status Garmin: {t.readiness.garminStatus}</div>}
+              {t.readiness.acwr != null && <div className="muted small">Wskaźnik obciążenia ACWR: {t.readiness.acwr}</div>}
             </div>
             <span className="score" aria-label={`wynik ${t.readiness.score} na 100`}>{t.readiness.score}</span>
           </div>
@@ -91,7 +100,7 @@ export function Today({ goCoach }: { goCoach: () => void }) {
       {t.bonusOffer && <BonusOfferCard offer={t.bonusOffer} defaultMode={t.defaultRideMode} setT={setT} />}
 
       {t.workout ? (
-        <WorkoutCard w={t.workout} busy={busy} run={run} setT={setT} goCoach={goCoach} />
+        <WorkoutCard w={t.workout} norwegian={t.norwegian} busy={busy} run={run} setT={setT} goCoach={goCoach} />
       ) : !t.bonusOffer && (
         <RestDay t={t} busy={busy} run={run} setT={setT} />
       )}
@@ -163,7 +172,7 @@ function CheckInCard({ initial, defaultMode, busy, editing, onSubmit, onSkip }: 
 
 const SHORTEN = [30, 45, 60, 75, 90];
 
-function WorkoutCard({ w, busy, run, setT, goCoach }: { w: any; busy: boolean; run: any; setT: (t: any) => void; goCoach: () => void }) {
+function WorkoutCard({ w, norwegian, busy, run, setT, goCoach }: { w: any; norwegian?: any; busy: boolean; run: any; setT: (t: any) => void; goCoach: () => void }) {
   const [minutesOpen, setMinutesOpen] = useState(false);
   const [swapOpen, setSwapOpen] = useState(false);
   const [alts, setAlts] = useState<any[] | null>(null);
@@ -181,6 +190,15 @@ function WorkoutCard({ w, busy, run, setT, goCoach }: { w: any; busy: boolean; r
       <div className="row small muted" style={{ marginBottom: 8 }}>
         <span>{fmtMinutes(w.minutes)}</span>·<span>obciążenie {w.load}</span>·<span>{outdoor ? "Na zewnątrz" : "W domu"}</span>·<span>{done ? "zrobione ✔" : delivery}</span>
       </div>
+      {norwegian && (
+        <div style={{ background: "var(--accent-soft)", borderRadius: 12, padding: "8px 12px", marginBottom: 10 }}>
+          <div className="spread small" style={{ fontWeight: 600 }}>
+            <span>🇳🇴 Metoda norweska{norwegian.targetLactate ? ` · ${norwegian.targetLactate.label}` : ""}</span>
+            <span className="muted">LT1: {norwegian.lt1Watts} W · LT2: {norwegian.lt2Watts} W</span>
+          </div>
+          <p className="tiny muted" style={{ margin: "4px 0 0" }}>{norwegian.tip}</p>
+        </div>
+      )}
       <StepGraph steps={w.steps} />
       {outdoor && w.guidance && <p className="small">{w.guidance}</p>}
       <StepList steps={w.steps} outdoor={outdoor} />

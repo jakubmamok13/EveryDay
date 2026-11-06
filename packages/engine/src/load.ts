@@ -72,3 +72,57 @@ export function weeklyLoadCap(fitness: number, rampPerWeek = 5): number {
   const daily = (fitness + rampPerWeek - fitness * decay) / (1 - decay);
   return Math.max(0, daily * 7);
 }
+
+export interface AcwrResult {
+  date: ISODate;
+  acute: number;
+  chronic: number;
+  acwr: number | null;
+  risk: "under" | "optimal" | "caution" | "danger" | "insufficient_data";
+}
+
+/**
+ * Acute:Chronic Workload Ratio (Gabbett 2016, Hulin 2014, Soligard 2016).
+ * Acute = rolling 7-day average daily load.
+ * Chronic = rolling 28-day average daily load (chronic baseline).
+ * Ratio 0.8–1.34: optimal ('sweet spot', low injury/overreaching risk).
+ * Ratio 1.35–1.49: caution (elevated fatigue accumulation).
+ * Ratio >= 1.50: danger (overreaching, high injury/maladaptation risk).
+ */
+export function computeAcwr(loads: Map<ISODate, number>, date: ISODate): AcwrResult {
+  let acuteSum = 0;
+  for (let i = 1; i <= 7; i++) {
+    acuteSum += loads.get(addDays(date, -i)) ?? 0;
+  }
+  const acute = acuteSum / 7;
+
+  let chronicSum = 0;
+  let recordedDays = 0;
+  for (let i = 1; i <= 28; i++) {
+    const l = loads.get(addDays(date, -i));
+    if (l !== undefined) {
+      chronicSum += l;
+      recordedDays++;
+    }
+  }
+  const chronic = recordedDays > 0 ? chronicSum / Math.max(recordedDays, 14) : 0;
+
+  if (recordedDays < 7 || chronic < 10) {
+    return { date, acute: Math.round(acute), chronic: Math.round(chronic), acwr: null, risk: "insufficient_data" };
+  }
+
+  const acwr = Math.round((acute / chronic) * 100) / 100;
+  let risk: AcwrResult["risk"] = "optimal";
+  if (acwr >= 1.5) risk = "danger";
+  else if (acwr >= 1.35) risk = "caution";
+  else if (acwr < 0.8) risk = "under";
+
+  return {
+    date,
+    acute: Math.round(acute),
+    chronic: Math.round(chronic),
+    acwr,
+    risk,
+  };
+}
+

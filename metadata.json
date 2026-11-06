@@ -1,0 +1,8 @@
+{
+  "name": "EveryDay",
+  "description": "EveryDay: a free cycling coach that runs on your phone",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

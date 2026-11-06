@@ -120,17 +120,29 @@ export function plannedBetween(app: App, athleteId: number, from: ISODate, to: I
 }
 
 export function wellnessRange(app: App, athleteId: number, from: ISODate, to: ISODate): WellnessDay[] {
-  return app.db.all("SELECT * FROM wellness_day WHERE athlete_id = ? AND date BETWEEN ? AND ? ORDER BY date", athleteId, from, to).map((w) => ({
-    date: w.date,
-    hrv: w.hrv,
-    restingHr: w.resting_hr,
-    sleepSeconds: w.sleep_seconds,
-    sleepScore: w.sleep_score,
-    bodyBatteryMax: w.body_battery_max,
-    bodyBatteryMin: w.body_battery_min,
-    garminReadiness: w.garmin_readiness,
-    weightKg: w.weight_kg,
-  }));
+  return app.db.all("SELECT * FROM wellness_day WHERE athlete_id = ? AND date BETWEEN ? AND ? ORDER BY date", athleteId, from, to).map((w) => {
+    let raw: any = null;
+    try {
+      raw = w.raw_json ? JSON.parse(w.raw_json) : null;
+    } catch {}
+    const garminTrainingStatus =
+      raw?.trainingStatus ?? raw?.training_status ?? raw?.GarminTrainingStatus ?? raw?.status ?? null;
+    const acuteLoad = typeof raw?.acuteLoad === "number" ? raw.acuteLoad : typeof raw?.atlLoad === "number" ? raw.atlLoad : null;
+    return {
+      date: w.date,
+      hrv: w.hrv,
+      restingHr: w.resting_hr,
+      sleepSeconds: w.sleep_seconds,
+      sleepScore: w.sleep_score,
+      bodyBatteryMax: w.body_battery_max,
+      bodyBatteryMin: w.body_battery_min,
+      garminReadiness: w.garmin_readiness,
+      garminTrainingStatus: typeof garminTrainingStatus === "string" ? garminTrainingStatus : null,
+      acuteLoad,
+      chronicLoad: typeof raw?.ctlLoad === "number" ? raw.ctlLoad : null,
+      weightKg: w.weight_kg,
+    };
+  });
 }
 
 export function checkIn(app: App, athleteId: number, date: ISODate): CheckIn | null {

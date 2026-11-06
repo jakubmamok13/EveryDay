@@ -144,7 +144,7 @@ export async function autoBackup(app: App): Promise<AutoResult> {
     await saveBackup(app);
     return "saved";
   } catch (e) {
-    app.db.setMeta(K.error, JSON.stringify({ at: new Date().toISOString(), message: (e as Error).message }));
+    app.db.setMeta(K.error, JSON.stringify({ at: app.clock().toISOString(), message: (e as Error).message }));
     return "error";
   }
 }
@@ -216,6 +216,6 @@ export function backupNotice(app: App) {
   const s = backupStatus(app);
   if (s.conflict) return { kind: "conflict" as const, savedAt: s.conflict.modifiedTime, deviceName: s.conflict.deviceName };
   const last = s.lastSavedAt ? Date.parse(s.lastSavedAt) : 0;
-  if (s.error && Date.now() - last > 7 * 86_400_000) return { kind: "stale" as const, lastSavedAt: s.lastSavedAt, message: s.error.message };
+  if (s.error && app.clock().getTime() - last > 7 * 86_400_000) return { kind: "stale" as const, lastSavedAt: s.lastSavedAt, message: s.error.message };
   return null;
 }

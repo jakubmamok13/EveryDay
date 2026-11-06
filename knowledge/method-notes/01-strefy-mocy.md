@@ -17,6 +17,12 @@ treningi same stają się mocniejsze w watach.
 - **Z6 Beztlenowa (121–150%)** — 30 s–2 min, bardzo ciężko.
 - **Z7 Sprint (powyżej 150%)** — kilka sekund maksymalnego wysiłku.
 
+## Trzystrefowy model norweski (Seiler)
+W metodzie norweskiej wysiłek kategoryzuje się według stężenia kwasu mlekowego i dwóch progów (LT1 i LT2):
+- **Strefa 1 (< LT1, < 75% FTP, mleczan < 2.0 mmol/L)** — niska intensywność tlenowa. 80–85% czasu w siodle.
+- **Strefa 2 (LT1–LT2, 76–100% FTP, mleczan 2.0–4.0 mmol/L)** — kontrolowany próg. Optimum w metodzie norweskiej to Sub-LT2 (88–95% FTP, 2.5–3.5 mmol/L).
+- **Strefa 3 (> LT2, > 100% FTP, mleczan > 4.0 mmol/L)** — wysoka intensywność, dawkowana ostrożnie (2–5% czasu).
+
 ## Strefy tętna (od LTHR)
 LTHR to tętno na progu. Strefy tętna: Z1 do 68% LTHR, Z2 69–83%, Z3 84–94%,
 Z4 95–105%, Z5 powyżej 106%. Tętno reaguje z opóźnieniem 1–2 minut, dlatego

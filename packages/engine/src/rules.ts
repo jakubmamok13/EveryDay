@@ -52,6 +52,22 @@ export function adapt(ctx: AdaptContext): AdaptResult {
   if (r.overrides.includes("pain") && w.intensity !== "easy") {
     return { action: "shorten", reasons: ["pain"], workout: shortenAndCap(w, Math.min(1, 60 / w.minutes)), keyMissed: p.isKey };
   }
+  if (r.overrides.includes("overload")) {
+    // Athlete is in acute overreaching / high load overload state. Block hard sessions.
+    if (w.intensity === "hard" || p.isKey) {
+      const easyLater = ctx.laterThisWeek.find((d) => !d.isKey && d.workout.intensity === "easy");
+      if (easyLater) {
+        return { action: "swap", reasons: ["overload_swap"], workout: easyLater.workout, keyMissed: false, swapWith: easyLater.date };
+      }
+      return { action: "recovery", reasons: ["overload_recovery"], workout: recovery(ctx.library, Math.min(45, w.minutes)), keyMissed: p.isKey };
+    }
+    if (w.intensity === "moderate") {
+      return { action: "reduce", reasons: ["overload_reduce"], workout: reduceWorkout(w), keyMissed: false };
+    }
+    if (w.minutes > 60) {
+      return { action: "shorten", reasons: ["overload_shorten"], workout: shortenAndCap(w, 0.75), keyMissed: false };
+    }
+  }
 
   switch (r.effective) {
     case "green":

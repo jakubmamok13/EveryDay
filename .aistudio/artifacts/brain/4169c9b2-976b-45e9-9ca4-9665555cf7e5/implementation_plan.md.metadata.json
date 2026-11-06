@@ -1,0 +1,6 @@
+{
+  "summary": "Kompleksowy plan wdrożenia zaawansowanej analizy kumulacji obciążenia treningowego (ACWR, Garmin Overreaching / Przeciążenie, wykładnicze ATL/CTL, blokada ciężkich jednostek przy kumulacji zmęczenia) oraz natywnych porannych powiadomień PWA (Web Notifications API) z konfigurowalną godziną w Ustawieniach.",
+  "updatedAt": "2026-11-06T07:51:35.021427104Z",
+  "requestFeedback": true,
+  "userFacing": true
+}

@@ -8,6 +8,7 @@ import {
   buildBriefFacts,
   checkEnvelope,
   compliance,
+  computeAcwr,
   computeReadiness,
   displaySteps,
   estimateLoad,
@@ -48,6 +49,16 @@ import {
   readinessRule,
   sportGroup,
   SPORT_WEIGHTS,
+  analyzeTid,
+  estimateLactate,
+  lt1Watts,
+  lt2Watts,
+  norwegian3Zone,
+  norwegian5Zone,
+  norwegian3ZoneTable,
+  norwegian5ZoneTable,
+  norwegianSubThresholdRange,
+  norwegianLt1Range,
 } from "../src";
 import { SAMPLE_AVAILABILITY, SAMPLE_GOALS, SAMPLE_PHYS } from "./fixtures";
 
@@ -251,6 +262,39 @@ describe("readiness", () => {
     expect(r.state).toBe("learning");
     expect(r.inputs.find((i) => i.key === "hrv")!.detail).toBe("learning");
   });
+
+  it("detects Garmin Przeciążenie (overreaching) and lowers readiness with overload override", () => {
+    const overloadWellness = wellness.map((w) =>
+      w.date === MONDAY ? { ...w, garminTrainingStatus: "Przeciążenie", garminReadiness: 30 } : w,
+    );
+    const r = computeReadiness({
+      date: MONDAY,
+      wellness: overloadWellness,
+      checkIn: { date: MONDAY, sleepQuality: 4, legs: 4, motivation: 4, sick: false, pain: false, rideMode: "indoor" },
+    });
+    expect(r.overrides).toContain("overload");
+    expect(r.score).toBeLessThanOrEqual(35);
+    expect(r.effective).toBe("red");
+    expect(r.mainReason).toBe("overload");
+  });
+
+  it("calculates ACWR correctly and triggers caution and danger zones", () => {
+    const loads = new Map<string, number>();
+    for (let i = 1; i <= 28; i++) {
+      loads.set(addDays(MONDAY, -i), 40); // steady baseline = 40
+    }
+    const steady = computeAcwr(loads, MONDAY);
+    expect(steady.acwr).toBeCloseTo(1.0, 1);
+    expect(steady.risk).toBe("optimal");
+
+    // Sudden 7-day spike of 80 load/day
+    for (let i = 1; i <= 7; i++) {
+      loads.set(addDays(MONDAY, -i), 90);
+    }
+    const spiked = computeAcwr(loads, MONDAY);
+    expect(spiked.acwr).toBeGreaterThanOrEqual(1.5);
+    expect(spiked.risk).toBe("danger");
+  });
 });
 
 describe("adaptation and envelope", () => {
@@ -270,6 +314,18 @@ describe("adaptation and envelope", () => {
     const res = adapt({ date: MONDAY, readiness: readiness({ effective: "red", state: "red", score: 50 }), planned: monday, recentlySick: false, laterThisWeek: [], library: LIBRARY });
     expect(res.action).toBe("recovery");
     expect(res.keyMissed).toBe(true);
+    expect(res.workout!.category).toBe("recovery");
+  });
+  it("blocks hard Key Workout on overload and swaps or converts to recovery", () => {
+    const res = adapt({
+      date: MONDAY,
+      readiness: readiness({ overrides: ["overload"], effective: "yellow", score: 35 }),
+      planned: monday, // hard key workout
+      recentlySick: false,
+      laterThisWeek: [],
+      library: LIBRARY,
+    });
+    expect(res.action).toBe("recovery");
     expect(res.workout!.category).toBe("recovery");
   });
   it("rests when sick", () => {
@@ -598,3 +654,87 @@ describe("research features (D-049 …)", () => {
     expect(wk!.days.map((d) => d.workout.category)).toContain("vo2max");
   });
 });
+
+describe("Norwegian method (Metoda norweska)", () => {
+  it("computes LT1 and LT2 thresholds from FTP", () => {
+    const ftp = 250;
+    expect(lt1Watts(ftp)).toBe(188); // 75% FTP
+    expect(lt2Watts(ftp)).toBe(250); // 100% FTP
+    const sub = norwegianSubThresholdRange(ftp);
+    expect(sub.low).toBe(220); // 88% FTP
+    expect(sub.high).toBe(238); // 95% FTP
+    expect(sub.target).toBe(230); // 92% FTP
+    const base = norwegianLt1Range(ftp);
+    expect(base.low).toBe(150); // 60% FTP
+    expect(base.high).toBe(188); // 75% FTP
+  });
+
+  it("classifies into Norwegian 3-zone model (Seiler)", () => {
+    expect(norwegian3Zone(50)).toBe(1);
+    expect(norwegian3Zone(75)).toBe(1);
+    expect(norwegian3Zone(76)).toBe(2);
+    expect(norwegian3Zone(92)).toBe(2);
+    expect(norwegian3Zone(100)).toBe(2);
+    expect(norwegian3Zone(105)).toBe(3);
+    expect(norwegian3Zone(120)).toBe(3);
+  });
+
+  it("classifies into Norwegian 5-zone Olympiatoppen model", () => {
+    expect(norwegian5Zone(55)).toBe(1);
+    expect(norwegian5Zone(70)).toBe(2);
+    expect(norwegian5Zone(90)).toBe(3);
+    expect(norwegian5Zone(110)).toBe(4);
+    expect(norwegian5Zone(130)).toBe(5);
+  });
+
+  it("estimates physiological blood lactate concentration", () => {
+    const low = estimateLactate(65);
+    expect(low.zone).toBe(1);
+    expect(low.mmol).toBeLessThanOrEqual(2.0);
+
+    const sub = estimateLactate(92);
+    expect(sub.zone).toBe(2);
+    expect(sub.subThreshold).toBe(true);
+    expect(sub.mmol).toBeGreaterThanOrEqual(2.5);
+    expect(sub.mmol).toBeLessThanOrEqual(3.5);
+
+    const severe = estimateLactate(110);
+    expect(severe.zone).toBe(3);
+    expect(severe.subThreshold).toBe(false);
+    expect(severe.mmol).toBeGreaterThanOrEqual(4.0);
+  });
+
+  it("analyzes Training Intensity Distribution (TID) compliance", () => {
+    // 82% in Z1, 15% in Z2, 3% in Z3 -> compliant with Norwegian standard
+    const tidCompliant = analyzeTid([
+      { minutes: 240, pct: 68 }, // Z1
+      { minutes: 45, pct: 92 },  // Z2 sub-threshold
+      { minutes: 9, pct: 110 },  // Z3 VO2max
+    ]);
+    expect(tidCompliant.isNorwegianCompliant).toBe(true);
+    expect(tidCompliant.z1Pct).toBeGreaterThanOrEqual(80);
+    expect(tidCompliant.z3Pct).toBeLessThanOrEqual(5);
+
+    // Too much severe work (25% in Z3) -> non-compliant
+    const tidSevere = analyzeTid([
+      { minutes: 60, pct: 68 },  // Z1
+      { minutes: 10, pct: 92 },  // Z2
+      { minutes: 30, pct: 115 }, // Z3
+    ]);
+    expect(tidSevere.isNorwegianCompliant).toBe(false);
+    expect(tidSevere.diagnosis).toContain("Zbyt dużo czasu powyżej LT2");
+  });
+
+  it("generates 3-zone and 5-zone tables with power and HR", () => {
+    const z3 = norwegian3ZoneTable(250, 165);
+    expect(z3).toHaveLength(3);
+    expect(z3[0]!.highWatts).toBe(188);
+    expect(z3[1]!.highWatts).toBe(250);
+    expect(z3[1]!.lactate).toBe("2.0–4.0 mmol/L");
+
+    const z5 = norwegian5ZoneTable(250, 165);
+    expect(z5).toHaveLength(5);
+    expect(z5[2]!.name).toContain("Terskel");
+  });
+});
+

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { api, fmtDate, saveFile } from "../api";
 import { AvailabilityEditor, GoalEditor, goalsFromApi, goalsToApi, type DayForm, type GoalForm } from "../forms";
 import { DriveBackupCard } from "../Backup";
-import { InstallHint, ReminderGuide } from "../reminder";
+import { InstallHint, NotificationManager } from "../reminder";
 import { runtime, setMode } from "../runtime";
 import { Card, Seg, useAction } from "../ui";
 
@@ -23,6 +23,7 @@ export function Settings() {
       <InstallHint />
       {s.demo && <DemoBanner />}
       <Profile s={s} reload={load} />
+      <Methodology s={s} reload={load} />
       <Goals s={s} reload={load} />
       <Season s={s} reload={load} />
       <Availability s={s} reload={load} />
@@ -64,6 +65,38 @@ function Profile({ s, reload }: { s: any; reload: () => void }) {
       <Seg text label="Tabela profilu mocy" value={p.sex} options={[{ value: "m", label: "Mężczyźni" }, { value: "f", label: "Kobiety" }]} onChange={(v) => setP({ ...p, sex: v })} />
       <div style={{ height: 10 }} />
       <button className="btn primary" disabled={busy} onClick={() => run(async () => { await api.put("/api/settings/profile", { ...p, weightKg: Number(p.weightKg), heightCm: Number(p.heightCm) || null, ftp: Number(p.ftp), lthr: Number(p.lthr) || null, maxHr: Number(p.maxHr) || null }); reload(); }, "Zapisano. Pamiętaj o FTP także w intervals.icu i MyWhoosh.")}>Zapisz</button>
+    </Card>
+  );
+}
+
+function Methodology({ s, reload }: { s: any; reload: () => void }) {
+  const [m, setM] = useState(s.methodology ?? "norwegian");
+  const { busy, run } = useAction();
+  return (
+    <Card title="Model treningowy">
+      <p className="small" style={{ marginTop: 0 }}>
+        Wybierz metodykę wyliczania podstaw treningu, progów i stref intensywności.
+      </p>
+      <Seg
+        text
+        label="Model treningowy"
+        value={m}
+        options={[
+          { value: "norwegian", label: "🇳🇴 Norweska (Mleczan / Sub-LT2)" },
+          { value: "coggan", label: "Coggan (7 stref % FTP)" },
+        ]}
+        onChange={setM}
+      />
+      <p className="tiny muted" style={{ marginTop: 8 }}>
+        {m === "norwegian"
+          ? "Metoda norweska (Stephen Seiler / Marius Bakken): ścisła kontrola kwasu mlekowego (<2.0 mM w bazie tlenowej, 2.5–3.5 mM w interwałach podprogowych) i ochrona układu nerwowego."
+          : "Klasyczne podejście Allena i Coggana oparte na 7 strefach procentowych FTP oraz strefie Sweet Spot (88–94% FTP)."}
+      </p>
+      <div style={{ height: 10 }} />
+      <button className="btn primary" disabled={busy} onClick={() => run(async () => {
+        await api.put("/api/settings/methodology", { methodology: m });
+        reload();
+      }, "Zapisano model treningowy.")}>Zapisz model</button>
     </Card>
   );
 }
@@ -113,21 +146,20 @@ function OtherSports({ s, reload }: { s: any; reload: () => void }) {
   );
 }
 
-const TIMES = ["06:00", "06:30", "07:00", "07:30", "08:00", "09:00"];
-
 function Reminder({ s, reload }: { s: any; reload: () => void }) {
   const { run } = useAction();
-  const time = s.reminder?.time ?? "07:00";
+  const time = s.reminder?.time ?? "07:30";
   return (
-    <Card title="Poranne przypomnienie">
-      <p className="small" style={{ marginTop: 0 }}>EveryDay nie ma serwera, więc przypomnienie ustawiasz raz w telefonie. O której?</p>
-      <div className="chips">
-        {TIMES.map((t) => (
-          <button key={t} className={`btn small${t === time ? " on" : ""}`} aria-pressed={t === time}
-            onClick={() => run(async () => { await api.put("/api/settings/reminder", { time: t }); reload(); })}>{t}</button>
-        ))}
-      </div>
-      <ReminderGuide time={time} />
+    <Card title="Poranne powiadomienia">
+      <NotificationManager
+        time={time}
+        onTimeChange={(t) =>
+          run(async () => {
+            await api.put("/api/settings/reminder", { time: t });
+            reload();
+          }, "Zapisano godzinę przypomnienia: " + t)
+        }
+      />
     </Card>
   );
 }
